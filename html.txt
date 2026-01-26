@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Kas Keuangan</title>
+    <style>
+        :root { --primary: #f39c12; --dark: #333; --gray: #f4f4f4; }
+        body { font-family: sans-serif; margin: 0; background: var(--gray); }
+        .container { max-width: 500px; margin: auto; background: white; min-height: 100vh; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        
+        /* Header & Menu */
+        .header { background: white; padding: 20px; text-align: center; border-bottom: 2px solid var(--gray); }
+        .menu-grid { padding: 10px; }
+        .btn-menu { width: 100%; padding: 15px; margin-bottom: 10px; border: 1px solid #ddd; background: white; font-weight: bold; cursor: pointer; text-align: left; }
+        
+        /* Form & View Section */
+        .section { display: none; padding: 20px; }
+        .active { display: block; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 14px; color: #666; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .btn-simpan { width: 100%; padding: 12px; background: linear-gradient(to bottom, #fff, #bbb); border: 1px solid #999; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        
+        /* Table Style */
+        .search-box { border: 2px solid var(--primary); padding: 10px; margin-bottom: 10px; display: flex; align-items: center; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { background: #666; color: white; padding: 8px; }
+        td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        .btn-back { margin-bottom: 20px; cursor: pointer; color: blue; text-decoration: underline; display: block; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="menu-utama" class="section active">
+        <div class="header"><h2>MENU UTAMA</h2></div>
+        <div class="menu-grid">
+            <button class="btn-menu" onclick="showSection('form-hutang', 'TAMBAH HUTANG')">TAMBAH HUTANG</button>
+            <button class="btn-menu" onclick="showSection('data-hutang', 'DATA HUTANG')">PEMBAYARAN HUTANG (DATA)</button>
+            <button class="btn-menu" onclick="showSection('form-piutang', 'TAMBAH PIUTANG')">TAMBAH PIUTANG</button>
+            <button class="btn-menu" onclick="showSection('data-piutang', 'DATA PIUTANG')">PENYETORAN PIUTANG (DATA)</button>
+        </div>
+    </div>
+
+    <div id="form-section" class="section">
+        <a class="btn-back" onclick="showSection('menu-utama')">← Kembali</a>
+        <h3 id="form-title">TAMBAH</h3>
+        <div class="form-group">
+            <label>Tanggal</label>
+            <input type="date" id="tgl">
+        </div>
+        <div class="form-group">
+            <label>Jatuh Tempo</label>
+            <input type="date" id="tempo">
+        </div>
+        <div class="form-group">
+            <label id="label-kas">Simpan ke / Diambil dari</label>
+            <select id="akun">
+                <option>1111-Kas</option>
+                <option>1112-Bank</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Jumlah</label>
+            <input type="number" id="jumlah" placeholder="0">
+        </div>
+        <div class="form-group">
+            <label>Keterangan</label>
+            <input type="text" id="ket" placeholder="Contoh: Hutang Usaha">
+        </div>
+        <button class="btn-simpan" onclick="simpanData()">SIMPAN</button>
+    </div>
+
+    <div id="data-section" class="section">
+        <a class="btn-back" onclick="showSection('menu-utama')">← Kembali</a>
+        <h3 id="data-title">DATA</h3>
+        <div class="search-box">🔍 <input type="text" placeholder="Cari..." style="border:none; outline:none;"></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>TANGGAL</th>
+                    <th>KETERANGAN</th>
+                    <th>NILAI</th>
+                    <th>BAYAR</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    let currentMode = ''; // 'hutang' atau 'piutang'
+
+    function showSection(id, title) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        
+        if(id === 'form-hutang' || id === 'form-piutang') {
+            currentMode = id.includes('hutang') ? 'hutang' : 'piutang';
+            document.getElementById('form-section').classList.add('active');
+            document.getElementById('form-title').innerText = title;
+            document.getElementById('label-kas').innerText = currentMode === 'hutang' ? 'Simpan ke' : 'Diambil dari';
+        } else if(id === 'data-hutang' || id === 'data-piutang') {
+            currentMode = id.includes('hutang') ? 'hutang' : 'piutang';
+            document.getElementById('data-section').classList.add('active');
+            document.getElementById('data-title').innerText = title;
+            renderTable();
+        } else {
+            document.getElementById('menu-utama').classList.add('active');
+        }
+    }
+
+    function simpanData() {
+        const data = {
+            tgl: document.getElementById('tgl').value,
+            ket: document.getElementById('ket').value,
+            nilai: document.getElementById('jumlah').value,
+            bayar: 0
+        };
+
+        let storageKey = currentMode === 'hutang' ? 'db_hutang' : 'db_piutang';
+        let list = JSON.parse(localStorage.getItem(storageKey)) || [];
+        list.push(data);
+        localStorage.setItem(storageKey, JSON.stringify(list));
+        
+        alert('Data berhasil disimpan!');
+        showSection('menu-utama');
+    }
+
+    function renderTable() {
+        let storageKey = currentMode === 'hutang' ? 'db_hutang' : 'db_piutang';
+        let list = JSON.parse(localStorage.getItem(storageKey)) || [];
+        let html = '';
+        list.forEach(item => {
+            html += `<tr>
+                <td>${item.tgl}</td>
+                <td style="text-align:left; color:blue;">${item.ket}</td>
+                <td>${Number(item.nilai).toLocaleString()}</td>
+                <td>${Number(item.bayar).toLocaleString()}</td>
+            </tr>`;
+        });
+        document.getElementById('table-body').innerHTML = html;
+    }
+</script>
+
+</body>
+</html>
