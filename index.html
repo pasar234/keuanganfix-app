@@ -3,148 +3,185 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Kas Keuangan</title>
+    <title>Aplikasi Kas Keuangan Pro</title>
     <style>
-        :root { --primary: #f39c12; --dark: #333; --gray: #f4f4f4; }
-        body { font-family: sans-serif; margin: 0; background: var(--gray); }
-        .container { max-width: 500px; margin: auto; background: white; min-height: 100vh; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        :root { --primary-orange: #f39c12; --dark-header: #555; --text-blue: #0056b3; --red: #e74c3c; --green: #27ae60; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f0f0; margin: 0; }
+        .app-container { max-width: 480px; margin: 0 auto; background: #fff; min-height: 100vh; position: relative; box-shadow: 0 0 15px rgba(0,0,0,0.2); }
         
-        /* Header & Menu */
-        .header { background: white; padding: 20px; text-align: center; border-bottom: 2px solid var(--gray); }
-        .menu-grid { padding: 10px; }
-        .btn-menu { width: 100%; padding: 15px; margin-bottom: 10px; border: 1px solid #ddd; background: white; font-weight: bold; cursor: pointer; text-align: left; }
+        /* Dashboard Saldo */
+        .summary-card { padding: 15px; background: #fdfdfd; border-bottom: 5px solid #eee; display: flex; gap: 10px; }
+        .summary-item { flex: 1; padding: 10px; border-radius: 8px; color: white; text-align: center; }
+        .bg-hutang { background: var(--red); }
+        .bg-piutang { background: var(--green); }
+        .summary-item small { font-size: 0.7rem; display: block; text-transform: uppercase; }
+        .summary-item strong { font-size: 1.1rem; }
+
+        .title-bar { padding: 15px; font-weight: bold; font-size: 1.2rem; border-bottom: 1px solid #ddd; background: #fff; }
+        .menu-item { width: 100%; padding: 18px; border: none; border-bottom: 1px solid #eee; background: #fff; text-align: left; font-size: 1rem; color: #444; cursor: pointer; text-transform: uppercase; font-weight: 500; }
         
-        /* Form & View Section */
-        .section { display: none; padding: 20px; }
-        .active { display: block; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-size: 14px; color: #666; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .btn-simpan { width: 100%; padding: 12px; background: linear-gradient(to bottom, #fff, #bbb); border: 1px solid #999; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        /* Form & Table Style tetap sama agar konsisten dengan gambar sebelumnya */
+        .form-body { padding: 20px; }
+        .form-group { display: flex; align-items: center; margin-bottom: 12px; }
+        .form-group label { width: 120px; color: #666; font-size: 0.9rem; }
+        .form-group input, .form-group select { flex: 1; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 3px; }
+        .btn-simpan { width: 100%; padding: 15px; background: linear-gradient(to bottom, #fefefe, #ccc); border: 1px solid #999; border-radius: 5px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+
+        .search-container { padding: 10px; }
+        .search-box { display: flex; align-items: center; border: 2px solid var(--primary-orange); border-radius: 5px; padding: 5px 10px; }
+        .search-box input { border: none; outline: none; width: 100%; padding: 8px; }
         
-        /* Table Style */
-        .search-box { border: 2px solid var(--primary); padding: 10px; margin-bottom: 10px; display: flex; align-items: center; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        th { background: #666; color: white; padding: 8px; }
-        td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        .btn-back { margin-bottom: 20px; cursor: pointer; color: blue; text-decoration: underline; display: block; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: var(--dark-header); color: #fff; padding: 10px; font-size: 0.75rem; }
+        td { border-bottom: 1px solid #eee; padding: 12px 5px; text-align: center; font-size: 0.85rem; cursor: pointer; }
+        .col-ket { text-align: left; color: var(--text-blue); font-weight: 500; }
+
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10; }
+        .popup { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; width: 250px; border-radius: 8px; padding: 10px; }
+        .popup-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; font-weight: bold; color: #444; text-align: center;}
+        .hidden { display: none; }
     </style>
 </head>
-<body>
+<body onload="updateSummary()">
 
-<div class="container">
-    <div id="menu-utama" class="section active">
-        <div class="header"><h2>MENU UTAMA</h2></div>
-        <div class="menu-grid">
-            <button class="btn-menu" onclick="showSection('form-hutang', 'TAMBAH HUTANG')">TAMBAH HUTANG</button>
-            <button class="btn-menu" onclick="showSection('data-hutang', 'DATA HUTANG')">PEMBAYARAN HUTANG (DATA)</button>
-            <button class="btn-menu" onclick="showSection('form-piutang', 'TAMBAH PIUTANG')">TAMBAH PIUTANG</button>
-            <button class="btn-menu" onclick="showSection('data-piutang', 'DATA PIUTANG')">PENYETORAN PIUTANG (DATA)</button>
+<div class="app-container">
+    <div id="view-menu">
+        <div class="title-bar">MENU UTAMA</div>
+        
+        <div class="summary-card">
+            <div class="summary-item bg-hutang">
+                <small>Total Hutang</small>
+                <strong id="total-hutang">Rp 0</strong>
+            </div>
+            <div class="summary-item bg-piutang">
+                <small>Total Piutang</small>
+                <strong id="total-piutang">Rp 0</strong>
+            </div>
+        </div>
+
+        <button class="menu-item" onclick="openForm('hutang')">TAMBAH HUTANG</button>
+        <button class="menu-item" onclick="openData('hutang')">PEMBAYARAN HUTANG</button>
+        <button class="menu-item" onclick="openForm('piutang')">TAMBAH PIUTANG</button>
+        <button class="menu-item" onclick="openData('piutang')">PENYETORAN PIUTANG</button>
+    </div>
+
+    <div id="view-form" class="hidden">
+        <div class="title-bar" id="form-title">TAMBAH</div>
+        <div class="form-body">
+            <div class="form-group"><label>Tanggal</label><input type="date" id="inp-tgl" value="2026-01-26"></div>
+            <div class="form-group"><label>Jatuh tempo</label><input type="date" id="inp-tempo" value="2026-01-26"></div>
+            <div class="form-group"><label id="lbl-akun">Akun</label><select id="inp-akun"><option>1111-Kas</option></select></div>
+            <div class="form-group" style="border: 2px solid var(--primary-orange);"><label style="padding-left:10px">Jumlah</label><input type="number" id="inp-nilai" placeholder="0" style="border:none"></div>
+            <div class="form-group"><label>Keterangan</label><input type="text" id="inp-ket"></div>
+            <button class="btn-simpan" onclick="saveData()">SIMPAN</button>
+            <button class="btn-simpan" style="background:#eee" onclick="goBack()">BATAL</button>
         </div>
     </div>
 
-    <div id="form-section" class="section">
-        <a class="btn-back" onclick="showSection('menu-utama')">← Kembali</a>
-        <h3 id="form-title">TAMBAH</h3>
-        <div class="form-group">
-            <label>Tanggal</label>
-            <input type="date" id="tgl">
-        </div>
-        <div class="form-group">
-            <label>Jatuh Tempo</label>
-            <input type="date" id="tempo">
-        </div>
-        <div class="form-group">
-            <label id="label-kas">Simpan ke / Diambil dari</label>
-            <select id="akun">
-                <option>1111-Kas</option>
-                <option>1112-Bank</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Jumlah</label>
-            <input type="number" id="jumlah" placeholder="0">
-        </div>
-        <div class="form-group">
-            <label>Keterangan</label>
-            <input type="text" id="ket" placeholder="Contoh: Hutang Usaha">
-        </div>
-        <button class="btn-simpan" onclick="simpanData()">SIMPAN</button>
-    </div>
-
-    <div id="data-section" class="section">
-        <a class="btn-back" onclick="showSection('menu-utama')">← Kembali</a>
-        <h3 id="data-title">DATA</h3>
-        <div class="search-box">🔍 <input type="text" placeholder="Cari..." style="border:none; outline:none;"></div>
+    <div id="view-data" class="hidden">
+        <div class="title-bar" id="data-title">DATA</div>
+        <div class="search-container"><div class="search-box">🔍 <input type="text" placeholder="Cari"></div></div>
         <table>
-            <thead>
-                <tr>
-                    <th>TANGGAL</th>
-                    <th>KETERANGAN</th>
-                    <th>NILAI</th>
-                    <th>BAYAR</th>
-                </tr>
-            </thead>
-            <tbody id="table-body">
-                </tbody>
+            <thead><tr><th>TANGGAL</th><th>KETERANGAN</th><th>NILAI</th><th>BAYAR</th></tr></thead>
+            <tbody id="table-content"></tbody>
         </table>
+        <button class="btn-simpan" onclick="goBack()">KEMBALI</button>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="closePopup()">
+        <div class="popup">
+            <div class="popup-item" id="pop-action-text">Bayar</div>
+            <div class="popup-item">Data Rincian</div>
+            <div class="popup-item" style="color:red" id="pop-delete">Hapus Data</div>
+        </div>
     </div>
 </div>
 
 <script>
-    let currentMode = ''; // 'hutang' atau 'piutang'
+    let mode = ''; 
+    let selectedIndex = null;
 
-    function showSection(id, title) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    function updateSummary() {
+        const hutang = JSON.parse(localStorage.getItem('app_hutang')) || [];
+        const piutang = JSON.parse(localStorage.getItem('app_piutang')) || [];
         
-        if(id === 'form-hutang' || id === 'form-piutang') {
-            currentMode = id.includes('hutang') ? 'hutang' : 'piutang';
-            document.getElementById('form-section').classList.add('active');
-            document.getElementById('form-title').innerText = title;
-            document.getElementById('label-kas').innerText = currentMode === 'hutang' ? 'Simpan ke' : 'Diambil dari';
-        } else if(id === 'data-hutang' || id === 'data-piutang') {
-            currentMode = id.includes('hutang') ? 'hutang' : 'piutang';
-            document.getElementById('data-section').classList.add('active');
-            document.getElementById('data-title').innerText = title;
-            renderTable();
-        } else {
-            document.getElementById('menu-utama').classList.add('active');
-        }
+        const totalH = hutang.reduce((a, b) => a + (Number(b.nilai) - Number(b.bayar)), 0);
+        const totalP = piutang.reduce((a, b) => a + (Number(b.nilai) - Number(b.bayar)), 0);
+
+        document.getElementById('total-hutang').innerText = 'Rp ' + totalH.toLocaleString('id-ID');
+        document.getElementById('total-piutang').innerText = 'Rp ' + totalP.toLocaleString('id-ID');
     }
 
-    function simpanData() {
-        const data = {
-            tgl: document.getElementById('tgl').value,
-            ket: document.getElementById('ket').value,
-            nilai: document.getElementById('jumlah').value,
+    function openForm(m) {
+        mode = m;
+        document.getElementById('view-menu').classList.add('hidden');
+        document.getElementById('view-form').classList.remove('hidden');
+        document.getElementById('form-title').innerText = 'TAMBAH ' + m.toUpperCase();
+    }
+
+    function openData(m) {
+        mode = m;
+        document.getElementById('view-menu').classList.add('hidden');
+        document.getElementById('view-data').classList.remove('hidden');
+        document.getElementById('data-title').innerText = 'DATA ' + m.toUpperCase();
+        renderTable();
+    }
+
+    function goBack() {
+        document.querySelectorAll('.hidden').forEach(el => el.classList.add('hidden'));
+        document.getElementById('view-menu').classList.remove('hidden');
+        updateSummary();
+    }
+
+    function saveData() {
+        const val = document.getElementById('inp-nilai').value;
+        if(!val || val <= 0) return alert('Masukkan jumlah!');
+
+        const item = {
+            tgl: document.getElementById('inp-tgl').value.split('-').reverse().join('/'),
+            ket: document.getElementById('inp-ket').value || 'Tanpa Keterangan',
+            nilai: val,
             bayar: 0
         };
-
-        let storageKey = currentMode === 'hutang' ? 'db_hutang' : 'db_piutang';
-        let list = JSON.parse(localStorage.getItem(storageKey)) || [];
-        list.push(data);
-        localStorage.setItem(storageKey, JSON.stringify(list));
-        
-        alert('Data berhasil disimpan!');
-        showSection('menu-utama');
+        const key = mode === 'hutang' ? 'app_hutang' : 'app_piutang';
+        let list = JSON.parse(localStorage.getItem(key)) || [];
+        list.push(item);
+        localStorage.setItem(key, JSON.stringify(list));
+        goBack();
     }
 
     function renderTable() {
-        let storageKey = currentMode === 'hutang' ? 'db_hutang' : 'db_piutang';
-        let list = JSON.parse(localStorage.getItem(storageKey)) || [];
+        const key = mode === 'hutang' ? 'app_hutang' : 'app_piutang';
+        let list = JSON.parse(localStorage.getItem(key)) || [];
         let html = '';
-        list.forEach(item => {
-            html += `<tr>
-                <td>${item.tgl}</td>
-                <td style="text-align:left; color:blue;">${item.ket}</td>
-                <td>${Number(item.nilai).toLocaleString()}</td>
-                <td>${Number(item.bayar).toLocaleString()}</td>
+        list.forEach((data, index) => {
+            html += `<tr onclick="showOptions(${index})">
+                <td>${data.tgl}</td>
+                <td class="col-ket">${data.ket}</td>
+                <td>${Number(data.nilai).toLocaleString('id-ID')}</td>
+                <td>${Number(data.bayar).toLocaleString('id-ID')}</td>
             </tr>`;
         });
-        document.getElementById('table-body').innerHTML = html;
+        document.getElementById('table-content').innerHTML = html || '<tr><td colspan="4">Tidak ada data</td></tr>';
     }
+
+    function showOptions(index) {
+        selectedIndex = index;
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('pop-action-text').innerText = mode === 'hutang' ? 'Bayar Hutang' : 'Setor Piutang';
+        
+        document.getElementById('pop-delete').onclick = function() {
+            const key = mode === 'hutang' ? 'app_hutang' : 'app_piutang';
+            let list = JSON.parse(localStorage.getItem(key));
+            list.splice(selectedIndex, 1);
+            localStorage.setItem(key, JSON.stringify(list));
+            closePopup();
+            renderTable();
+        };
+    }
+
+    function closePopup() { document.getElementById('overlay').style.display = 'none'; }
 </script>
 
 </body>
-
 </html>
