@@ -1,7 +1,13 @@
-const cacheName = 'v1';
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(cacheName).then(cache => cache.addAll(['index.html', 'manifest.json'])));
-});
-self.addEventListener('fetch', e => {
-  e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
-});
+{
+  "name": "Kas App Pasar",
+  "short_name": "KasApp",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f39c12",
+  "icons": [{
+    "src": "https://cdn-icons-png.flaticon.com/512/2344/2344132.png",
+    "sizes": "512x512",
+    "type": "image/png"
+  }]
+}
