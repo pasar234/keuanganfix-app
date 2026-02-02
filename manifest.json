@@ -1,13 +1,52 @@
-{
-  "name": "Kas App Pasar",
-  "short_name": "KasApp",
-  "start_url": "index.html",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#f39c12",
-  "icons": [{
-    "src": "https://cdn-icons-png.flaticon.com/512/2344/2344132.png",
-    "sizes": "512x512",
-    "type": "image/png"
-  }]
+function openScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+    document.getElementById(id).style.display = 'block';
+    if (id === 'data-hutang' || id === 'data-piutang') tampilkanData();
+}
+
+function tampilkanData() {
+    let list = JSON.parse(localStorage.getItem('data_keuangan')) || [];
+    const tbodyHutang = document.getElementById('tbody-hutang');
+    const tbodyPiutang = document.getElementById('tbody-piutang');
+    
+    tbodyHutang.innerHTML = '';
+    tbodyPiutang.innerHTML = '';
+    
+    let totalH = 0;
+    let totalP = 0;
+    const hariIni = new Date().setHours(0,0,0,0);
+
+    list.forEach((item, index) => {
+        const sisa = item.jumlah - item.bayar;
+        
+        // Template Baris Tabel
+        const riwayatList = item.riwayat.map(r => `<div style="font-size:9px; color:gray;">${r.tgl}: ${r.amt.toLocaleString()}</div>`).join('');
+        let styleJT = (item.jatuh_tempo !== '-' && new Date(item.jatuh_tempo) <= hariIni && sisa > 0) ? "color:red; font-weight:bold;" : "";
+
+        const barisHtml = `
+            <tr>
+                <td>${item.tanggal}</td>
+                <td style="${styleJT}">${item.jatuh_tempo}</td>
+                <td style="font-size:11px;">${item.keterangan}</td>
+                <td>${item.jumlah.toLocaleString()}</td>
+                <td>
+                    <button onclick="inputBayar(${index})">${item.bayar > 0 ? item.bayar.toLocaleString() : 'Bayar'}</button>
+                    ${riwayatList}
+                    <div style="color:blue; font-weight:bold; font-size:10px;">Sisa: ${sisa.toLocaleString()}</div>
+                </td>
+                <td><button onclick="hapusData(${index})" style="background:red; color:white; border:none;">X</button></td>
+            </tr>`;
+
+        // Masukkan ke tabel yang sesuai berdasarkan JENIS
+        if (item.jenis === 'hutang') {
+            tbodyHutang.innerHTML += barisHtml;
+            totalH += sisa;
+        } else {
+            tbodyPiutang.innerHTML += barisHtml;
+            totalP += sisa;
+        }
+    });
+
+    document.getElementById('totalHutang').innerText = totalH.toLocaleString();
+    document.getElementById('totalPiutang').innerText = totalP.toLocaleString();
 }
