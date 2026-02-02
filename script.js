@@ -1,54 +1,109 @@
-function tampilkanData() {
-    // 1. Ambil data dan pastikan formatnya array
-    const rawData = localStorage.getItem('data_keuangan');
-    let list = [];
-    try {
-        list = JSON.parse(rawData) || [];
-    } catch (e) {
-        console.error("Gagal membaca data:", e);
-        list = [];
-    }
+// Navigasi yang diperbaiki agar ID sesuai
+function openScreen(id) {
+    // Sembunyikan semua screen
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(s => s.style.display = 'none');
 
-    // 2. Hubungkan ke elemen tabel di HTML
+    // Tampilkan layar yang dipilih
+    const target = document.getElementById(id);
+    if (target) {
+        target.style.display = 'block';
+        // Jalankan fungsi tampil data jika membuka layar tabel
+        if (id === 'data-hutang' || id === 'data-piutang') {
+            tampilkanData();
+        }
+    }
+}
+
+// Format Tanggal Hari-Bulan-Tahun
+function formatTgl(tgl) {
+    if (!tgl || tgl === '-') return '-';
+    const [y, m, d] = tgl.split('-');
+    return `${d}-${m}-${y}`;
+}
+
+// Simpan Data Baru
+document.getElementById('financeForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const data = {
+        jenis: document.getElementById('jenis').value,
+        tanggal: document.getElementById('tanggal').value,
+        jatuh_tempo: document.getElementById('jatuh_tempo').value || '-',
+        jumlah: parseFloat(document.getElementById('jumlah').value),
+        bayar: 0,
+        keterangan: document.getElementById('keterangan').value
+    };
+    
+    let list = JSON.parse(localStorage.getItem('data_keuangan')) || [];
+    list.push(data);
+    localStorage.setItem('data_keuangan', JSON.stringify(list));
+    
+    alert("Berhasil!");
+    this.reset();
+    openScreen(data.jenis === 'hutang' ? 'data-hutang' : 'data-piutang');
+});
+
+// Menampilkan Data ke Tabel
+function tampilkanData() {
+    let list = JSON.parse(localStorage.getItem('data_keuangan')) || [];
     const tbodyH = document.getElementById('tbody-hutang');
     const tbodyP = document.getElementById('tbody-piutang');
     
-    // Bersihkan isi tabel lama
     if (tbodyH) tbodyH.innerHTML = '';
     if (tbodyP) tbodyP.innerHTML = '';
     
-    let totalH = 0;
-    let totalP = 0;
+    let totalH = 0, totalP = 0;
 
-    // 3. Masukkan data satu per satu ke tabel
     list.forEach((item, index) => {
-        const sisa = (item.jumlah || 0) - (item.bayar || 0);
-        
-        // Buat baris tabel baru
-        const baris = document.createElement('tr');
-        baris.innerHTML = `
-            <td>${formatTglIndo(item.tanggal)}</td>
-            <td>${formatTglIndo(item.jatuh_tempo)}</td>
-            <td style="font-size:11px;">${item.keterangan || '-'}</td>
-            <td>${Number(item.jumlah).toLocaleString('id-ID')}</td>
-            <td>
-                <button onclick="inputBayar(${index})" style="padding:2px 5px;">Bayar</button>
-                <div style="color:blue; font-size:10px; font-weight:bold;">Sisa: ${sisa.toLocaleString('id-ID')}</div>
-            </td>
-            <td><button onclick="hapusData(${index})" style="background:red; color:white; border:none; padding:5px; border-radius:3px;">X</button></td>
-        `;
+        const sisa = item.jumlah - (item.bayar || 0);
+        const baris = `
+            <tr>
+                <td>${formatTgl(item.tanggal)}</td>
+                <td>${formatTgl(item.jatuh_tempo)}</td>
+                <td>${item.keterangan}</td>
+                <td>${item.jumlah.toLocaleString()}</td>
+                <td>${sisa.toLocaleString()}</td>
+                <td><button onclick="hapusData(${index})" style="background:red; color:white;">X</button></td>
+            </tr>`;
 
-        // Masukkan ke tabel yang benar (Hutang atau Piutang)
         if (item.jenis === 'hutang' && tbodyH) {
-            tbodyH.appendChild(baris);
+            tbodyH.innerHTML += baris;
             totalH += sisa;
         } else if (item.jenis === 'piutang' && tbodyP) {
-            tbodyP.appendChild(baris);
+            tbodyP.innerHTML += baris;
             totalP += sisa;
         }
     });
 
-    // 4. Update ringkasan total di atas tabel
-    if (document.getElementById('totalHutang')) document.getElementById('totalHutang').innerText = totalH.toLocaleString('id-ID');
-    if (document.getElementById('totalPiutang')) document.getElementById('totalPiutang').innerText = totalP.toLocaleString('id-ID');
+    if (document.getElementById('totalHutang')) document.getElementById('totalHutang').innerText = totalH.toLocaleString();
+    if (document.getElementById('totalPiutang')) document.getElementById('totalPiutang').innerText = totalP.toLocaleString();
+}
+
+function hapusData(i) {
+    if(confirm("Hapus?")) {
+        let list = JSON.parse(localStorage.getItem('data_keuangan'));
+        list.splice(i, 1);
+        localStorage.setItem('data_keuangan', JSON.stringify(list));
+        tampilkanData();
+    }
+}
+
+// Backup & Restore
+function eksporData() {
+    const data = localStorage.getItem('data_keuangan');
+    const blob = new Blob([data], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "backup.json";
+    a.click();
+}
+
+function imporData() {
+    const txt = document.getElementById('importDataText').value;
+    try {
+        localStorage.setItem('data_keuangan', JSON.stringify(JSON.parse(txt)));
+        alert("Berhasil!");
+        location.reload();
+    } catch(e) { alert("Format Salah!"); }
 }
