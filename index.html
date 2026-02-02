@@ -25,14 +25,8 @@
                     <option value="hutang">Hutang</option>
                     <option value="piutang">Piutang</option>
                 </select>
-                <div class="input-group">
-                    <label>Tgl Transaksi:</label>
-                    <input type="date" id="tanggal" class="custom-input" required>
-                </div>
-                <div class="input-group">
-                    <label>Jatuh Tempo:</label>
-                    <input type="date" id="jatuh_tempo" class="custom-input">
-                </div>
+                <input type="date" id="tanggal" class="custom-input" required>
+                <input type="date" id="jatuh_tempo" class="custom-input" placeholder="Jatuh Tempo">
                 <input type="number" id="jumlah" class="custom-input" placeholder="Jumlah (Nilai)" required>
                 <textarea id="keterangan" class="custom-input" placeholder="Keterangan"></textarea>
                 <button type="submit" class="btn-simpan">SIMPAN DATA</button>
@@ -42,23 +36,40 @@
         <div id="data-hutang" class="screen" style="display:none">
             <h3 style="color:red;">Daftar Hutang</h3>
             <div class="summary-box">Total: Rp <span id="totalHutang">0</span></div>
-            <div class="table-scroll">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Tgl</th>
-                            <th>Jatuh Tempo</th>
-                            <th>Ket</th>
-                            <th>Nilai</th>
-                            <th>Bayar/Sisa</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody-hutang"></tbody>
-                </table>
-            </div>
+            <table>
+                <thead>
+                    <tr><th>Tgl</th><th>Tempo</th><th>Ket</th><th>Nilai</th><th>Bayar</th><th>Aksi</th></tr>
+                </thead>
+                <tbody id="tbody-hutang"></tbody>
+            </table>
         </div>
 
         <div id="data-piutang" class="screen" style="display:none">
             <h3 style="color:green;">Daftar Piutang</h3>
-            <div class="summary-box">Total: Rp <span id
+            <div class="summary-box">Total: Rp <span id="totalPiutang">0</span></div>
+            <table>
+                <thead>
+                    <tr><th>Tgl</th><th>Tempo</th><th>Ket</th><th>Nilai</th><th>Bayar</th><th>Aksi</th></tr>
+                </thead>
+                <tbody id="tbody-piutang"></tbody>
+            </table>
+        </div>
+
+        <div id="backup-screen" class="screen" style="display:none">
+            <h3>Backup Data</h3>
+            <button onclick="eksporData()" class="btn-simpan" style="background:#007bff">Unduh Data (.json)</button>
+        </div>
+
+        <div id="paymentModal" class="modal-overlay" style="display:none;">
+            <div class="modal-content">
+                <h4>Input Pembayaran</h4>
+                <input type="date" id="tglBayarInput" class="custom-input">
+                <input type="number" id="nominalInput" class="custom-input">
+                <button onclick="prosesBayar()" class="btn-oke">OKE</button>
+                <button onclick="tutupModal()" class="btn-batal">BATAL</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
