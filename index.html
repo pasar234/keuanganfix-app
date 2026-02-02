@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplikasi Keuangan Sempurna</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -10,7 +10,7 @@
     <div class="app-container">
         <h2 style="text-align:center;">💰 Keuangan</h2>
         
-        <div class="tabs" style="position: sticky; top: 0; z-index: 9999; background: white; padding-bottom: 10px;">
+        <div class="tabs" style="position: sticky; top: 0; z-index: 1000; background: white; padding: 10px 0;">
             <button onclick="openScreen('transaksi')">Tambah</button>
             <button onclick="openScreen('data-hutang')">Hutang</button>
             <button onclick="openScreen('data-piutang')">Piutang</button>
@@ -38,9 +38,7 @@
             <div class="summary-box">Total: Rp <span id="totalHutang">0</span></div>
             <div class="table-scroll">
                 <table>
-                    <thead>
-                        <tr><th>Tgl</th><th>Tempo</th><th>Ket</th><th>Nilai</th><th>Bayar</th><th>Aksi</th></tr>
-                    </thead>
+                    <thead><tr><th>Tgl</th><th>Tempo</th><th>Ket</th><th>Nilai</th><th>Bayar</th><th>Aksi</th></tr></thead>
                     <tbody id="tbody-hutang"></tbody>
                 </table>
             </div>
@@ -51,9 +49,7 @@
             <div class="summary-box">Total: Rp <span id="totalPiutang">0</span></div>
             <div class="table-scroll">
                 <table>
-                    <thead>
-                        <tr><th>Tgl</th><th>Tempo</th><th>Ket</th><th>Nilai</th><th>Bayar</th><th>Aksi</th></tr>
-                    </thead>
+                    <thead><tr><th>Tgl</th><th>Tempo</th><th>Ket</th><th>Nilai</th><th>Bayar</th><th>Aksi</th></tr></thead>
                     <tbody id="tbody-piutang"></tbody>
                 </table>
             </div>
@@ -61,13 +57,10 @@
 
         <div id="backup-screen" class="screen" style="display:none">
             <h3>Backup Data</h3>
-            <button onclick="eksporData()" class="btn-simpan" style="background:#007bff">💾 UNDUH DATA (.json)</button>
-            <hr>
-            <textarea id="importDataText" class="custom-input" rows="3" placeholder="Tempel kode restore di sini"></textarea>
-            <button onclick="imporData()" class="btn-simpan" style="background:#ffc107; color:black;">📂 PULIHKAN DATA</button>
+            <button onclick="eksporData()" class="btn-simpan" style="background:#007bff">💾 UNDUH (.json)</button>
         </div>
 
-        <div id="paymentModal" class="modal-overlay" style="display:none;">
+        <div id="paymentModal" class="modal-overlay" style="display:none; z-index: 2000;">
             <div class="modal-content">
                 <h4>Input Pembayaran</h4>
                 <input type="date" id="tglBayarInput" class="custom-input">
