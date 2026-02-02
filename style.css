@@ -1,0 +1,44 @@
+/* Pengaturan dasar agar tampilan pas di layar tablet/HP */
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f4f7f9;
+    padding: 20px;
+}
+
+/* Membuat navigasi (Transaksi, Data, Backup) jadi tombol modern */
+.main-nav button {
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-right: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.main-nav button:hover {
+    background-color: #1a73e8;
+    color: white;
+}
+
+/* Mengatur input agar tidak berantakan */
+input, select, textarea {
+    display: block;
+    width: 100%;
+    margin-bottom: 15px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box; /* Agar padding tidak merusak lebar */
+}
+
+/* Tombol utama */
+button.submit-btn {
+    background-color: #28a745;
+    color: white;
+    font-weight: bold;
+    border: none;
+    width: 100%;
+    padding: 15px;
+    border-radius: 6px;
+}
