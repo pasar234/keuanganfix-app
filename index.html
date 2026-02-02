@@ -2,15 +2,15 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Aplikasi Keuangan Sempurna</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-container">
-        <h2>💰 Keuangan</h2>
+        <h2 style="text-align:center;">💰 Keuangan</h2>
         
-        <div class="tabs">
+        <div class="tabs" style="position: sticky; top: 0; z-index: 9999; background: white; padding-bottom: 10px;">
             <button onclick="openScreen('transaksi')">Tambah</button>
             <button onclick="openScreen('data-hutang')">Hutang</button>
             <button onclick="openScreen('data-piutang')">Piutang</button>
@@ -26,7 +26,7 @@
                     <option value="piutang">Piutang</option>
                 </select>
                 <input type="date" id="tanggal" class="custom-input" required>
-                <input type="date" id="jatuh_tempo" class="custom-input" placeholder="Jatuh Tempo">
+                <input type="date" id="jatuh_tempo" class="custom-input">
                 <input type="number" id="jumlah" class="custom-input" placeholder="Jumlah (Nilai)" required>
                 <textarea id="keterangan" class="custom-input" placeholder="Keterangan"></textarea>
                 <button type="submit" class="btn-simpan">SIMPAN DATA</button>
@@ -36,28 +36,35 @@
         <div id="data-hutang" class="screen" style="display:none">
             <h3 style="color:red;">Daftar Hutang</h3>
             <div class="summary-box">Total: Rp <span id="totalHutang">0</span></div>
-            <table>
-                <thead>
-                    <tr><th>Tgl</th><th>Tempo</th><th>Ket</th><th>Nilai</th><th>Bayar</th><th>Aksi</th></tr>
-                </thead>
-                <tbody id="tbody-hutang"></tbody>
-            </table>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr><th>Tgl</th><th>Tempo</th><th>Ket</th><th>Nilai</th><th>Bayar</th><th>Aksi</th></tr>
+                    </thead>
+                    <tbody id="tbody-hutang"></tbody>
+                </table>
+            </div>
         </div>
 
         <div id="data-piutang" class="screen" style="display:none">
             <h3 style="color:green;">Daftar Piutang</h3>
             <div class="summary-box">Total: Rp <span id="totalPiutang">0</span></div>
-            <table>
-                <thead>
-                    <tr><th>Tgl</th><th>Tempo</th><th>Ket</th><th>Nilai</th><th>Bayar</th><th>Aksi</th></tr>
-                </thead>
-                <tbody id="tbody-piutang"></tbody>
-            </table>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr><th>Tgl</th><th>Tempo</th><th>Ket</th><th>Nilai</th><th>Bayar</th><th>Aksi</th></tr>
+                    </thead>
+                    <tbody id="tbody-piutang"></tbody>
+                </table>
+            </div>
         </div>
 
         <div id="backup-screen" class="screen" style="display:none">
             <h3>Backup Data</h3>
-            <button onclick="eksporData()" class="btn-simpan" style="background:#007bff">Unduh Data (.json)</button>
+            <button onclick="eksporData()" class="btn-simpan" style="background:#007bff">💾 UNDUH DATA (.json)</button>
+            <hr>
+            <textarea id="importDataText" class="custom-input" rows="3" placeholder="Tempel kode restore di sini"></textarea>
+            <button onclick="imporData()" class="btn-simpan" style="background:#ffc107; color:black;">📂 PULIHKAN DATA</button>
         </div>
 
         <div id="paymentModal" class="modal-overlay" style="display:none;">
