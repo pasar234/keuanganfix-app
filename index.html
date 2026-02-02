@@ -9,7 +9,6 @@
 <body>
     <div class="app-container">
         <h2>💰 Keuangan</h2>
-        
         <div class="tabs">
             <button onclick="openScreen('transaksi')">Tambah</button>
             <button onclick="openScreen('data-hutang')">Hutang</button>
@@ -26,8 +25,9 @@
                     <option value="piutang">Piutang (Orang Pinjam)</option>
                 </select>
                 <input type="date" id="tanggal" class="custom-input" required>
+                <label style="font-size:12px; margin-left:5px;">Jatuh Tempo:</label>
                 <input type="date" id="jatuh_tempo" class="custom-input">
-                <input type="number" id="jumlah" class="custom-input" placeholder="Jumlah" required>
+                <input type="number" id="jumlah" class="custom-input" placeholder="Jumlah (Nilai)" required>
                 <textarea id="keterangan" class="custom-input" placeholder="Keterangan"></textarea>
                 <button type="submit" class="btn-simpan">SIMPAN DATA</button>
             </form>
@@ -35,22 +35,18 @@
 
         <div id="data-hutang" class="screen" style="display:none">
             <h3 style="color:red;">Daftar Hutang</h3>
-            <div class="summary-box">Total: Rp <span id="totalHutang">0</span></div>
-            <table border="1" width="100%">
-                <thead>
-                    <tr><th>Tgl</th><th>Tempo</th><th>Ket</th><th>Nilai</th><th>Bayar/Sisa</th><th>Aksi</th></tr>
-                </thead>
+            <div class="summary-box">Total Sisa: Rp <span id="totalHutang">0</span></div>
+            <table border="1" width="100%" style="border-collapse: collapse;">
+                <thead><tr><th>Tgl</th><th>Tempo</th><th>Ket</th><th>Nilai</th><th>Bayar/Sisa</th><th>Aksi</th></tr></thead>
                 <tbody id="tbody-hutang"></tbody>
             </table>
         </div>
 
         <div id="data-piutang" class="screen" style="display:none">
             <h3 style="color:green;">Daftar Piutang</h3>
-            <div class="summary-box">Total: Rp <span id="totalPiutang">0</span></div>
-            <table border="1" width="100%">
-                <thead>
-                    <tr><th>Tgl</th><th>Tempo</th><th>Ket</th><th>Nilai</th><th>Bayar/Sisa</th><th>Aksi</th></tr>
-                </thead>
+            <div class="summary-box">Total Sisa: Rp <span id="totalPiutang">0</span></div>
+            <table border="1" width="100%" style="border-collapse: collapse;">
+                <thead><tr><th>Tgl</th><th>Tempo</th><th>Ket</th><th>Nilai</th><th>Bayar/Sisa</th><th>Aksi</th></tr></thead>
                 <tbody id="tbody-piutang"></tbody>
             </table>
         </div>
@@ -59,7 +55,7 @@
             <h3>Backup & Restore</h3>
             <button onclick="eksporData()" class="btn-simpan" style="background:#007bff">💾 DOWNLOAD BACKUP</button>
             <hr>
-            <textarea id="importDataText" class="custom-input" rows="3" placeholder="Paste kode JSON di sini..."></textarea>
+            <textarea id="importDataText" class="custom-input" rows="3" placeholder="Paste JSON di sini..."></textarea>
             <button onclick="imporData()" class="btn-simpan" style="background:#ffc107; color:black;">📂 PULIHKAN DATA</button>
         </div>
     </div>
