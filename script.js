@@ -1,13 +1,30 @@
-// Pastikan fungsi ini dipanggil saat halaman dimuat pertama kali
+let currentEditIndex = null;
+
+// Jalankan fungsi tampilkan data saat pertama kali buka aplikasi
 window.onload = function() {
     tampilkanData();
 };
 
-// 1. FUNGSI SIMPAN (Penyebab data tidak tersimpan sebelumnya)
+// 1. FUNGSI NAVIGASI (Pindah antar Tab)
+function openScreen(id) {
+    // Sembunyikan semua layar
+    document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+    
+    // Tampilkan layar yang dipilih
+    const target = document.getElementById(id);
+    if (target) {
+        target.style.display = 'block';
+        // Refresh tabel jika yang dibuka adalah Hutang atau Piutang
+        if (id === 'data-hutang' || id === 'data-piutang') {
+            tampilkanData();
+        }
+    }
+}
+
+// 2. FUNGSI SIMPAN DATA (Hutang/Piutang)
 document.getElementById('financeForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    // Ambil nilai dari input
     const dataBaru = {
         id: Date.now(),
         jenis: document.getElementById('jenis').value,
@@ -21,16 +38,16 @@ document.getElementById('financeForm').addEventListener('submit', function(e) {
 
     let list = JSON.parse(localStorage.getItem('data_keuangan')) || [];
     list.push(dataBaru);
-    localStorage.setItem('data_keuangan', JSON.stringify(list)); // Simpan ke memori HP/Tablet
+    localStorage.setItem('data_keuangan', JSON.stringify(list));
     
     alert("Data Berhasil Tersimpan!");
     this.reset();
     
-    // Pindah ke layar yang sesuai otomatis
+    // Langsung pindah ke halaman data yang sesuai
     openScreen(dataBaru.jenis === 'hutang' ? 'data-hutang' : 'data-piutang');
 });
 
-// 2. FUNGSI TAMPILKAN (Agar angka Rp tidak nol)
+// 3. FUNGSI TAMPILKAN DATA (Terpisah Tabel Hutang & Piutang)
 function tampilkanData() {
     let list = JSON.parse(localStorage.getItem('data_keuangan')) || [];
     const tbodyH = document.getElementById('tbody-hutang');
@@ -44,44 +61,29 @@ function tampilkanData() {
 
     list.forEach((item, index) => {
         const sisa = item.jumlah - item.bayar;
+        
+        // Buat daftar riwayat cicilan
         const riwayatHtml = item.riwayat ? item.riwayat.map(r => 
             `<div style="font-size:9px; color:gray;">${r.tgl}: ${r.amt.toLocaleString()}</div>`
         ).join('') : '';
         
+        // Warnai merah jika sudah jatuh tempo
         let styleJT = (item.jatuh_tempo !== '-' && new Date(item.jatuh_tempo) <= hariIni && sisa > 0) ? "color:red; font-weight:bold;" : "";
 
         const baris = `
             <tr>
                 <td>${item.tanggal}</td>
                 <td style="${styleJT}">${item.jatuh_tempo}</td>
-                <td>${item.keterangan}</td>
+                <td style="font-size:11px;">${item.keterangan}</td>
                 <td>${item.jumlah.toLocaleString()}</td>
                 <td>
                     <button onclick="inputBayar(${index})">${item.bayar > 0 ? item.bayar.toLocaleString() : 'Bayar'}</button>
                     ${riwayatHtml}
-                    <div style="color:blue; font-weight:bold; font-size:10px;">Sisa: ${sisa.toLocaleString()}</div>
+                    <span class="sisa-teks">Sisa: ${sisa.toLocaleString()}</span>
                 </td>
-                <td><button onclick="hapusData(${index})" style="background:red; color:white; border:none;">X</button></td>
+                <td><button onclick="hapusData(${index})" style="background:red; color:white; border:none; padding:5px 10px; border-radius:3px;">X</button></td>
             </tr>`;
 
+        // Filter masuk ke tabel mana
         if (item.jenis === 'hutang') {
-            if (tbodyH) { tbodyH.innerHTML += baris; totalH += sisa; }
-        } else {
-            if (tbodyP) { tbodyP.innerHTML += baris; totalP += sisa; }
-        }
-    });
-
-    // Update total angka di layar
-    if (document.getElementById('totalHutang')) document.getElementById('totalHutang').innerText = totalH.toLocaleString();
-    if (document.getElementById('totalPiutang')) document.getElementById('totalPiutang').innerText = totalP.toLocaleString();
-}
-
-// 3. FUNGSI NAVIGASI
-function openScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
-    const target = document.getElementById(id);
-    if (target) {
-        target.style.display = 'block';
-        tampilkanData(); // Refresh data setiap pindah halaman
-    }
-}
+            if (tbodyH) { tbodyH.innerHTML += baris
