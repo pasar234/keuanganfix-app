@@ -4,12 +4,14 @@ window.onload = function() {
     tampilkanData();
 };
 
+// Fungsi Format Tanggal Indo
 function formatTglIndo(tgl) {
     if (!tgl || tgl === '-') return '-';
-    const d = tgl.split('-');
-    return `${d[2]}-${d[1]}-${d[0]}`; // Merubah ke Hari-Bulan-Tahun
+    const [y, m, d] = tgl.split('-');
+    return `${d}-${m}-${y}`;
 }
 
+// Navigasi Layar
 function openScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
     const target = document.getElementById(id);
@@ -19,6 +21,7 @@ function openScreen(id) {
     }
 }
 
+// Simpan Data
 document.getElementById('financeForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const data = {
@@ -34,11 +37,12 @@ document.getElementById('financeForm').addEventListener('submit', function(e) {
     let list = JSON.parse(localStorage.getItem('data_keuangan')) || [];
     list.push(data);
     localStorage.setItem('data_keuangan', JSON.stringify(list));
-    alert("Berhasil!");
+    alert("Berhasil Disimpan!");
     this.reset();
     openScreen(data.jenis === 'hutang' ? 'data-hutang' : 'data-piutang');
 });
 
+// Tampilkan Tabel Sempurna
 function tampilkanData() {
     let list = JSON.parse(localStorage.getItem('data_keuangan')) || [];
     const tbodyH = document.getElementById('tbody-hutang');
@@ -52,25 +56,24 @@ function tampilkanData() {
 
     list.forEach((item, index) => {
         const sisa = item.jumlah - item.bayar;
-        const riwayatHtml = item.riwayat ? item.riwayat.map(r => 
+        const riwayatHtml = (item.riwayat || []).map(r => 
             `<div style="font-size:9px; color:gray;">${r.tgl}: ${r.amt.toLocaleString()}</div>`
-        ).join('') : '';
+        ).join('');
         
         let styleJT = (item.jatuh_tempo !== '-' && new Date(item.jatuh_tempo) <= hariIni && sisa > 0) ? "color:red; font-weight:bold;" : "";
 
-        // Pastikan baris menggunakan backtick (`) agar tidak bocor kodenya
         const baris = `
             <tr>
                 <td>${formatTglIndo(item.tanggal)}</td>
                 <td style="${styleJT}">${formatTglIndo(item.jatuh_tempo)}</td>
-                <td>${item.keterangan}</td>
+                <td style="font-size:11px;">${item.keterangan}</td>
                 <td>${item.jumlah.toLocaleString()}</td>
                 <td>
                     <button onclick="inputBayar(${index})">Bayar</button>
                     ${riwayatHtml}
-                    <div style="color:blue; font-weight:bold; font-size:10px;">Sisa: ${sisa.toLocaleString()}</div>
+                    <div style="color:blue; font-weight:bold; font-size:10px; margin-top:2px;">Sisa: ${sisa.toLocaleString()}</div>
                 </td>
-                <td><button onclick="hapusData(${index})" style="background:red; color:white; border:none; padding:5px;">X</button></td>
+                <td><button onclick="hapusData(${index})" style="background:red; color:white; border:none; border-radius:3px; padding:5px;">X</button></td>
             </tr>`;
 
         if (item.jenis === 'hutang') {
@@ -84,6 +87,7 @@ function tampilkanData() {
     if (document.getElementById('totalPiutang')) document.getElementById('totalPiutang').innerText = totalP.toLocaleString();
 }
 
+// Fungsi Modal Pembayaran
 function inputBayar(index) {
     currentEditIndex = index;
     let list = JSON.parse(localStorage.getItem('data_keuangan'));
@@ -110,7 +114,7 @@ function prosesBayar() {
 }
 
 function hapusData(i) {
-    if(confirm("Hapus?")) {
+    if(confirm("Hapus data ini?")) {
         let list = JSON.parse(localStorage.getItem('data_keuangan'));
         list.splice(i, 1);
         localStorage.setItem('data_keuangan', JSON.stringify(list));
