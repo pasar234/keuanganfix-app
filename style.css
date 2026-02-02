@@ -1,20 +1,93 @@
-/* Container Utama */
-.app-container { padding: 15px; font-family: sans-serif; }
-
-/* Navigasi Tombol */
-.tabs { display: flex; gap: 5px; margin-bottom: 15px; }
-.tabs button { 
-    padding: 10px; border: 1px solid #ccc; background: #f9f9f9; 
-    border-radius: 5px; cursor: pointer; flex: 1; 
+/* Dasar Tampilan */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 10px;
 }
 
-/* Tabel yang Dirapikan */
-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-th, td { border: 1px solid #999; padding: 8px; text-align: left; }
-th { background-color: #eee; font-weight: bold; }
+.app-container {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    max-width: 800px;
+    margin: auto;
+}
 
-/* Indikator Sisa Saldo Biru */
-.sisa-saldo { color: blue; font-weight: bold; display: block; font-size: 11px; margin-top: 5px; }
+/* Navigasi Tab */
+.tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 15px;
+}
 
-/* Baris Merah untuk Jatuh Tempo */
-.jatuh-tempo-lewat { color: red; font-weight: bold; }
+.tabs button {
+    flex: 1;
+    padding: 12px 5px;
+    border: 1px solid #ddd;
+    background: #fdfdfd;
+    cursor: pointer;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.tabs button:active {
+    background: #e0e0e0;
+}
+
+/* Form Input */
+.custom-input {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+.btn-simpan {
+    background: #28a745;
+    color: white;
+    border: none;
+    width: 100%;
+    padding: 15px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Tabel Keuangan */
+.table-scroll {
+    overflow-x: auto;
+    margin-top: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+th, td {
+    border: 1px solid #aaa;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background: #eeeeee;
+}
+
+/* Ringkasan Saldo */
+.summary-box {
+    background: #e9ecef;
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* Modal Pembayaran [cite: f61d1c
