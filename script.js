@@ -1,62 +1,44 @@
-// Navigasi Utama
-function openScreen(id) {
-    // 1. Sembunyikan semua screen
-    const screens = document.querySelectorAll('.screen');
-    screens.forEach(s => s.style.display = 'none');
-
-    // 2. PAKSA tutup modal pembayaran agar area klik navigasi bersih
-    const modal = document.getElementById('paymentModal');
-    if (modal) {
-        modal.style.display = 'none';
-        modal.style.pointerEvents = 'none'; // Tambahan keamanan
-    }
-
-    // 3. Tampilkan screen tujuan
-    const target = document.getElementById(id);
-    if (target) {
-        target.style.display = 'block';
-        if (id.includes('data')) tampilkanData();
-    }
-}
-
-// Proses Simpan Data
-document.getElementById('financeForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const data = {
-        id: Date.now(),
-        jenis: document.getElementById('jenis').value,
-        tanggal: document.getElementById('tanggal').value,
-        jatuh_tempo: document.getElementById('jatuh_tempo').value || '-',
-        jumlah: parseFloat(document.getElementById('jumlah').value),
-        bayar: 0,
-        keterangan: document.getElementById('keterangan').value,
-        riwayat: []
-    };
-    
+function tampilkanData() {
+    // Ambil data dari penyimpanan lokal
     let list = JSON.parse(localStorage.getItem('data_keuangan')) || [];
-    list.push(data);
-    localStorage.setItem('data_keuangan', JSON.stringify(list));
     
-    alert("Data Berhasil Disimpan!");
-    this.reset();
+    // Pastikan ID body tabel sesuai dengan yang ada di HTML
+    const tbodyH = document.getElementById('tbody-hutang');
+    const tbodyP = document.getElementById('tbody-piutang');
     
-    // Kembali ke layar tabel secara otomatis setelah simpan
-    openScreen(data.jenis === 'hutang' ? 'data-hutang' : 'data-piutang');
-});
+    // Bersihkan tabel sebelum diisi ulang agar tidak dobel
+    if (tbodyH) tbodyH.innerHTML = '';
+    if (tbodyP) tbodyP.innerHTML = '';
+    
+    let totalH = 0;
+    let totalP = 0;
 
-// Fungsi penutup modal yang benar
-function tutupModal() {
-    const modal = document.getElementById('paymentModal');
-    if (modal) {
-        modal.style.display = 'none';
-        modal.style.pointerEvents = 'none';
-    }
-}
+    list.forEach((item, index) => {
+        const sisa = item.jumlah - (item.bayar || 0);
+        
+        // Buat baris tabel
+        const baris = `
+            <tr>
+                <td>${formatTglIndo(item.tanggal)}</td>
+                <td>${formatTglIndo(item.jatuh_tempo)}</td>
+                <td>${item.keterangan}</td>
+                <td>${item.jumlah.toLocaleString()}</td>
+                <td>
+                    <button onclick="inputBayar(${index})">Bayar</button>
+                    <div style="color:blue; font-size:10px;">Sisa: ${sisa.toLocaleString()}</div>
+                </td>
+                <td><button onclick="hapusData(${index})" style="background:red; color:white;">X</button></td>
+            </tr>`;
 
-// Fungsi pembuka modal
-function inputBayar(index) {
-    const modal = document.getElementById('paymentModal');
-    modal.style.display = 'flex';
-    modal.style.pointerEvents = 'auto'; // Aktifkan klik kembali
-    // ... isi data input ...
+        // Masukkan ke tabel yang sesuai (Hutang atau Piutang)
+        if (item.jenis === 'hutang') {
+            if (tbodyH) { tbodyH.innerHTML += baris; totalH += sisa; }
+        } else if (item.jenis === 'piutang') {
+            if (tbodyP) { tbodyP.innerHTML += baris; totalP += sisa; }
+        }
+    });
+
+    // Update tampilan total saldo di atas tabel
+    if (document.getElementById('totalHutang')) document.getElementById('totalHutang').innerText = totalH.toLocaleString();
+    if (document.getElementById('totalPiutang')) document.getElementById('totalPiutang').innerText = totalP.toLocaleString();
 }
