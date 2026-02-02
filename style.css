@@ -1,44 +1,33 @@
-/* Pengaturan dasar agar tampilan pas di layar tablet/HP */
-body {
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #f4f7f9;
-    padding: 20px;
-}
-
-/* Membuat navigasi (Transaksi, Data, Backup) jadi tombol modern */
-.main-nav button {
-    background-color: #ffffff;
-    border: 1px solid #ddd;
-    padding: 10px 15px;
-    border-radius: 8px;
-    margin-right: 5px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.main-nav button:hover {
-    background-color: #1a73e8;
-    color: white;
-}
-
-/* Mengatur input agar tidak berantakan */
-input, select, textarea {
-    display: block;
+table {
     width: 100%;
-    margin-bottom: 15px;
-    padding: 12px;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 13px; /* Ukuran font agar muat di layar tablet */
+}
+
+th, td {
     border: 1px solid #ccc;
-    border-radius: 6px;
-    box-sizing: border-box; /* Agar padding tidak merusak lebar */
+    padding: 8px;
+    text-align: left;
 }
 
-/* Tombol utama */
-button.submit-btn {
-    background-color: #28a745;
+th {
+    background-color: #f2f2f2;
+}
+
+.btn-aksi-hapus {
+    background-color: #ff4d4d;
     color: white;
-    font-weight: bold;
     border: none;
-    width: 100%;
-    padding: 15px;
-    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.sisa-saldo {
+    color: blue;
+    font-weight: bold;
+    font-size: 11px;
+    display: block;
+    margin-top: 4px;
 }
