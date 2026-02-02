@@ -1,31 +1,22 @@
-let currentEditIndex = null;
-
-// Jalankan fungsi tampilkan data saat pertama kali buka aplikasi
-window.onload = function() {
-    tampilkanData();
-};
-
-// 1. FUNGSI NAVIGASI (Pindah antar Tab)
+// Fungsi Navigasi (Memperbaiki tombol yang tidak bisa diklik)
 function openScreen(id) {
-    // Sembunyikan semua layar
+    // Sembunyikan semua halaman
     document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
     
-    // Tampilkan layar yang dipilih
+    // Tampilkan halaman yang dipilih
     const target = document.getElementById(id);
     if (target) {
         target.style.display = 'block';
-        // Refresh tabel jika yang dibuka adalah Hutang atau Piutang
-        if (id === 'data-hutang' || id === 'data-piutang') {
-            tampilkanData();
-        }
+        // Refresh data jika membuka tabel
+        if (id === 'data-hutang' || id === 'data-piutang') tampilkanData();
     }
 }
 
-// 2. FUNGSI SIMPAN DATA (Hutang/Piutang)
+// Fungsi Simpan Data Baru
 document.getElementById('financeForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    const dataBaru = {
+    const data = {
         id: Date.now(),
         jenis: document.getElementById('jenis').value,
         tanggal: document.getElementById('tanggal').value,
@@ -37,17 +28,15 @@ document.getElementById('financeForm').addEventListener('submit', function(e) {
     };
 
     let list = JSON.parse(localStorage.getItem('data_keuangan')) || [];
-    list.push(dataBaru);
+    list.push(data);
     localStorage.setItem('data_keuangan', JSON.stringify(list));
     
-    alert("Data Berhasil Tersimpan!");
+    alert("Data Berhasil Disimpan!");
     this.reset();
-    
-    // Langsung pindah ke halaman data yang sesuai
-    openScreen(dataBaru.jenis === 'hutang' ? 'data-hutang' : 'data-piutang');
+    openScreen(data.jenis === 'hutang' ? 'data-hutang' : 'data-piutang');
 });
 
-// 3. FUNGSI TAMPILKAN DATA (Terpisah Tabel Hutang & Piutang)
+// Fungsi Menampilkan Tabel (Merapikan kolom dan sisa saldo)
 function tampilkanData() {
     let list = JSON.parse(localStorage.getItem('data_keuangan')) || [];
     const tbodyH = document.getElementById('tbody-hutang');
@@ -61,29 +50,35 @@ function tampilkanData() {
 
     list.forEach((item, index) => {
         const sisa = item.jumlah - item.bayar;
-        
-        // Buat daftar riwayat cicilan
         const riwayatHtml = item.riwayat ? item.riwayat.map(r => 
             `<div style="font-size:9px; color:gray;">${r.tgl}: ${r.amt.toLocaleString()}</div>`
         ).join('') : '';
         
-        // Warnai merah jika sudah jatuh tempo
-        let styleJT = (item.jatuh_tempo !== '-' && new Date(item.jatuh_tempo) <= hariIni && sisa > 0) ? "color:red; font-weight:bold;" : "";
+        // Cek Jatuh Tempo
+        let classJT = (item.jatuh_tempo !== '-' && new Date(item.jatuh_tempo) <= hariIni && sisa > 0) ? "jatuh-tempo-lewat" : "";
 
-        const baris = `
+        const barisHtml = `
             <tr>
                 <td>${item.tanggal}</td>
-                <td style="${styleJT}">${item.jatuh_tempo}</td>
-                <td style="font-size:11px;">${item.keterangan}</td>
+                <td class="${classJT}">${item.jatuh_tempo}</td>
+                <td style="max-width:150px;">${item.keterangan}</td>
                 <td>${item.jumlah.toLocaleString()}</td>
                 <td>
                     <button onclick="inputBayar(${index})">${item.bayar > 0 ? item.bayar.toLocaleString() : 'Bayar'}</button>
                     ${riwayatHtml}
-                    <span class="sisa-teks">Sisa: ${sisa.toLocaleString()}</span>
+                    <span class="sisa-saldo">Sisa: ${sisa.toLocaleString()}</span>
                 </td>
-                <td><button onclick="hapusData(${index})" style="background:red; color:white; border:none; padding:5px 10px; border-radius:3px;">X</button></td>
+                <td><button onclick="hapusData(${index})" style="background:red; color:white; border:none; padding:5px;">X</button></td>
             </tr>`;
 
-        // Filter masuk ke tabel mana
         if (item.jenis === 'hutang') {
-            if (tbodyH) { tbodyH.innerHTML += baris
+            if (tbodyH) { tbodyH.innerHTML += barisHtml; totalH += sisa; }
+        } else {
+            if (tbodyP) { tbodyP.innerHTML += barisHtml; totalP += barisHtml; totalP += sisa; }
+        }
+    });
+
+    // Update total saldo per halaman
+    if (document.getElementById('totalHutang')) document.getElementById('totalHutang').innerText = totalH.toLocaleString();
+    if (document.getElementById('totalPiutang')) document.getElementById('totalPiutang').innerText = totalP.toLocaleString();
+        }
