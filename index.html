@@ -9,6 +9,7 @@
 <body>
     <div class="app-container">
         <h2>💰 Keuangan</h2>
+        
         <div class="tabs">
             <button onclick="openScreen('transaksi')">Tambah</button>
             <button onclick="openScreen('data-hutang')">Hutang</button>
@@ -21,64 +22,52 @@
             <h3>Tambah Hutang / Piutang</h3>
             <form id="financeForm">
                 <select id="jenis" class="custom-input">
-                    <option value="hutang">Tambah Hutang</option>
-                    <option value="piutang">Tambah Piutang</option>
+                    <option value="hutang">Tambah Hutang (Saya Pinjam)</option>
+                    <option value="piutang">Tambah Piutang (Orang Pinjam)</option>
                 </select>
+                <label>Tanggal Transaksi:</label>
                 <input type="date" id="tanggal" class="custom-input" required>
+                <label>Jatuh Tempo (Opsional):</label>
                 <input type="date" id="jatuh_tempo" class="custom-input">
                 <input type="number" id="jumlah" class="custom-input" placeholder="Jumlah (Nilai)" required>
-                <textarea id="keterangan" class="custom-input" placeholder="Keterangan"></textarea>
-                <button type="submit" class="btn-simpan">SIMPAN</button>
+                <textarea id="keterangan" class="custom-input" placeholder="Keterangan (Nama/Barang)"></textarea>
+                <button type="submit" class="btn-simpan">SIMPAN DATA</button>
             </form>
         </div>
 
         <div id="data-hutang" class="screen" style="display:none">
             <h3 style="color:red;">Daftar Hutang</h3>
-            <div>Total: Rp <span id="totalHutang">0</span></div>
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>Tgl</th>
-                        <th>Jatuh Tempo</th>
-                        <th>Ket</th>
-                        <th>Nilai</th>
-                        <th>Bayar/Sisa</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="tbody-hutang"></tbody>
-            </table>
+            <div class="summary-box">Total Hutang: Rp <span id="totalHutang">0</span></div>
+            <div class="table-scroll">
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Tgl</th>
+                            <th>Jatuh Tempo</th>
+                            <th>Ket</th>
+                            <th>Nilai</th>
+                            <th>Bayar/Sisa</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-hutang"></tbody>
+                </table>
+            </div>
         </div>
 
         <div id="data-piutang" class="screen" style="display:none">
             <h3 style="color:green;">Daftar Piutang</h3>
-            <div>Total: Rp <span id="totalPiutang">0</span></div>
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>Tgl</th>
-                        <th>Jatuh Tempo</th>
-                        <th>Ket</th>
-                        <th>Nilai</th>
-                        <th>Bayar/Sisa</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="tbody-piutang"></tbody>
-            </table>
-        </div>
-
-        <div id="paymentModal" style="display:none; position:fixed; z-index:100; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.8);">
-            <div style="background:white; margin:15% auto; padding:20px; width:80%; border-radius:10px; max-width:350px;">
-                <h4>Input Pembayaran</h4>
-                <input type="date" id="tglBayarInput" class="custom-input">
-                <input type="number" id="nominalInput" class="custom-input">
-                <input type="text" id="metodeInput" placeholder="Tunai/Transfer" class="custom-input">
-                <button onclick="prosesBayar()" style="background:green; color:white; width:100%; padding:10px; border:none; margin-bottom:5px;">OKE</button>
-                <button onclick="tutupModal()" style="background:gray; color:white; width:100%; padding:10px; border:none;">BATAL</button>
-            </div>
-        </div>
-    </div>
-    <script src="script.js"></script>
-</body>
-                               </html>
+            <div class="summary-box">Total Piutang: Rp <span id="totalPiutang">0</span></div>
+            <div class="table-scroll">
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Tgl</th>
+                            <th>Jatuh Tempo</th>
+                            <th>Ket</th>
+                            <th>Nilai</th>
+                            <th>Bayar/Sisa</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-piutang"></tbody>
