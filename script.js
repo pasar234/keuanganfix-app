@@ -1,46 +1,4 @@
-// Fungsi Pindah Layar
-function openScreen(id) {
-    const screens = document.querySelectorAll('.screen');
-    screens.forEach(s => s.style.display = 'none');
-
-    const target = document.getElementById(id);
-    if (target) {
-        target.style.display = 'block';
-        if (id === 'data-hutang' || id === 'data-piutang') {
-            tampilkanData();
-        }
-    }
-}
-
-// Format Tanggal Indonesia
-function formatTgl(tgl) {
-    if (!tgl || tgl === '-') return '-';
-    const parts = tgl.split('-');
-    return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : tgl;
-}
-
-// Simpan Data Baru
-document.getElementById('financeForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const data = {
-        jenis: document.getElementById('jenis').value,
-        tanggal: document.getElementById('tanggal').value,
-        jatuh_tempo: document.getElementById('jatuh_tempo').value || '-',
-        jumlah: parseFloat(document.getElementById('jumlah').value),
-        bayar: 0,
-        keterangan: document.getElementById('keterangan').value
-    };
-    
-    let list = JSON.parse(localStorage.getItem('data_keuangan')) || [];
-    list.push(data);
-    localStorage.setItem('data_keuangan', JSON.stringify(list));
-    
-    alert("Data Berhasil Disimpan!");
-    this.reset();
-    openScreen(data.jenis === 'hutang' ? 'data-hutang' : 'data-piutang');
-});
-
-// Menampilkan Data ke Tabel (Memperbaiki Tombol Bayar yang Hilang)
+// Fungsi Menampilkan Data dengan Indikator Jatuh Tempo Merah
 function tampilkanData() {
     let list = JSON.parse(localStorage.getItem('data_keuangan')) || [];
     const tbodyH = document.getElementById('tbody-hutang');
@@ -50,14 +8,28 @@ function tampilkanData() {
     if (tbodyP) tbodyP.innerHTML = '';
     
     let totalH = 0, totalP = 0;
+    const hariIni = new Date().setHours(0,0,0,0);
 
     list.forEach((item, index) => {
         const sisa = item.jumlah - (item.bayar || 0);
+        
+        // Logika Warna Merah untuk Jatuh Tempo
+        let styleTempo = "";
+        if (item.jatuh_tempo !== "-") {
+            const tglTempo = new Date(item.jatuh_tempo).getTime();
+            if (tglTempo < hariIni && sisa > 0) {
+                styleTempo = "color: red; font-weight: bold;";
+            }
+        }
+
         const barisHtml = `
             <tr>
                 <td>${formatTgl(item.tanggal)}</td>
-                <td>${formatTgl(item.jatuh_tempo)}</td>
-                <td style="font-size:11px;">${item.keterangan}</td>
+                <td style="${styleTempo}">${formatTgl(item.jatuh_tempo)}</td>
+                <td style="font-size:11px;">
+                    ${item.keterangan}
+                    ${item.metode ? `<br><small><i>(${item.metode})</i></small>` : ''}
+                </td>
                 <td>${item.jumlah.toLocaleString('id-ID')}</td>
                 <td style="text-align:center;">
                     <button onclick="inputBayar(${index})" style="background:#007bff; color:white; border:none; padding:4px 8px; border-radius:3px; margin-bottom:4px;">Bayar</button>
@@ -81,7 +53,7 @@ function tampilkanData() {
     if (document.getElementById('totalPiutang')) document.getElementById('totalPiutang').innerText = totalP.toLocaleString('id-ID');
 }
 
-// Fungsi Input Pembayaran
+// Fungsi Bayar dengan Keterangan Tunai/Transfer
 function inputBayar(index) {
     let list = JSON.parse(localStorage.getItem('data_keuangan'));
     const sisaSekarang = list[index].jumlah - (list[index].bayar || 0);
@@ -89,41 +61,12 @@ function inputBayar(index) {
     let nominal = prompt(`Masukkan nilai pembayaran (Sisa: ${sisaSekarang.toLocaleString()}):`, sisaSekarang);
     
     if (nominal !== null && nominal !== "") {
+        let metode = prompt("Metode Pembayaran (Tunai/Transfer):", "Tunai"); // Tambahan input metode
+        
         list[index].bayar = (list[index].bayar || 0) + parseFloat(nominal);
+        list[index].metode = metode; // Simpan metode ke data
+        
         localStorage.setItem('data_keuangan', JSON.stringify(list));
         tampilkanData();
     }
-}
-
-// Hapus Data
-function hapusData(i) {
-    if(confirm("Hapus data ini?")) {
-        let list = JSON.parse(localStorage.getItem('data_keuangan'));
-        list.splice(i, 1);
-        localStorage.setItem('data_keuangan', JSON.stringify(list));
-        tampilkanData();
-    }
-}
-
-// Ekspor & Impor (Backup)
-function eksporData() {
-    const data = localStorage.getItem('data_keuangan');
-    if(!data || data === "[]") return alert("Tidak ada data untuk dibackup.");
-    const blob = new Blob([data], {type: "application/json"});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `backup_keuangan_${new Date().toISOString().slice(0,10)}.json`;
-    a.click();
-}
-
-function imporData() {
-    const txt = document.getElementById('importDataText').value;
-    try {
-        const parsed = JSON.parse(txt);
-        localStorage.setItem('data_keuangan', JSON.stringify(parsed));
-        alert("Data Berhasil Dipulihkan!");
-        location.reload();
-    } catch(e) { 
-        alert("Gagal! Pastikan format kode JSON benar."); 
-    }
-                             }
+                      }
