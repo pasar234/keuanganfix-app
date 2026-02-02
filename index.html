@@ -18,11 +18,30 @@
         </div>
         <hr>
 
-        
+        <div id="transaksi" class="screen">
+            <h3>Tambah Baru</h3>
+            <form id="financeForm">
+                <select id="jenis" class="custom-input">
+                    <option value="hutang">Hutang</option>
+                    <option value="piutang">Piutang</option>
+                </select>
+                <div class="input-group">
+                    <label>Tgl Transaksi:</label>
+                    <input type="date" id="tanggal" class="custom-input" required>
+                </div>
+                <div class="input-group">
+                    <label>Jatuh Tempo:</label>
+                    <input type="date" id="jatuh_tempo" class="custom-input">
+                </div>
+                <input type="number" id="jumlah" class="custom-input" placeholder="Jumlah (Nilai)" required>
+                <textarea id="keterangan" class="custom-input" placeholder="Keterangan"></textarea>
+                <button type="submit" class="btn-simpan">SIMPAN DATA</button>
+            </form>
+        </div>
 
         <div id="data-hutang" class="screen" style="display:none">
             <h3 style="color:red;">Daftar Hutang</h3>
-            <div class="summary-box">Total Hutang: Rp <span id="totalHutang">0</span></div>
+            <div class="summary-box">Total: Rp <span id="totalHutang">0</span></div>
             <div class="table-scroll">
                 <table>
                     <thead>
@@ -42,7 +61,7 @@
 
         <div id="data-piutang" class="screen" style="display:none">
             <h3 style="color:green;">Daftar Piutang</h3>
-            <div class="summary-box">Total Piutang: Rp <span id="totalPiutang">0</span></div>
+            <div class="summary-box">Total: Rp <span id="totalPiutang">0</span></div>
             <div class="table-scroll">
                 <table>
                     <thead>
@@ -64,7 +83,7 @@
             <div class="modal-content">
                 <h4>Input Pembayaran</h4>
                 <input type="date" id="tglBayarInput" class="custom-input">
-                <input type="number" id="nominalInput" class="custom-input" placeholder="Nominal Bayar">
+                <input type="number" id="nominalInput" class="custom-input">
                 <input type="text" id="metodeInput" placeholder="Metode (Tunai/Transfer)" class="custom-input">
                 <button onclick="prosesBayar()" class="btn-oke">OKE</button>
                 <button onclick="tutupModal()" class="btn-batal">BATAL</button>
@@ -73,5 +92,4 @@
     </div>
     <script src="script.js"></script>
 </body>
-    </html>
-
+                                              </html>
