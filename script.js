@@ -4,16 +4,18 @@ window.onload = function() {
     tampilkanData();
 };
 
-// Fungsi Format Tanggal Indo
+// Merubah format Tgl ke Hari-Bulan-Tahun
 function formatTglIndo(tgl) {
     if (!tgl || tgl === '-') return '-';
     const [y, m, d] = tgl.split('-');
     return `${d}-${m}-${y}`;
 }
 
-// Navigasi Layar
+// Navigasi Tanpa Bocor
 function openScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+    tutupModal(); // Tutup modal otomatis saat pindah layar agar tidak bocor
+    
     const target = document.getElementById(id);
     if (target) {
         target.style.display = 'block';
@@ -21,7 +23,7 @@ function openScreen(id) {
     }
 }
 
-// Simpan Data
+// Simpan Data Baru
 document.getElementById('financeForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const data = {
@@ -37,12 +39,12 @@ document.getElementById('financeForm').addEventListener('submit', function(e) {
     let list = JSON.parse(localStorage.getItem('data_keuangan')) || [];
     list.push(data);
     localStorage.setItem('data_keuangan', JSON.stringify(list));
-    alert("Berhasil Disimpan!");
+    alert("Berhasil!");
     this.reset();
     openScreen(data.jenis === 'hutang' ? 'data-hutang' : 'data-piutang');
 });
 
-// Tampilkan Tabel Sempurna
+// Render Tabel
 function tampilkanData() {
     let list = JSON.parse(localStorage.getItem('data_keuangan')) || [];
     const tbodyH = document.getElementById('tbody-hutang');
@@ -71,9 +73,9 @@ function tampilkanData() {
                 <td>
                     <button onclick="inputBayar(${index})">Bayar</button>
                     ${riwayatHtml}
-                    <div style="color:blue; font-weight:bold; font-size:10px; margin-top:2px;">Sisa: ${sisa.toLocaleString()}</div>
+                    <div style="color:blue; font-weight:bold; font-size:10px;">Sisa: ${sisa.toLocaleString()}</div>
                 </td>
-                <td><button onclick="hapusData(${index})" style="background:red; color:white; border:none; border-radius:3px; padding:5px;">X</button></td>
+                <td><button onclick="hapusData(${index})" style="background:red; color:white; border:none; padding:5px;">X</button></td>
             </tr>`;
 
         if (item.jenis === 'hutang') {
@@ -87,7 +89,29 @@ function tampilkanData() {
     if (document.getElementById('totalPiutang')) document.getElementById('totalPiutang').innerText = totalP.toLocaleString();
 }
 
-// Fungsi Modal Pembayaran
+// Backup & Restore
+function eksporData() {
+    const data = localStorage.getItem('data_keuangan');
+    if (!data) return alert("Data kosong.");
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `backup_keuangan.json`;
+    a.click();
+}
+
+function imporData() {
+    const jsonInput = document.getElementById('importDataText').value;
+    try {
+        const parsed = JSON.parse(jsonInput);
+        localStorage.setItem('data_keuangan', JSON.stringify(parsed));
+        alert("Berhasil Pulih!");
+        location.reload();
+    } catch (e) { alert("Format salah!"); }
+}
+
+// Fungsi Modal Bayar
 function inputBayar(index) {
     currentEditIndex = index;
     let list = JSON.parse(localStorage.getItem('data_keuangan'));
@@ -114,10 +138,10 @@ function prosesBayar() {
 }
 
 function hapusData(i) {
-    if(confirm("Hapus data ini?")) {
+    if(confirm("Hapus?")) {
         let list = JSON.parse(localStorage.getItem('data_keuangan'));
         list.splice(i, 1);
         localStorage.setItem('data_keuangan', JSON.stringify(list));
         tampilkanData();
     }
-}
+                        }
