@@ -1,49 +1,3 @@
-// Navigasi yang diperbaiki agar ID sesuai
-function openScreen(id) {
-    // Sembunyikan semua screen
-    const screens = document.querySelectorAll('.screen');
-    screens.forEach(s => s.style.display = 'none');
-
-    // Tampilkan layar yang dipilih
-    const target = document.getElementById(id);
-    if (target) {
-        target.style.display = 'block';
-        // Jalankan fungsi tampil data jika membuka layar tabel
-        if (id === 'data-hutang' || id === 'data-piutang') {
-            tampilkanData();
-        }
-    }
-}
-
-// Format Tanggal Hari-Bulan-Tahun
-function formatTgl(tgl) {
-    if (!tgl || tgl === '-') return '-';
-    const [y, m, d] = tgl.split('-');
-    return `${d}-${m}-${y}`;
-}
-
-// Simpan Data Baru
-document.getElementById('financeForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const data = {
-        jenis: document.getElementById('jenis').value,
-        tanggal: document.getElementById('tanggal').value,
-        jatuh_tempo: document.getElementById('jatuh_tempo').value || '-',
-        jumlah: parseFloat(document.getElementById('jumlah').value),
-        bayar: 0,
-        keterangan: document.getElementById('keterangan').value
-    };
-    
-    let list = JSON.parse(localStorage.getItem('data_keuangan')) || [];
-    list.push(data);
-    localStorage.setItem('data_keuangan', JSON.stringify(list));
-    
-    alert("Berhasil!");
-    this.reset();
-    openScreen(data.jenis === 'hutang' ? 'data-hutang' : 'data-piutang');
-});
-
-// Menampilkan Data ke Tabel
 function tampilkanData() {
     let list = JSON.parse(localStorage.getItem('data_keuangan')) || [];
     const tbodyH = document.getElementById('tbody-hutang');
@@ -56,14 +10,21 @@ function tampilkanData() {
 
     list.forEach((item, index) => {
         const sisa = item.jumlah - (item.bayar || 0);
+        
+        // Kode HTML untuk baris tabel
         const baris = `
             <tr>
                 <td>${formatTgl(item.tanggal)}</td>
                 <td>${formatTgl(item.jatuh_tempo)}</td>
                 <td>${item.keterangan}</td>
                 <td>${item.jumlah.toLocaleString()}</td>
-                <td>${sisa.toLocaleString()}</td>
-                <td><button onclick="hapusData(${index})" style="background:red; color:white;">X</button></td>
+                <td style="text-align:center;">
+                    <button onclick="inputBayar(${index})" style="background:#007bff; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer; margin-bottom:5px;">Bayar</button>
+                    <div style="color:blue; font-size:11px; font-weight:bold;">Sisa: ${sisa.toLocaleString()}</div>
+                </td>
+                <td>
+                    <button onclick="hapusData(${index})" style="background:red; color:white; border:none; padding:8px; border-radius:3px; cursor:pointer;">X</button>
+                </td>
             </tr>`;
 
         if (item.jenis === 'hutang' && tbodyH) {
@@ -79,31 +40,15 @@ function tampilkanData() {
     if (document.getElementById('totalPiutang')) document.getElementById('totalPiutang').innerText = totalP.toLocaleString();
 }
 
-function hapusData(i) {
-    if(confirm("Hapus?")) {
-        let list = JSON.parse(localStorage.getItem('data_keuangan'));
-        list.splice(i, 1);
+// Tambahkan fungsi inputBayar ini agar tombol berfungsi
+function inputBayar(index) {
+    let list = JSON.parse(localStorage.getItem('data_keuangan'));
+    let nominal = prompt("Masukkan Nominal Pembayaran:", list[index].jumlah - list[index].bayar);
+    
+    if (nominal !== null && nominal !== "") {
+        list[index].bayar = (list[index].bayar || 0) + parseFloat(nominal);
         localStorage.setItem('data_keuangan', JSON.stringify(list));
-        tampilkanData();
+        tampilkanData(); // Refresh tabel
+        alert("Pembayaran Berhasil Dicatat!");
     }
-}
-
-// Backup & Restore
-function eksporData() {
-    const data = localStorage.getItem('data_keuangan');
-    const blob = new Blob([data], {type: "application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = "backup.json";
-    a.click();
-}
-
-function imporData() {
-    const txt = document.getElementById('importDataText').value;
-    try {
-        localStorage.setItem('data_keuangan', JSON.stringify(JSON.parse(txt)));
-        alert("Berhasil!");
-        location.reload();
-    } catch(e) { alert("Format Salah!"); }
 }
