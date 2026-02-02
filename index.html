@@ -1,133 +1,46 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Keuangan PWA</title>
-    <link rel="manifest" href="manifest.json">
-    <style>
-        :root { --orange: #f39c12; --red: #e74c3c; --green: #27ae60; --dark: #555; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f4f4f4; }
-        .app-container { max-width: 480px; margin: 0 auto; background: #fff; min-height: 100vh; position: relative; }
-        
-        /* Dashboard Saldo sesuai gambar 56879.jpg */
-        .summary-box { padding: 15px; display: flex; gap: 10px; border-bottom: 1px solid #eee; }
-        .card { flex: 1; padding: 15px; border-radius: 8px; color: white; text-align: center; }
-        .card.h { background: var(--red); }
-        .card.p { background: var(--green); }
-        .card strong { font-size: 1.2rem; display: block; }
+<div class="tabs">
+    <button onclick="openScreen('transaksi')">Tambah</button>
+    <button onclick="openScreen('data-hutang')">Hutang</button>
+    <button onclick="openScreen('data-piutang')">Piutang</button>
+    <button onclick="openScreen('backup')">Backup</button>
+</div>
 
-        /* Menu Utama sesuai gambar 56673.jpg */
-        .menu-btn { width: 100%; padding: 20px; border: none; border-bottom: 1px solid #eee; background: #fff; text-align: left; font-size: 1rem; cursor: pointer; text-transform: uppercase; font-weight: 500; color: #444; }
-        .menu-btn:active { background: #f9f9f9; }
-
-        /* Table Style sesuai gambar 56681.jpg & 3ac1367e */
-        table { width: 100%; border-collapse: collapse; }
-        th { background: var(--dark); color: white; padding: 10px; font-size: 0.75rem; text-transform: uppercase; }
-        td { border-bottom: 1px solid #eee; padding: 12px 5px; text-align: center; font-size: 0.85rem; }
-        .txt-blue { color: #0056b3; font-weight: bold; text-align: left; padding-left: 10px; }
-        .txt-red { color: var(--red); }
-
-        /* Modal Popup sesuai gambar 56685.jpg & 56686.jpg */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
-        .modal-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; width: 280px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .modal-item { padding: 20px; text-align: center; border-bottom: 1px solid #eee; font-weight: 500; font-size: 1.1rem; cursor: pointer; color: #333; }
-        .modal-item:last-child { border-bottom: none; }
-        
-        .hidden { display: none; }
-        .header-title { padding: 15px; font-weight: bold; font-size: 1.1rem; border-bottom: 1px solid #ddd; }
-    </style>
-</head>
-<body onload="initApp()">
-
-<div class="app-container">
-    <div id="view-menu">
-        <div class="header-title">MANAJEMEN KEUANGAN</div>
-        <div class="summary-box">
-            <div class="card h"><small>Hutang</small><strong id="total-h">Rp 0</strong></div>
-            <div class="card p"><small>Piutang</small><strong id="total-p">Rp 0</strong></div>
-        </div>
-        <button class="menu-btn" onclick="alert('Buka Form Tambah Hutang')">TAMBAH HUTANG</button>
-        <button class="menu-btn" onclick="showDataPage('h')">PEMBAYARAN HUTANG</button>
-        <button class="menu-btn" onclick="alert('Buka Form Tambah Piutang')">TAMBAH PIUTANG</button>
-        <button class="menu-btn" onclick="showDataPage('p')">PENYETORAN PIUTANG</button>
-    </div>
-
-    <div id="view-data" class="hidden">
-        <div class="header-title" id="data-title">DATA</div>
-        <table>
-            <thead><tr><th>TANGGAL</th><th>KETERANGAN</th><th>NILAI</th><th>BAYAR</th></tr></thead>
-            <tbody id="table-body"></tbody>
+<div id="data-hutang" class="screen" style="display:none">
+    <h3>Daftar Hutang (Saya Meminjam)</h3>
+    <div style="color:red; font-weight:bold; margin-bottom:10px;">Total Hutang: Rp <span id="totalHutang">0</span></div>
+    <div class="table-container">
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Tgl</th>
+                    <th>Jatuh Tempo</th>
+                    <th>Ket</th>
+                    <th>Nilai</th>
+                    <th>Bayar/Sisa</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="tbody-hutang"></tbody>
         </table>
-        <button class="menu-btn" style="background:#eee; text-align:center" onclick="goBack()">KEMBALI KE MENU</button>
-    </div>
-
-    <div id="modal-opsi" class="modal" onclick="closeModal()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-item" id="pop-action" onclick="prosesBayar()">Bayar Hutang</div>
-            <div class="modal-item" onclick="alert('Membuka rincian...')">Data Pembayaran</div>
-            <div class="modal-item" style="color:var(--red)" onclick="closeModal()">Batal</div>
-        </div>
     </div>
 </div>
 
-<script>
-    let currentType = '';
-    
-    // Data contoh agar tabel tidak kosong saat pertama buka
-    const dummyH = [{t:'26/01/2026', k:'Narita', n:50000, b:0}];
-    const dummyP = [{t:'26/01/2026', k:'6111-Piutang Usaha', n:80000, b:80000}];
-
-    function initApp() {
-        if(!localStorage.getItem('db_h')) localStorage.setItem('db_h', JSON.stringify(dummyH));
-        if(!localStorage.getItem('db_p')) localStorage.setItem('db_p', JSON.stringify(dummyP));
-        refreshSummary();
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
-    }
-
-    function refreshSummary() {
-        const h = JSON.parse(localStorage.getItem('db_h')) || [];
-        const p = JSON.parse(localStorage.getItem('db_p')) || [];
-        const totalH = h.reduce((a, b) => a + (Number(b.n) - Number(b.b)), 0);
-        const totalP = p.reduce((a, b) => a + (Number(b.n) - Number(b.b)), 0);
-        document.getElementById('total-h').innerText = 'Rp ' + totalH.toLocaleString('id-ID');
-        document.getElementById('total-p').innerText = 'Rp ' + totalP.toLocaleString('id-ID');
-    }
-
-    function showDataPage(type) {
-        currentType = type;
-        document.getElementById('view-menu').classList.add('hidden');
-        document.getElementById('view-data').classList.remove('hidden');
-        document.getElementById('data-title').innerText = type === 'h' ? 'DATA HUTANG' : 'DATA PIUTANG';
-        renderTable();
-    }
-
-    function renderTable() {
-        const data = JSON.parse(localStorage.getItem(currentType === 'h' ? 'db_h' : 'db_p')) || [];
-        let html = '';
-        data.forEach((item, i) => {
-            html += `<tr onclick="openModal(${i})">
-                <td>${item.t}</td>
-                <td class="txt-blue">${item.k}</td>
-                <td>${Number(item.n).toLocaleString('id-ID')}</td>
-                <td>${Number(item.b).toLocaleString('id-ID')}</td>
-            </tr>`;
-        });
-        document.getElementById('table-body').innerHTML = html;
-    }
-
-    function openModal(i) {
-        document.getElementById('modal-opsi').style.display = 'block';
-        document.getElementById('pop-action').innerText = currentType === 'h' ? 'Bayar Hutang' : 'Setor Piutang';
-    }
-
-    function closeModal() { document.getElementById('modal-opsi').style.display = 'none'; }
-    function goBack() { document.getElementById('view-data').classList.add('hidden'); document.getElementById('view-menu').classList.remove('hidden'); refreshSummary(); }
-    
-    function prosesBayar() {
-        alert('Membuka form input pembayaran...');
-        closeModal();
-    }
-</script>
-</body>
-</html>
+<div id="data-piutang" class="screen" style="display:none">
+    <h3>Daftar Piutang (Orang Pinjam)</h3>
+    <div style="color:green; font-weight:bold; margin-bottom:10px;">Total Piutang: Rp <span id="totalPiutang">0</span></div>
+    <div class="table-container">
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Tgl</th>
+                    <th>Jatuh Tempo</th>
+                    <th>Ket</th>
+                    <th>Nilai</th>
+                    <th>Bayar/Sisa</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="tbody-piutang"></tbody>
+        </table>
+    </div>
+</div>
