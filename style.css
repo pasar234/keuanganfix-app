@@ -1,36 +1,20 @@
-/* Penataan Tabel agar rapi */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-    margin-top: 10px;
-}
-th, td {
-    border: 1px solid #ccc;
-    padding: 6px;
-    text-align: left;
-}
-th { background: #f4f4f4; }
+/* Container Utama */
+.app-container { padding: 15px; font-family: sans-serif; }
 
-/* Tombol Aksi */
-.btn-simpan { background: #28a745; color: white; width: 100%; padding: 12px; border: none; border-radius: 5px; cursor: pointer; }
-.btn-oke { background: #007bff; color: white; width: 100%; padding: 10px; border: none; margin-bottom: 5px; }
-.btn-batal { background: #6c757d; color: white; width: 100%; padding: 10px; border: none; }
-
-/* Modal Background */
-.modal-overlay {
-    position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center;
-}
-.modal-content {
-    background: white; padding: 20px; border-radius: 10px; width: 85%; max-width: 320px;
+/* Navigasi Tombol */
+.tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+.tabs button { 
+    padding: 10px; border: 1px solid #ccc; background: #f9f9f9; 
+    border-radius: 5px; cursor: pointer; flex: 1; 
 }
 
-/* Teks Biru untuk Sisa */
-.sisa-teks {
-    color: blue;
-    font-weight: bold;
-    font-size: 10px;
-    display: block;
-    margin-top: 3px;
-}
+/* Tabel yang Dirapikan */
+table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+th, td { border: 1px solid #999; padding: 8px; text-align: left; }
+th { background-color: #eee; font-weight: bold; }
+
+/* Indikator Sisa Saldo Biru */
+.sisa-saldo { color: blue; font-weight: bold; display: block; font-size: 11px; margin-top: 5px; }
+
+/* Baris Merah untuk Jatuh Tempo */
+.jatuh-tempo-lewat { color: red; font-weight: bold; }
