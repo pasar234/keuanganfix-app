@@ -38,7 +38,14 @@
             <div class="summary-box">Total: Rp <span id="totalHutang">0</span></div>
             <table>
                 <thead>
-                    <tr><th>Tgl</th><th>Tempo</th><th>Ket</th><th>Nilai</th><th>Sisa</th><th>Aksi</th></tr>
+                    <tr>
+                        <th>Tgl</th>
+                        <th>Tempo</th>
+                        <th>Ket</th>
+                        <th>Nilai</th>
+                        <th>Bayar/Sisa</th>
+                        <th>Aksi</th>
+                    </tr>
                 </thead>
                 <tbody id="tbody-hutang"></tbody>
             </table>
@@ -49,18 +56,25 @@
             <div class="summary-box">Total: Rp <span id="totalPiutang">0</span></div>
             <table>
                 <thead>
-                    <tr><th>Tgl</th><th>Tempo</th><th>Ket</th><th>Nilai</th><th>Sisa</th><th>Aksi</th></tr>
+                    <tr>
+                        <th>Tgl</th>
+                        <th>Tempo</th>
+                        <th>Ket</th>
+                        <th>Nilai</th>
+                        <th>Bayar/Sisa</th>
+                        <th>Aksi</th>
+                    </tr>
                 </thead>
                 <tbody id="tbody-piutang"></tbody>
             </table>
         </div>
 
         <div id="backup-screen" class="screen" style="display:none">
-            <h3>Backup Data</h3>
-            <button onclick="eksporData()" class="btn-simpan" style="background:#007bff">💾 DOWNLOAD DATA (.json)</button>
+            <h3>Manajemen Data</h3>
+            <button onclick="eksporData()" class="btn-simpan" style="background:#007bff">💾 DOWNLOAD BACKUP (.json)</button>
             <hr>
             <p>Restore Data (Tempel kode di bawah):</p>
-            <textarea id="importDataText" class="custom-input" rows="3"></textarea>
+            <textarea id="importDataText" class="custom-input" rows="4" placeholder="Tempel kode JSON di sini..."></textarea>
             <button onclick="imporData()" class="btn-simpan" style="background:#ffc107; color:black;">📂 PULIHKAN DATA</button>
         </div>
     </div>
