@@ -2,63 +2,52 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Keuangan</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DompetKu Pro</title>
+    <style>
+        /* CSS UNTUK TAMPILAN MOBILE YANG RAPI */
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f4f7f6; margin: 0; padding: 10px; color: #333; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 20px; font-size: 22px; }
+        
+        /* Navigasi Tab (Grid 4 Kolom) */
+        .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 20px; }
+        .tabs button { padding: 12px 2px; cursor: pointer; border: none; background: #e9ecef; font-weight: bold; border-radius: 10px; font-size: 11px; transition: 0.2s; }
+        .tabs button.active { background: #007bff; color: white; }
+
+        .screen { display: none; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Ringkasan Saldo */
+        .summary-box { background: #f8f9fa; border-left: 5px solid #007bff; padding: 15px; margin-bottom: 15px; border-radius: 10px; text-align: center; }
+        .summary-box div { font-size: 14px; color: #666; }
+        .summary-box span { font-size: 20px; font-weight: bold; color: #007bff; }
+
+        /* Tabel Responsif (Bisa Di-scroll Samping) */
+        .table-wrapper { width: 100%; overflow-x: auto; border-radius: 10px; border: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; min-width: 450px; font-size: 12px; }
+        th { background: #007bff; color: white; padding: 12px 8px; text-align: center; }
+        td { padding: 10px 8px; border-bottom: 1px solid #f0f0f0; text-align: center; vertical-align: top; }
+
+        /* Kolom Keterangan & Riwayat */
+        .col-ket { text-align: left; min-width: 150px; }
+        .riwayat-item { font-size: 10px; color: #0056b3; margin-top: 4px; line-height: 1.4; border-top: 1px dashed #ddd; padding-top: 4px; }
+
+        /* Tombol & Input */
+        .custom-input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 15px; }
+        .btn-primary { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; }
+        .btn-bayar { background: #007bff; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+        .btn-hapus { background: #dc3545; color: white; border: none; padding: 6px 10px; border-radius: 6px; }
+        .sisa-label { font-size: 10px; font-weight: bold; color: #d93025; margin-top: 5px; }
+    </style>
 </head>
 <body>
-    <div class="app-container">
-        <h2>💰 Keuangan</h2>
-        <div class="tabs">
-            <button onclick="openScreen('transaksi')">Tambah</button>
-            <button onclick="openScreen('data-hutang')">Hutang</button>
-            <button onclick="openScreen('data-piutang')">Piutang</button>
-            <button onclick="openScreen('backup-screen')">Backup</button>
-        </div>
-        <hr>
 
-        <div id="transaksi" class="screen">
-            <h3>Tambah Baru</h3>
-            <form id="financeForm">
-                <select id="jenis" class="custom-input">
-                    <option value="hutang">Hutang (Saya Pinjam)</option>
-                    <option value="piutang">Piutang (Orang Pinjam)</option>
-                </select>
-                <input type="date" id="tanggal" class="custom-input" required>
-                <label style="font-size:12px; margin-left:5px;">Jatuh Tempo:</label>
-                <input type="date" id="jatuh_tempo" class="custom-input">
-                <input type="number" id="jumlah" class="custom-input" placeholder="Jumlah (Nilai)" required>
-                <textarea id="keterangan" class="custom-input" placeholder="Keterangan"></textarea>
-                <button type="submit" class="btn-simpan">SIMPAN DATA</button>
-            </form>
-        </div>
-
-        <div id="data-hutang" class="screen" style="display:none">
-            <h3 style="color:red;">Daftar Hutang</h3>
-            <div class="summary-box">Total Sisa: Rp <span id="totalHutang">0</span></div>
-            <table border="1" width="100%" style="border-collapse: collapse;">
-                <thead><tr><th>Tgl</th><th>Tempo</th><th>Ket</th><th>Nilai</th><th>Bayar/Sisa</th><th>Aksi</th></tr></thead>
-                <tbody id="tbody-hutang"></tbody>
-            </table>
-        </div>
-
-        <div id="data-piutang" class="screen" style="display:none">
-            <h3 style="color:green;">Daftar Piutang</h3>
-            <div class="summary-box">Total Sisa: Rp <span id="totalPiutang">0</span></div>
-            <table border="1" width="100%" style="border-collapse: collapse;">
-                <thead><tr><th>Tgl</th><th>Tempo</th><th>Ket</th><th>Nilai</th><th>Bayar/Sisa</th><th>Aksi</th></tr></thead>
-                <tbody id="tbody-piutang"></tbody>
-            </table>
-        </div>
-
-        <div id="backup-screen" class="screen" style="display:none">
-            <h3>Backup & Restore</h3>
-            <button onclick="eksporData()" class="btn-simpan" style="background:#007bff">💾 DOWNLOAD BACKUP</button>
-            <hr>
-            <textarea id="importDataText" class="custom-input" rows="3" placeholder="Paste JSON di sini..."></textarea>
-            <button onclick="imporData()" class="btn-simpan" style="background:#ffc107; color:black;">📂 PULIHKAN DATA</button>
-        </div>
-    </div>
-    <script src="script.js"></script>
-</body>
-</html>
+<div class="container">
+    <h2>💰 DompetKu</h2>
+    
+    <div class="tabs">
+        <button id="btn-tambah" onclick="showScreen('transaksi', this)">TAMBAH</button>
+        <button id="btn-hutang" onclick="showScreen('data-hutang', this)">HUTANG</button>
+        <button id="btn-piutang" onclick="showScreen('data-piutang', this)">PIUTANG</button>
