@@ -3,51 +3,644 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DompetKu Pro</title>
+    <title>Aplikasi Keuangan Mobile</title>
     <style>
-        /* CSS UNTUK TAMPILAN MOBILE YANG RAPI */
-        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f4f7f6; margin: 0; padding: 10px; color: #333; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        
-        h2 { text-align: center; color: #2c3e50; margin-bottom: 20px; font-size: 22px; }
-        
-        /* Navigasi Tab (Grid 4 Kolom) */
-        .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 20px; }
-        .tabs button { padding: 12px 2px; cursor: pointer; border: none; background: #e9ecef; font-weight: bold; border-radius: 10px; font-size: 11px; transition: 0.2s; }
-        .tabs button.active { background: #007bff; color: white; }
+        /* Reset & Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-        .screen { display: none; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+            color: #333;
+        }
 
-        /* Ringkasan Saldo */
-        .summary-box { background: #f8f9fa; border-left: 5px solid #007bff; padding: 15px; margin-bottom: 15px; border-radius: 10px; text-align: center; }
-        .summary-box div { font-size: 14px; color: #666; }
-        .summary-box span { font-size: 20px; font-weight: bold; color: #007bff; }
+        .app-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            min-height: 90vh;
+        }
 
-        /* Tabel Responsif (Bisa Di-scroll Samping) */
-        .table-wrapper { width: 100%; overflow-x: auto; border-radius: 10px; border: 1px solid #eee; }
-        table { width: 100%; border-collapse: collapse; min-width: 450px; font-size: 12px; }
-        th { background: #007bff; color: white; padding: 12px 8px; text-align: center; }
-        td { padding: 10px 8px; border-bottom: 1px solid #f0f0f0; text-align: center; vertical-align: top; }
+        /* Header Styles */
+        .app-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+            position: relative;
+        }
 
-        /* Kolom Keterangan & Riwayat */
-        .col-ket { text-align: left; min-width: 150px; }
-        .riwayat-item { font-size: 10px; color: #0056b3; margin-top: 4px; line-height: 1.4; border-top: 1px dashed #ddd; padding-top: 4px; }
+        .app-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
 
-        /* Tombol & Input */
-        .custom-input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 15px; }
-        .btn-primary { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; }
-        .btn-bayar { background: #007bff; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; }
-        .btn-hapus { background: #dc3545; color: white; border: none; padding: 6px 10px; border-radius: 6px; }
-        .sisa-label { font-size: 10px; font-weight: bold; color: #d93025; margin-top: 5px; }
+        .app-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+            background: #f5f5f5;
+            padding: 2px;
+        }
+
+        .nav-btn {
+            background: white;
+            border: none;
+            padding: 15px 5px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            margin: 2px;
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .nav-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Screen Styles */
+        .screen {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        /* Button Styles */
+        .btn {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #555;
+        }
+
+        /* Summary Cards */
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .summary-title {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .summary-amount {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 12px;
+            border: 2px solid #f0f0f0;
+            margin-top: 20px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 400px;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            padding: 15px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 2px solid #e0e0e0;
+            text-align: left;
+        }
+
+        .data-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            vertical-align: top;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-paid {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-unpaid {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-overdue {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn.pay {
+            background: #28a745;
+            color: white;
+        }
+
+        .action-btn.delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Payment History */
+        .payment-history {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+
+        .payment-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Backup Screen */
+        .backup-actions {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .backup-textarea {
+            min-height: 150px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { bottom: -100px; opacity: 0; }
+            to { bottom: 20px; opacity: 1; }
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .app-container {
+                min-height: 95vh;
+            }
+            
+            .app-header {
+                padding: 20px 15px;
+            }
+            
+            .nav-btn {
+                padding: 12px 3px;
+                font-size: 11px;
+            }
+            
+            .screen {
+                padding: 15px;
+            }
+            
+            .form-input, .form-select, .form-textarea {
+                padding: 14px;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="app-header">
+            <div class="app-title">💰 Keuangan Mobile</div>
+            <div class="app-subtitle">Kelola hutang & piutang dengan mudah</div>
+        </div>
 
-<div class="container">
-    <h2>💰 DompetKu</h2>
-    
-    <div class="tabs">
-        <button id="btn-tambah" onclick="showScreen('transaksi', this)">TAMBAH</button>
-        <button id="btn-hutang" onclick="showScreen('data-hutang', this)">HUTANG</button>
-        <button id="btn-piutang" onclick="showScreen('data-piutang', this)">PIUTANG</button>
+        <!-- Navigation -->
+        <div class="nav-tabs">
+            <button class="nav-btn active" onclick="showScreen('transaksi')">➕ Tambah</button>
+            <button class="nav-btn" onclick="showScreen('hutang')">📉 Hutang</button>
+            <button class="nav-btn" onclick="showScreen('piutang')">📈 Piutang</button>
+            <button class="nav-btn" onclick="showScreen('backup')">💾 Backup</button>
+        </div>
+
+        <!-- Add Transaction Screen -->
+        <div id="transaksi" class="screen active">
+            <h2 style="margin-bottom: 20px; color: #333;">Tambah Transaksi</h2>
+            
+            <form id="financeForm">
+                <div class="form-group">
+                    <label class="form-label">Jenis Transaksi</label>
+                    <select id="jenis" class="form-select">
+                        <option value="hutang">🏦 Saya Hutang (Pinjam)</option>
+                        <option value="piutang">👤 Saya Piutang (Dipinjam)</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Tanggal</label>
+                        <input type="date" id="tanggal" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Jatuh Tempo</label>
+                        <input type="date" id="jatuh_tempo" class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Jumlah (Rp)</label>
+                    <input type="number" id="jumlah" class="form-input" placeholder="Masukkan jumlah" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Keterangan</label>
+                    <textarea id="keterangan" class="form-textarea" placeholder="Deskripsi transaksi..." rows="3"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    💾 Simpan Transaksi
+                </button>
+            </form>
+        </div>
+
+        <!-- Hutang Screen -->
+        <div id="hutang" class="screen">
+            <div class="summary-card">
+                <div class="summary-title">Total Hutang</div>
+                <div class="summary-amount">Rp <span id="totalHutang">0</span></div>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Tempo</th>
+                            <th>Keterangan</th>
+                            <th>Jumlah</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hutangTable">
+                        <!-- Data hutang akan diisi oleh JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Piutang Screen -->
+        <div id="piutang" class="screen">
+            <div class="summary-card">
+                <div class="summary-title">Total Piutang</div>
+                <div class="summary-amount">Rp <span id="totalPiutang">0</span></div>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Tempo</th>
+                            <th>Keterangan</th>
+                            <th>Jumlah</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="piutangTable">
+                        <!-- Data piutang akan diisi oleh JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Backup Screen -->
+        <div id="backup" class="screen">
+            <h2 style="margin-bottom: 20px; color: #333;">Backup & Restore</h2>
+            
+            <p style="margin-bottom: 20px; color: #666; font-size: 14px;">
+                Backup data keuangan Anda untuk mengamankan semua transaksi.
+            </p>
+
+            <div class="backup-actions">
+                <button onclick="exportData()" class="btn btn-primary">
+                    📥 Download Backup
+                </button>
+                
+                <div class="form-group">
+                    <label class="form-label">Restore Data (Paste JSON)</label>
+                    <textarea id="importData" class="form-textarea backup-textarea" 
+                              placeholder='Tempel data JSON backup di sini...'></textarea>
+                </div>
+                
+                <button onclick="importData()" class="btn btn-secondary">
+                    🔄 Restore Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast" style="display: none;"></div>
+
+    <script>
+        // Inisialisasi
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            document.getElementById('tanggal').valueAsDate = new Date();
+            showScreen('transaksi');
+        });
+
+        // Navigasi antar screen
+        function showScreen(screenId) {
+            // Update active nav button
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`button[onclick*="${screenId}"]`).classList.add('active');
+            
+            // Update active screen
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            
+            // Load data jika screen data
+            if (screenId === 'hutang' || screenId === 'piutang') {
+                loadData();
+            }
+        }
+
+        // Format tanggal
+        function formatDate(dateString) {
+            if (!dateString || dateString === '-') return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('id-ID').format(amount);
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            toast.style.background = type === 'success' ? '#28a745' : 
+                                   type === 'error' ? '#dc3545' : '#333';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        // Simpan data transaksi
+        document.getElementById('financeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const transaction = {
+                id: Date.now(),
+                jenis: document.getElementById('jenis').value,
+                tanggal: document.getElementById('tanggal').value,
+                jatuh_tempo: document.getElementById('jatuh_tempo').value || '-',
+                jumlah: parseFloat(document.getElementById('jumlah').value),
+                bayar: 0,
+                riwayat_bayar: [],
+                keterangan: document.getElementById('keterangan').value,
+                created_at: new Date().toISOString()
+            };
+            
+            // Validasi
+            if (!transaction.jumlah || transaction.jumlah <= 0) {
+                showToast('Jumlah harus lebih dari 0', 'error');
+                return;
+            }
+            
+            // Simpan ke localStorage
+            let transactions = JSON.parse(localStorage.getItem('keuangan_data')) || [];
+            transactions.push(transaction);
+            localStorage.setItem('keuangan_data', JSON.stringify(transactions));
+            
+            // Reset form
+            this.reset();
+            document.getElementById('tanggal').valueAsDate = new Date();
+            
+            // Tampilkan notifikasi dan navigasi
+            showToast('Transaksi berhasil disimpan!', 'success');
+            showScreen(transaction.jenis === 'hutang' ? 'hutang' : 'piutang');
+        });
+
+        // Load dan tampilkan data
+        function loadData() {
+            const transactions = JSON.parse(localStorage.getItem('keuangan_data')) || [];
+            const now = new Date();
+            
+            // Filter dan hitung totals
+            const hutangData = transactions.filter(t => t.jenis === 'hutang');
+            const piutangData = transactions.filter(t => t.jenis === 'piutang');
+            
+            let totalHutang = 0;
+            let totalPiutang = 0;
+            
+            // Render hutang table
+            const hutangTable = document.getElementById('hutangTable');
+            hutangTable.innerHTML = hutangData.length === 0 ? 
+                '<tr><td colspan="5" style="text-align:center; padding:40px; color:#999;">Belum ada data hutang</td></tr>' : '';
+            
+            hutangData.forEach(transaction => {
+                const sisa = transaction.jumlah - (transaction.bayar || 0);
+                totalHutang += sisa;
+                
+                const row = document.createElement('tr');
+                const isOverdue = transaction.jatuh_tempo !== '-' && 
+                                 new Date(transaction.jatuh_tempo) < now && 
+                                 sisa > 0;
+                
+                row.innerHTML = `
+                    <td>${formatDate(transaction.tanggal)}</td>
+                    <td>
+                        ${formatDate(transaction.jatuh_tempo)}
+                        ${
