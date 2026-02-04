@@ -4,12 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Aplikasi Keuangan Mobile</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" type="image/png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Keuangan">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
+    <meta name="theme-color" content="#764ba2">
     <style>
         /* Reset & Base Styles */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -18,6 +26,7 @@
             min-height: 100vh;
             padding: 15px;
             color: #333;
+            touch-action: manipulation;
         }
 
         .app-container {
@@ -28,6 +37,7 @@
             overflow: hidden;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             min-height: 90vh;
+            position: relative;
         }
 
         /* Header Styles */
@@ -54,9 +64,10 @@
         .nav-tabs {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 2px;
+            gap: 1px;
             background: #f5f5f5;
-            padding: 2px;
+            padding: 1px;
+            border-bottom: 2px solid #f5f5f5;
         }
 
         .nav-btn {
@@ -68,19 +79,31 @@
             color: #555;
             cursor: pointer;
             transition: all 0.3s ease;
-            border-radius: 12px;
-            margin: 2px;
+            border-radius: 0;
+            margin: 0;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 4px;
         }
 
         .nav-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            font-weight: 700;
         }
 
         .nav-btn:active {
+            background: #f0f0f0;
             transform: scale(0.98);
+        }
+
+        .nav-icon {
+            font-size: 18px;
+            display: block;
         }
 
         /* Screen Styles */
@@ -88,6 +111,7 @@
             display: none;
             padding: 20px;
             animation: fadeIn 0.3s ease;
+            min-height: 400px;
         }
 
         .screen.active {
@@ -120,6 +144,8 @@
             font-size: 16px;
             transition: border-color 0.3s ease;
             background: #f8f9fa;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         .form-input:focus, .form-select:focus, .form-textarea:focus {
@@ -146,6 +172,7 @@
             transition: all 0.3s ease;
             text-align: center;
             display: block;
+            touch-action: manipulation;
         }
 
         .btn-primary {
@@ -162,6 +189,10 @@
         .btn-secondary {
             background: #f0f0f0;
             color: #555;
+        }
+
+        .btn-secondary:active {
+            transform: scale(0.98);
         }
 
         /* Summary Cards */
@@ -208,6 +239,8 @@
             color: #555;
             border-bottom: 2px solid #e0e0e0;
             text-align: left;
+            position: sticky;
+            top: 0;
         }
 
         .data-table td {
@@ -221,10 +254,6 @@
             border-bottom: none;
         }
 
-        .data-table tr:hover {
-            background: #f8f9fa;
-        }
-
         /* Status Badges */
         .status-badge {
             display: inline-block;
@@ -232,6 +261,7 @@
             border-radius: 20px;
             font-size: 11px;
             font-weight: 600;
+            margin-top: 4px;
         }
 
         .status-paid {
@@ -258,6 +288,9 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: inline-block;
+            margin: 2px;
+            touch-action: manipulation;
         }
 
         .action-btn.pay {
@@ -305,6 +338,7 @@
             min-height: 150px;
             font-family: monospace;
             font-size: 14px;
+            resize: vertical;
         }
 
         /* Empty State */
@@ -333,6 +367,8 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             z-index: 1000;
             animation: slideUp 0.3s ease;
+            max-width: 90%;
+            text-align: center;
         }
 
         @keyframes slideUp {
@@ -348,15 +384,25 @@
             
             .app-container {
                 min-height: 95vh;
+                border-radius: 15px;
             }
             
             .app-header {
                 padding: 20px 15px;
             }
             
+            .app-title {
+                font-size: 20px;
+            }
+            
             .nav-btn {
                 padding: 12px 3px;
                 font-size: 11px;
+                min-height: 55px;
+            }
+            
+            .nav-icon {
+                font-size: 16px;
             }
             
             .screen {
@@ -365,6 +411,11 @@
             
             .form-input, .form-select, .form-textarea {
                 padding: 14px;
+                font-size: 16px;
+            }
+            
+            .btn {
+                padding: 16px;
             }
         }
 
@@ -383,6 +434,26 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
     </style>
 </head>
 <body>
@@ -395,10 +466,22 @@
 
         <!-- Navigation -->
         <div class="nav-tabs">
-            <button class="nav-btn active" onclick="showScreen('transaksi')">➕ Tambah</button>
-            <button class="nav-btn" onclick="showScreen('hutang')">📉 Hutang</button>
-            <button class="nav-btn" onclick="showScreen('piutang')">📈 Piutang</button>
-            <button class="nav-btn" onclick="showScreen('backup')">💾 Backup</button>
+            <button class="nav-btn active" onclick="showScreen('transaksi')">
+                <span class="nav-icon">➕</span>
+                <span>Tambah</span>
+            </button>
+            <button class="nav-btn" onclick="showScreen('hutang')">
+                <span class="nav-icon">📉</span>
+                <span>Hutang</span>
+            </button>
+            <button class="nav-btn" onclick="showScreen('piutang')">
+                <span class="nav-icon">📈</span>
+                <span>Piutang</span>
+            </button>
+            <button class="nav-btn" onclick="showScreen('backup')">
+                <span class="nav-icon">💾</span>
+                <span>Backup</span>
+            </button>
         </div>
 
         <!-- Add Transaction Screen -->
@@ -427,7 +510,7 @@
 
                 <div class="form-group">
                     <label class="form-label">Jumlah (Rp)</label>
-                    <input type="number" id="jumlah" class="form-input" placeholder="Masukkan jumlah" required>
+                    <input type="number" id="jumlah" class="form-input" placeholder="Masukkan jumlah" required min="1">
                 </div>
 
                 <div class="form-group">
@@ -460,7 +543,11 @@
                         </tr>
                     </thead>
                     <tbody id="hutangTable">
-                        <!-- Data hutang akan diisi oleh JavaScript -->
+                        <tr>
+                            <td colspan="5" style="text-align:center; padding:40px; color:#999;">
+                                Belum ada data hutang
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -485,7 +572,11 @@
                         </tr>
                     </thead>
                     <tbody id="piutangTable">
-                        <!-- Data piutang akan diisi oleh JavaScript -->
+                        <tr>
+                            <td colspan="5" style="text-align:center; padding:40px; color:#999;">
+                                Belum ada data piutang
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -513,6 +604,12 @@
                 <button onclick="importData()" class="btn btn-secondary">
                     🔄 Restore Data
                 </button>
+
+                <div style="margin-top: 20px;">
+                    <label class="form-label">Atau upload file JSON:</label>
+                    <input type="file" id="fileInput" accept=".json" class="form-input"
+                           onchange="restoreFromFile(event)">
+                </div>
             </div>
         </div>
     </div>
@@ -523,40 +620,80 @@
     <script>
         // Inisialisasi
         document.addEventListener('DOMContentLoaded', function() {
+            // Set tanggal default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('tanggal').value = today;
+            
+            // Load data
             loadData();
-            document.getElementById('tanggal').valueAsDate = new Date();
-            showScreen('transaksi');
+            
+            // Event listeners
+            setupEventListeners();
+            
+            // Test tab functionality
+            console.log("Aplikasi siap digunakan!");
         });
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Form submission
+            document.getElementById('financeForm').addEventListener('submit', handleFormSubmit);
+            
+            // Auto-save form draft
+            const formInputs = document.querySelectorAll('#financeForm input, #financeForm textarea, #financeForm select');
+            formInputs.forEach(input => {
+                input.addEventListener('input', saveFormDraft);
+            });
+            
+            // Load form draft
+            loadFormDraft();
+        }
 
         // Navigasi antar screen
         function showScreen(screenId) {
+            console.log("Menampilkan screen:", screenId);
+            
             // Update active nav button
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            document.querySelector(`button[onclick*="${screenId}"]`).classList.add('active');
+            
+            const activeBtn = document.querySelector(`button[onclick*="${screenId}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
             
             // Update active screen
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
             });
-            document.getElementById(screenId).classList.add('active');
+            
+            const targetScreen = document.getElementById(screenId);
+            if (targetScreen) {
+                targetScreen.classList.add('active');
+            }
             
             // Load data jika screen data
             if (screenId === 'hutang' || screenId === 'piutang') {
-                loadData();
+                setTimeout(() => {
+                    loadData();
+                }, 100);
             }
         }
 
         // Format tanggal
         function formatDate(dateString) {
             if (!dateString || dateString === '-') return '-';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('id-ID', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+            } catch (e) {
+                return dateString;
+            }
         }
 
         // Format currency
@@ -577,8 +714,37 @@
             }, 3000);
         }
 
-        // Simpan data transaksi
-        document.getElementById('financeForm').addEventListener('submit', function(e) {
+        // Save form draft
+        function saveFormDraft() {
+            const formData = {
+                jenis: document.getElementById('jenis').value,
+                tanggal: document.getElementById('tanggal').value,
+                jatuh_tempo: document.getElementById('jatuh_tempo').value,
+                jumlah: document.getElementById('jumlah').value,
+                keterangan: document.getElementById('keterangan').value
+            };
+            localStorage.setItem('form_draft', JSON.stringify(formData));
+        }
+
+        // Load form draft
+        function loadFormDraft() {
+            try {
+                const draft = localStorage.getItem('form_draft');
+                if (draft) {
+                    const formData = JSON.parse(draft);
+                    document.getElementById('jenis').value = formData.jenis || 'hutang';
+                    document.getElementById('tanggal').value = formData.tanggal || new Date().toISOString().split('T')[0];
+                    document.getElementById('jatuh_tempo').value = formData.jatuh_tempo || '';
+                    document.getElementById('jumlah').value = formData.jumlah || '';
+                    document.getElementById('keterangan').value = formData.keterangan || '';
+                }
+            } catch (e) {
+                localStorage.removeItem('form_draft');
+            }
+        }
+
+        // Handle form submission
+        function handleFormSubmit(e) {
             e.preventDefault();
             
             const transaction = {
@@ -589,7 +755,7 @@
                 jumlah: parseFloat(document.getElementById('jumlah').value),
                 bayar: 0,
                 riwayat_bayar: [],
-                keterangan: document.getElementById('keterangan').value,
+                keterangan: document.getElementById('keterangan').value || '-',
                 created_at: new Date().toISOString()
             };
             
@@ -599,48 +765,391 @@
                 return;
             }
             
+            if (!transaction.tanggal) {
+                showToast('Tanggal harus diisi', 'error');
+                return;
+            }
+            
             // Simpan ke localStorage
             let transactions = JSON.parse(localStorage.getItem('keuangan_data')) || [];
             transactions.push(transaction);
             localStorage.setItem('keuangan_data', JSON.stringify(transactions));
             
-            // Reset form
-            this.reset();
-            document.getElementById('tanggal').valueAsDate = new Date();
+            // Reset form dan hapus draft
+            e.target.reset();
+            document.getElementById('tanggal').value = new Date().toISOString().split('T')[0];
+            localStorage.removeItem('form_draft');
             
             // Tampilkan notifikasi dan navigasi
-            showToast('Transaksi berhasil disimpan!', 'success');
-            showScreen(transaction.jenis === 'hutang' ? 'hutang' : 'piutang');
-        });
+            showToast('✅ Transaksi berhasil disimpan!', 'success');
+            
+            // Navigasi ke screen yang sesuai
+            const targetScreen = transaction.jenis === 'hutang' ? 'hutang' : 'piutang';
+            setTimeout(() => {
+                showScreen(targetScreen);
+            }, 500);
+        }
 
         // Load dan tampilkan data
         function loadData() {
-            const transactions = JSON.parse(localStorage.getItem('keuangan_data')) || [];
-            const now = new Date();
-            
-            // Filter dan hitung totals
-            const hutangData = transactions.filter(t => t.jenis === 'hutang');
-            const piutangData = transactions.filter(t => t.jenis === 'piutang');
-            
-            let totalHutang = 0;
-            let totalPiutang = 0;
-            
-            // Render hutang table
-            const hutangTable = document.getElementById('hutangTable');
-            hutangTable.innerHTML = hutangData.length === 0 ? 
-                '<tr><td colspan="5" style="text-align:center; padding:40px; color:#999;">Belum ada data hutang</td></tr>' : '';
-            
-            hutangData.forEach(transaction => {
+            try {
+                const transactions = JSON.parse(localStorage.getItem('keuangan_data')) || [];
+                const now = new Date();
+                
+                // Filter dan hitung totals
+                const hutangData = transactions.filter(t => t.jenis === 'hutang');
+                const piutangData = transactions.filter(t => t.jenis === 'piutang');
+                
+                let totalHutang = 0;
+                let totalPiutang = 0;
+                
+                // Render hutang table
+                const hutangTable = document.getElementById('hutangTable');
+                if (hutangData.length === 0) {
+                    hutangTable.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="text-align:center; padding:40px; color:#999;">
+                                Belum ada data hutang
+                            </td>
+                        </tr>`;
+                } else {
+                    hutangTable.innerHTML = '';
+                    
+                    hutangData.forEach(transaction => {
+                        const sisa = transaction.jumlah - (transaction.bayar || 0);
+                        totalHutang += sisa;
+                        
+                        const isOverdue = transaction.jatuh_tempo !== '-' && 
+                                         new Date(transaction.jatuh_tempo) < now && 
+                                         sisa > 0;
+                        
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${formatDate(transaction.tanggal)}</td>
+                            <td>
+                                ${formatDate(transaction.jatuh_tempo)}
+                                ${isOverdue ? '<span class="status-badge status-overdue">Telat</span>' : ''}
+                            </td>
+                            <td>
+                                <strong>${transaction.keterangan}</strong>
+                                ${transaction.riwayat_bayar && transaction.riwayat_bayar.length > 0 ? 
+                                    `<div class="payment-history">
+                                        ${transaction.riwayat_bayar.map(p => 
+                                            `<div class="payment-item">
+                                                <span>${p.metode || 'Pembayaran'}</span>
+                                                <span>Rp ${formatCurrency(p.nominal || 0)}</span>
+                                            </div>`
+                                        ).join('')}
+                                    </div>` : ''
+                                }
+                            </td>
+                            <td>
+                                <div>Rp ${formatCurrency(transaction.jumlah)}</div>
+                                <div style="font-size:12px; color:#666; margin-top:4px;">
+                                    Sisa: Rp ${formatCurrency(sisa)}
+                                </div>
+                            </td>
+                            <td>
+                                ${sisa > 0 ? 
+                                    `<button class="action-btn pay" onclick="addPayment(${transaction.id})">Bayar</button>` : 
+                                    '<span class="status-badge status-paid">Lunas</span>'
+                                }
+                                <button class="action-btn delete" onclick="deleteTransaction(${transaction.id})" style="margin-top:5px;">Hapus</button>
+                            </td>
+                        `;
+                        hutangTable.appendChild(row);
+                    });
+                }
+                
+                // Render piutang table
+                const piutangTable = document.getElementById('piutangTable');
+                if (piutangData.length === 0) {
+                    piutangTable.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="text-align:center; padding:40px; color:#999;">
+                                Belum ada data piutang
+                            </td>
+                        </tr>`;
+                } else {
+                    piutangTable.innerHTML = '';
+                    
+                    piutangData.forEach(transaction => {
+                        const sisa = transaction.jumlah - (transaction.bayar || 0);
+                        totalPiutang += sisa;
+                        
+                        const isOverdue = transaction.jatuh_tempo !== '-' && 
+                                         new Date(transaction.jatuh_tempo) < now && 
+                                         sisa > 0;
+                        
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${formatDate(transaction.tanggal)}</td>
+                            <td>
+                                ${formatDate(transaction.jatuh_tempo)}
+                                ${isOverdue ? '<span class="status-badge status-overdue">Telat</span>' : ''}
+                            </td>
+                            <td>
+                                <strong>${transaction.keterangan}</strong>
+                                ${transaction.riwayat_bayar && transaction.riwayat_bayar.length > 0 ? 
+                                    `<div class="payment-history">
+                                        ${transaction.riwayat_bayar.map(p => 
+                                            `<div class="payment-item">
+                                                <span>${p.metode || 'Pembayaran'}</span>
+                                                <span>Rp ${formatCurrency(p.nominal || 0)}</span>
+                                            </div>`
+                                        ).join('')}
+                                    </div>` : ''
+                                }
+                            </td>
+                            <td>
+                                <div>Rp ${formatCurrency(transaction.jumlah)}</div>
+                                <div style="font-size:12px; color:#666; margin-top:4px;">
+                                    Sisa: Rp ${formatCurrency(sisa)}
+                                </div>
+                            </td>
+                            <td>
+                                ${sisa > 0 ? 
+                                    `<button class="action-btn pay" onclick="addPayment(${transaction.id})">Terima</button>` : 
+                                    '<span class="status-badge status-paid">Lunas</span>'
+                                }
+                                <button class="action-btn delete" onclick="deleteTransaction(${transaction.id})" style="margin-top:5px;">Hapus</button>
+                            </td>
+                        `;
+                        piutangTable.appendChild(row);
+                    });
+                }
+                
+                // Update totals
+                document.getElementById('totalHutang').textContent = formatCurrency(totalHutang);
+                document.getElementById('totalPiutang').textContent = formatCurrency(totalPiutang);
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showToast('Error memuat data', 'error');
+            }
+        }
+
+        // Tambah pembayaran
+        function addPayment(transactionId) {
+            try {
+                const transactions = JSON.parse(localStorage.getItem('keuangan_data')) || [];
+                const transactionIndex = transactions.findIndex(t => t.id === transactionId);
+                
+                if (transactionIndex === -1) {
+                    showToast('Transaksi tidak ditemukan', 'error');
+                    return;
+                }
+                
+                const transaction = transactions[transactionIndex];
                 const sisa = transaction.jumlah - (transaction.bayar || 0);
-                totalHutang += sisa;
                 
-                const row = document.createElement('tr');
-                const isOverdue = transaction.jatuh_tempo !== '-' && 
-                                 new Date(transaction.jatuh_tempo) < now && 
-                                 sisa > 0;
+                if (sisa <= 0) {
+                    showToast('Transaksi sudah lunas', 'info');
+                    return;
+                }
                 
-                row.innerHTML = `
-                    <td>${formatDate(transaction.tanggal)}</td>
-                    <td>
-                        ${formatDate(transaction.jatuh_tempo)}
-                        ${
+                // Input nominal
+                const nominalInput = prompt(`Masukkan jumlah pembayaran (Sisa: Rp ${formatCurrency(sisa)}):`, sisa);
+                if (!nominalInput) return;
+                
+                const nominal = parseFloat(nominalInput);
+                if (isNaN(nominal) || nominal <= 0) {
+                    showToast('Nominal tidak valid', 'error');
+                    return;
+                }
+                
+                if (nominal > sisa) {
+                    showToast('Nominal melebihi sisa hutang/piutang', 'error');
+                    return;
+                }
+                
+                // Input metode
+                const metode = prompt('Metode pembayaran (Tunai/Transfer/etc):', 'Tunai') || 'Tunai';
+                
+                // Inisialisasi riwayat jika belum ada
+                if (!Array.isArray(transaction.riwayat_bayar)) {
+                    transaction.riwayat_bayar = [];
+                }
+                
+                // Tambah ke riwayat
+                transaction.riwayat_bayar.push({
+                    tanggal: new Date().toISOString().split('T')[0],
+                    nominal: nominal,
+                    metode: metode
+                });
+                
+                // Update total bayar
+                transaction.bayar = (transaction.bayar || 0) + nominal;
+                
+                // Update di array
+                transactions[transactionIndex] = transaction;
+                
+                // Simpan
+                localStorage.setItem('keuangan_data', JSON.stringify(transactions));
+                
+                showToast('✅ Pembayaran berhasil dicatat!', 'success');
+                
+                // Reload data setelah delay kecil
+                setTimeout(() => {
+                    loadData();
+                }, 300);
+                
+            } catch (error) {
+                console.error('Error adding payment:', error);
+                showToast('Error mencatat pembayaran', 'error');
+            }
+        }
+
+        // Hapus transaksi
+        function deleteTransaction(transactionId) {
+            if (!confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) return;
+            
+            try {
+                let transactions = JSON.parse(localStorage.getItem('keuangan_data')) || [];
+                const initialLength = transactions.length;
+                transactions = transactions.filter(t => t.id !== transactionId);
+                
+                if (transactions.length < initialLength) {
+                    localStorage.setItem('keuangan_data', JSON.stringify(transactions));
+                    showToast('✅ Transaksi berhasil dihapus', 'success');
+                    setTimeout(() => {
+                        loadData();
+                    }, 300);
+                } else {
+                    showToast('Transaksi tidak ditemukan', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting transaction:', error);
+                showToast('Error menghapus transaksi', 'error');
+            }
+        }
+
+        // Export data
+        function exportData() {
+            try {
+                const data = localStorage.getItem('keuangan_data') || '[]';
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `backup-keuangan-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showToast('✅ Backup berhasil diunduh!', 'success');
+            } catch (error) {
+                console.error('Error exporting data:', error);
+                showToast('Error mengunduh backup', 'error');
+            }
+        }
+
+        // Import data dari textarea
+        function importData() {
+            try {
+                const importText = document.getElementById('importData').value.trim();
+                
+                if (!importText) {
+                    showToast('Masukkan data JSON yang valid', 'error');
+                    return;
+                }
+                
+                const importedData = JSON.parse(importText);
+                
+                // Validasi data
+                if (!Array.isArray(importedData)) {
+                    throw new Error('Format data tidak valid. Harus array.');
+                }
+                
+                // Simpan data
+                localStorage.setItem('keuangan_data', JSON.stringify(importedData));
+                
+                // Reset input
+                document.getElementById('importData').value = '';
+                
+                showToast('✅ Data berhasil dipulihkan!', 'success');
+                
+                // Reload page setelah delay
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Error importing data:', error);
+                showToast('Format data tidak valid: ' + error.message, 'error');
+            }
+        }
+
+        // Restore dari file
+        function restoreFromFile(event) {
+            try {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                if (!file.name.endsWith('.json')) {
+                    showToast('File harus berformat .json', 'error');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        
+                        if (!Array.isArray(data)) {
+                            throw new Error('Format data tidak valid. Harus array.');
+                        }
+                        
+                        localStorage.setItem('keuangan_data', JSON.stringify(data));
+                        showToast('✅ Data berhasil dipulihkan dari file!', 'success');
+                        
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
+                        
+                    } catch (error) {
+                        console.error('Error parsing file:', error);
+                        showToast('Format file tidak valid: ' + error.message, 'error');
+                    }
+                };
+                reader.readAsText(file);
+                
+                // Reset file input
+                event.target.value = '';
+                
+            } catch (error) {
+                console.error('Error reading file:', error);
+                showToast('Error membaca file', 'error');
+            }
+        }
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('Service Worker terdaftar:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Service Worker gagal:', error);
+                    });
+            });
+        }
+
+        // Install PWA prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button after 5 seconds
+            setTimeout(() => {
+                if (deferredPrompt) {
+                    showToast('📱 Instal aplikasi untuk pengalaman lebih baik', 'info');
+                }
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
