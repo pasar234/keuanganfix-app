@@ -3,16 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Aplikasi Keuangan Mobile</title>
+    <title>Keuangan Mobile</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" type="image/png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Keuangan">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
     <meta name="theme-color" content="#764ba2">
     <style>
-        /* Reset & Base Styles */
+        /* RESET & BASE */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -21,485 +16,227 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 15px;
-            color: #333;
+            padding: 10px;
+            color: #000; /* Teks lebih gelap agar kontras */
             touch-action: manipulation;
         }
 
         .app-container {
-            max-width: 500px;
-            margin: 0 auto;
+            max-width: 100%;
             background: white;
-            border-radius: 20px;
+            border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            min-height: 90vh;
-            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            min-height: 95vh;
         }
 
-        /* Header Styles */
+        /* HEADER */
         .app-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 25px 20px;
+            padding: 20px 15px;
             text-align: center;
-            position: relative;
         }
 
         .app-title {
-            font-size: 24px;
-            font-weight: 700;
+            font-size: 26px; /* Diperbesar */
+            font-weight: 800;
             margin-bottom: 5px;
         }
 
-        .app-subtitle {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-
-        /* Navigation Tabs */
+        /* NAVIGASI TABS */
         .nav-tabs {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 1px;
-            background: #f5f5f5;
+            background: #ccc;
             padding: 1px;
-            border-bottom: 2px solid #f5f5f5;
         }
 
         .nav-btn {
             background: white;
             border: none;
             padding: 15px 5px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #555;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-radius: 0;
-            margin: 0;
-            min-height: 60px;
+            font-size: 14px; /* Diperbesar */
+            font-weight: 700;
+            color: #444;
             display: flex;
-            align-items: center;
-            justify-content: center;
             flex-direction: column;
-            gap: 4px;
+            align-items: center;
+            gap: 5px;
         }
 
         .nav-btn.active {
-            background: white;
             color: #667eea;
-            border-bottom: 3px solid #667eea;
-            font-weight: 700;
+            background: #f0f4ff;
+            border-bottom: 4px solid #667eea;
         }
 
-        .nav-btn:active {
-            background: #f0f0f0;
-            transform: scale(0.98);
-        }
+        .nav-icon { font-size: 20px; }
 
-        .nav-icon {
-            font-size: 18px;
-            display: block;
-        }
+        /* SCREENS */
+        .screen { display: none; padding: 20px 15px; }
+        .screen.active { display: block; }
 
-        /* Screen Styles */
-        .screen {
-            display: none;
-            padding: 20px;
-            animation: fadeIn 0.3s ease;
-            min-height: 400px;
-        }
-
-        .screen.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Form Styles */
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #555;
-        }
-
+        /* FORM - FONT BESAR */
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 16px; font-weight: 700; margin-bottom: 8px; color: #222; }
         .form-input, .form-select, .form-textarea {
             width: 100%;
-            padding: 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-            background: #f8f9fa;
-            -webkit-appearance: none;
-            appearance: none;
+            padding: 16px; /* Lebih lebar */
+            border: 2px solid #999;
+            border-radius: 10px;
+            font-size: 18px; /* Diperbesar */
+            font-weight: 600;
+            background: #fff;
+            color: #000;
         }
 
-        .form-input:focus, .form-select:focus, .form-textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            background: white;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        /* Button Styles */
+        /* BUTTON */
         .btn {
             width: 100%;
             padding: 18px;
             border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            display: block;
-            touch-action: manipulation;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            font-size: 20px; /* Sangat besar */
+            font-weight: 800;
+            background: #667eea;
             color: white;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        .btn-primary:active {
-            transform: scale(0.98);
-            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-secondary {
-            background: #f0f0f0;
-            color: #555;
-        }
-
-        .btn-secondary:active {
-            transform: scale(0.98);
-        }
-
-        /* Summary Cards */
+        /* SUMMARY CARD */
         .summary-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #764ba2;
             color: white;
             padding: 20px;
-            border-radius: 15px;
+            border-radius: 12px;
             margin-bottom: 20px;
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        .summary-title {
-            font-size: 14px;
-            opacity: 0.9;
-            margin-bottom: 5px;
+            text-align: center;
         }
 
         .summary-amount {
-            font-size: 28px;
-            font-weight: 700;
+            font-size: 32px; /* Diperbesar drastis */
+            font-weight: 900;
+            margin-top: 5px;
         }
 
-        /* Table Styles */
-        .table-container {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+        /* DATA DISPLAY (LIST) */
+        .data-item {
+            border: 2px solid #eee;
             border-radius: 12px;
-            border: 2px solid #f0f0f0;
-            margin-top: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #fff;
         }
 
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 400px;
-        }
-
-        .data-table th {
-            background: #f8f9fa;
-            padding: 15px 10px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #555;
-            border-bottom: 2px solid #e0e0e0;
-            text-align: left;
-            position: sticky;
-            top: 0;
-        }
-
-        .data-table td {
-            padding: 12px 10px;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 14px;
-            vertical-align: top;
-        }
-
-        .data-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* Status Badges */
-        .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-top: 4px;
-        }
-
-        .status-paid {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-unpaid {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .status-overdue {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        /* Action Buttons */
-        .action-btn {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-block;
-            margin: 2px;
-            touch-action: manipulation;
-        }
-
-        .action-btn.pay {
-            background: #28a745;
-            color: white;
-        }
-
-        .action-btn.delete {
-            background: #dc3545;
-            color: white;
-        }
-
-        .action-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* Payment History */
-        .payment-history {
-            margin-top: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            font-size: 12px;
-        }
-
-        .payment-item {
+        .data-header {
             display: flex;
             justify-content: space-between;
-            padding: 5px 0;
-            border-bottom: 1px dashed #ddd;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
         }
 
-        .payment-item:last-child {
-            border-bottom: none;
-        }
+        .tgl-tempo { font-size: 14px; color: #555; line-height: 1.4; }
+        .tgl-tempo strong { font-size: 16px; color: #000; }
 
-        /* Backup Screen */
-        .backup-actions {
-            display: grid;
-            gap: 15px;
-            margin-top: 20px;
-        }
+        .ket-text { font-size: 20px; font-weight: 800; color: #000; margin-bottom: 5px; }
+        .amount-text { font-size: 24px; font-weight: 900; color: #2c3e50; }
+        .sisa-text { font-size: 18px; color: #e74c3c; font-weight: 700; }
 
-        .backup-textarea {
-            min-height: 150px;
-            font-family: monospace;
-            font-size: 14px;
-            resize: vertical;
-        }
-
-        /* Empty State */
-        .empty-state {
+        /* SEARCH BAR */
+        .search-container { margin-bottom: 15px; }
+        .search-input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 25px;
+            border: 2px solid #667eea;
+            font-size: 18px;
             text-align: center;
-            padding: 40px 20px;
-            color: #999;
         }
 
-        .empty-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-            opacity: 0.5;
+        /* ACTION BUTTONS */
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .action-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 800;
+            color: white;
+            text-transform: uppercase;
+        }
+        .btn-pay { background: #28a745; }
+        .btn-del { background: #dc3545; }
+
+        /* RIWAYAT - RAPI & JELAS */
+        .history-box {
+            background: #f1f3f5;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .history-item {
+            font-size: 14px;
+            padding: 5px 0;
+            border-bottom: 1px solid #dee2e6;
+            color: #333;
+            font-weight: 600;
         }
 
-        /* Toast Notification */
         .toast {
             position: fixed;
-            bottom: 20px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            background: #333;
-            color: white;
+            background: #222;
+            color: #fff;
             padding: 15px 25px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
             z-index: 1000;
-            animation: slideUp 0.3s ease;
-            max-width: 90%;
-            text-align: center;
-        }
-
-        @keyframes slideUp {
-            from { bottom: -100px; opacity: 0; }
-            to { bottom: 20px; opacity: 1; }
-        }
-
-        /* Responsive Adjustments */
-        @media (max-width: 480px) {
-            body {
-                padding: 10px;
-            }
-            
-            .app-container {
-                min-height: 95vh;
-                border-radius: 15px;
-            }
-            
-            .app-header {
-                padding: 20px 15px;
-            }
-            
-            .app-title {
-                font-size: 20px;
-            }
-            
-            .nav-btn {
-                padding: 12px 3px;
-                font-size: 11px;
-                min-height: 55px;
-            }
-            
-            .nav-icon {
-                font-size: 16px;
-            }
-            
-            .screen {
-                padding: 15px;
-            }
-            
-            .form-input, .form-select, .form-textarea {
-                padding: 14px;
-                font-size: 16px;
-            }
-            
-            .btn {
-                padding: 16px;
-            }
-        }
-
-        /* Loading Animation */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Scrollbar Styling */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- Header -->
         <div class="app-header">
             <div class="app-title">💰 Keuangan Mobile</div>
-            <div class="app-subtitle">Kelola hutang & piutang dengan mudah</div>
         </div>
 
-        <!-- Navigation -->
         <div class="nav-tabs">
-            <button class="nav-btn active" onclick="showScreen('transaksi')">
-                <span class="nav-icon">➕</span>
-                <span>Tambah</span>
+            <button class="nav-btn active" onclick="openScreen('transaksi', this)">
+                <span class="nav-icon">➕</span> Tambah
             </button>
-            <button class="nav-btn" onclick="showScreen('hutang')">
-                <span class="nav-icon">📉</span>
-                <span>Hutang</span>
+            <button class="nav-btn" onclick="openScreen('hutang', this)">
+                <span class="nav-icon">📉</span> Hutang
             </button>
-            <button class="nav-btn" onclick="showScreen('piutang')">
-                <span class="nav-icon">📈</span>
-                <span>Piutang</span>
+            <button class="nav-btn" onclick="openScreen('piutang', this)">
+                <span class="nav-icon">📈</span> Piutang
             </button>
-            <button class="nav-btn" onclick="showScreen('backup')">
-                <span class="nav-icon">💾</span>
-                <span>Backup</span>
+            <button class="nav-btn" onclick="openScreen('backup', this)">
+                <span class="nav-icon">💾</span> Backup
             </button>
         </div>
 
-        <!-- Add Transaction Screen -->
         <div id="transaksi" class="screen active">
-            <h2 style="margin-bottom: 20px; color: #333;">Tambah Transaksi</h2>
-            
             <form id="financeForm">
                 <div class="form-group">
                     <label class="form-label">Jenis Transaksi</label>
                     <select id="jenis" class="form-select">
-                        <option value="hutang">🏦 Saya Hutang (Pinjam)</option>
-                        <option value="piutang">👤 Saya Piutang (Dipinjam)</option>
+                        <option value="hutang">Hutang (Saya Pinjam)</option>
+                        <option value="piutang">Piutang (Saya Pinjamin)</option>
                     </select>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">Tanggal</label>
+                        <label class="form-label">Tgl Pinjam</label>
                         <input type="date" id="tanggal" class="form-input" required>
                     </div>
                     <div class="form-group">
@@ -507,649 +244,164 @@
                         <input type="date" id="jatuh_tempo" class="form-input">
                     </div>
                 </div>
-
                 <div class="form-group">
-                    <label class="form-label">Jumlah (Rp)</label>
-                    <input type="number" id="jumlah" class="form-input" placeholder="Masukkan jumlah" required min="1">
+                    <label class="form-label">Nominal Uang (Rp)</label>
+                    <input type="number" id="jumlah" class="form-input" placeholder="0" required>
                 </div>
-
                 <div class="form-group">
-                    <label class="form-label">Keterangan</label>
-                    <textarea id="keterangan" class="form-textarea" placeholder="Deskripsi transaksi..." rows="3"></textarea>
+                    <label class="form-label">Nama / Keterangan</label>
+                    <textarea id="keterangan" class="form-textarea" rows="2"></textarea>
                 </div>
-
-                <button type="submit" class="btn btn-primary">
-                    💾 Simpan Transaksi
-                </button>
+                <button type="submit" class="btn">SIMPAN SEKARANG</button>
             </form>
         </div>
 
-        <!-- Hutang Screen -->
         <div id="hutang" class="screen">
             <div class="summary-card">
-                <div class="summary-title">Total Hutang</div>
-                <div class="summary-amount">Rp <span id="totalHutang">0</span></div>
+                <p style="font-size: 18px; font-weight: bold;">TOTAL HUTANG</p>
+                <div class="summary-amount" id="totalHutang">Rp 0</div>
             </div>
-
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Tanggal</th>
-                            <th>Tempo</th>
-                            <th>Keterangan</th>
-                            <th>Jumlah</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="hutangTable">
-                        <tr>
-                            <td colspan="5" style="text-align:center; padding:40px; color:#999;">
-                                Belum ada data hutang
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Cari Nama..." onkeyup="filterList('listHutang', this.value)">
             </div>
+            <div id="listHutang"></div>
         </div>
 
-        <!-- Piutang Screen -->
         <div id="piutang" class="screen">
-            <div class="summary-card">
-                <div class="summary-title">Total Piutang</div>
-                <div class="summary-amount">Rp <span id="totalPiutang">0</span></div>
+            <div class="summary-card" style="background: #28a745;">
+                <p style="font-size: 18px; font-weight: bold;">TOTAL PIUTANG</p>
+                <div class="summary-amount" id="totalPiutang">Rp 0</div>
             </div>
-
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Tanggal</th>
-                            <th>Tempo</th>
-                            <th>Keterangan</th>
-                            <th>Jumlah</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="piutangTable">
-                        <tr>
-                            <td colspan="5" style="text-align:center; padding:40px; color:#999;">
-                                Belum ada data piutang
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Cari Nama..." onkeyup="filterList('listPiutang', this.value)">
             </div>
+            <div id="listPiutang"></div>
         </div>
 
-        <!-- Backup Screen -->
         <div id="backup" class="screen">
-            <h2 style="margin-bottom: 20px; color: #333;">Backup & Restore</h2>
-            
-            <p style="margin-bottom: 20px; color: #666; font-size: 14px;">
-                Backup data keuangan Anda untuk mengamankan semua transaksi.
-            </p>
-
-            <div class="backup-actions">
-                <button onclick="exportData()" class="btn btn-primary">
-                    📥 Download Backup
-                </button>
-                
-                <div class="form-group">
-                    <label class="form-label">Restore Data (Paste JSON)</label>
-                    <textarea id="importData" class="form-textarea backup-textarea" 
-                              placeholder='Tempel data JSON backup di sini...'></textarea>
-                </div>
-                
-                <button onclick="importData()" class="btn btn-secondary">
-                    🔄 Restore Data
-                </button>
-
-                <div style="margin-top: 20px;">
-                    <label class="form-label">Atau upload file JSON:</label>
-                    <input type="file" id="fileInput" accept=".json" class="form-input"
-                           onchange="restoreFromFile(event)">
-                </div>
-            </div>
+            <button onclick="exportData()" class="btn" style="background: #444; margin-bottom: 30px;">📥 DOWNLOAD BACKUP</button>
+            <label class="form-label">Restore Data (Upload File):</label>
+            <input type="file" accept=".json" class="form-input" onchange="importData(event)">
         </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="toast" style="display: none;"></div>
+    <div id="toast" class="toast"></div>
 
     <script>
-        // Inisialisasi
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set tanggal default
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('tanggal').value = today;
-            
-            // Load data
-            loadData();
-            
-            // Event listeners
-            setupEventListeners();
-            
-            // Test tab functionality
-            console.log("Aplikasi siap digunakan!");
-        });
+        // Tanggal otomatis hari ini
+        document.getElementById('tanggal').value = new Date().toISOString().split('T')[0];
 
-        // Setup event listeners
-        function setupEventListeners() {
-            // Form submission
-            document.getElementById('financeForm').addEventListener('submit', handleFormSubmit);
-            
-            // Auto-save form draft
-            const formInputs = document.querySelectorAll('#financeForm input, #financeForm textarea, #financeForm select');
-            formInputs.forEach(input => {
-                input.addEventListener('input', saveFormDraft);
-            });
-            
-            // Load form draft
-            loadFormDraft();
+        function openScreen(id, btn) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            btn.classList.add('active');
+            if(id === 'hutang' || id === 'piutang') renderData();
         }
 
-        // Navigasi antar screen
-        function showScreen(screenId) {
-            console.log("Menampilkan screen:", screenId);
-            
-            // Update active nav button
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            const activeBtn = document.querySelector(`button[onclick*="${screenId}"]`);
-            if (activeBtn) {
-                activeBtn.classList.add('active');
-            }
-            
-            // Update active screen
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
-            
-            const targetScreen = document.getElementById(screenId);
-            if (targetScreen) {
-                targetScreen.classList.add('active');
-            }
-            
-            // Load data jika screen data
-            if (screenId === 'hutang' || screenId === 'piutang') {
-                setTimeout(() => {
-                    loadData();
-                }, 100);
-            }
-        }
-
-        // Format tanggal
-        function formatDate(dateString) {
-            if (!dateString || dateString === '-') return '-';
-            try {
-                const date = new Date(dateString);
-                return date.toLocaleDateString('id-ID', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric'
-                });
-            } catch (e) {
-                return dateString;
-            }
-        }
-
-        // Format currency
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('id-ID').format(amount);
-        }
-
-        // Show toast notification
-        function showToast(message, type = 'info') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.style.display = 'block';
-            toast.style.background = type === 'success' ? '#28a745' : 
-                                   type === 'error' ? '#dc3545' : '#333';
-            
-            setTimeout(() => {
-                toast.style.display = 'none';
-            }, 3000);
-        }
-
-        // Save form draft
-        function saveFormDraft() {
-            const formData = {
-                jenis: document.getElementById('jenis').value,
-                tanggal: document.getElementById('tanggal').value,
-                jatuh_tempo: document.getElementById('jatuh_tempo').value,
-                jumlah: document.getElementById('jumlah').value,
-                keterangan: document.getElementById('keterangan').value
-            };
-            localStorage.setItem('form_draft', JSON.stringify(formData));
-        }
-
-        // Load form draft
-        function loadFormDraft() {
-            try {
-                const draft = localStorage.getItem('form_draft');
-                if (draft) {
-                    const formData = JSON.parse(draft);
-                    document.getElementById('jenis').value = formData.jenis || 'hutang';
-                    document.getElementById('tanggal').value = formData.tanggal || new Date().toISOString().split('T')[0];
-                    document.getElementById('jatuh_tempo').value = formData.jatuh_tempo || '';
-                    document.getElementById('jumlah').value = formData.jumlah || '';
-                    document.getElementById('keterangan').value = formData.keterangan || '';
-                }
-            } catch (e) {
-                localStorage.removeItem('form_draft');
-            }
-        }
-
-        // Handle form submission
-        function handleFormSubmit(e) {
+        document.getElementById('financeForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            const transaction = {
+            const data = {
                 id: Date.now(),
                 jenis: document.getElementById('jenis').value,
-                tanggal: document.getElementById('tanggal').value,
-                jatuh_tempo: document.getElementById('jatuh_tempo').value || '-',
+                tgl: document.getElementById('tanggal').value,
+                tempo: document.getElementById('jatuh_tempo').value || '-',
                 jumlah: parseFloat(document.getElementById('jumlah').value),
                 bayar: 0,
-                riwayat_bayar: [],
-                keterangan: document.getElementById('keterangan').value || '-',
-                created_at: new Date().toISOString()
+                riwayat: [],
+                ket: document.getElementById('keterangan').value || '-'
             };
-            
-            // Validasi
-            if (!transaction.jumlah || transaction.jumlah <= 0) {
-                showToast('Jumlah harus lebih dari 0', 'error');
-                return;
-            }
-            
-            if (!transaction.tanggal) {
-                showToast('Tanggal harus diisi', 'error');
-                return;
-            }
-            
-            // Simpan ke localStorage
-            let transactions = JSON.parse(localStorage.getItem('keuangan_data')) || [];
-            transactions.push(transaction);
-            localStorage.setItem('keuangan_data', JSON.stringify(transactions));
-            
-            // Reset form dan hapus draft
-            e.target.reset();
+            const db = JSON.parse(localStorage.getItem('keuangan_pro')) || [];
+            db.push(data);
+            localStorage.setItem('keuangan_pro', JSON.stringify(db));
+            this.reset();
             document.getElementById('tanggal').value = new Date().toISOString().split('T')[0];
-            localStorage.removeItem('form_draft');
-            
-            // Tampilkan notifikasi dan navigasi
-            showToast('✅ Transaksi berhasil disimpan!', 'success');
-            
-            // Navigasi ke screen yang sesuai
-            const targetScreen = transaction.jenis === 'hutang' ? 'hutang' : 'piutang';
-            setTimeout(() => {
-                showScreen(targetScreen);
-            }, 500);
-        }
+            showToast("✅ Berhasil Disimpan");
+            openScreen(data.jenis, document.querySelector(`.nav-btn[onclick*="${data.jenis}"]`));
+        });
 
-        // Load dan tampilkan data
-        function loadData() {
-            try {
-                const transactions = JSON.parse(localStorage.getItem('keuangan_data')) || [];
-                const now = new Date();
+        function renderData() {
+            const db = JSON.parse(localStorage.getItem('keuangan_pro')) || [];
+            const listH = document.getElementById('listHutang');
+            const listP = document.getElementById('listPiutang');
+            listH.innerHTML = ''; listP.innerHTML = '';
+            let sumH = 0, sumP = 0;
+
+            db.sort((a,b) => b.id - a.id).forEach(item => {
+                const sisa = item.jumlah - item.bayar;
+                const isOver = item.tempo !== '-' && new Date(item.tempo) < new Date().setHours(0,0,0,0) && sisa > 0;
                 
-                // Filter dan hitung totals
-                const hutangData = transactions.filter(t => t.jenis === 'hutang');
-                const piutangData = transactions.filter(t => t.jenis === 'piutang');
-                
-                let totalHutang = 0;
-                let totalPiutang = 0;
-                
-                // Render hutang table
-                const hutangTable = document.getElementById('hutangTable');
-                if (hutangData.length === 0) {
-                    hutangTable.innerHTML = `
-                        <tr>
-                            <td colspan="5" style="text-align:center; padding:40px; color:#999;">
-                                Belum ada data hutang
-                            </td>
-                        </tr>`;
-                } else {
-                    hutangTable.innerHTML = '';
+                const html = `
+                <div class="data-item">
+                    <div class="data-header">
+                        <div class="tgl-tempo">PINJAM: <strong>${fmtTgl(item.tgl)}</strong></div>
+                        <div class="tgl-tempo">TEMPO: <strong style="color:${isOver ? 'red' : 'black'}">${fmtTgl(item.tempo)}</strong></div>
+                    </div>
+                    <div class="ket-text">${item.ket}</div>
+                    <div class="amount-text">${fmtRp(item.jumlah)}</div>
+                    <div class="sisa-text">SISA: ${fmtRp(sisa)}</div>
                     
-                    hutangData.forEach(transaction => {
-                        const sisa = transaction.jumlah - (transaction.bayar || 0);
-                        totalHutang += sisa;
-                        
-                        const isOverdue = transaction.jatuh_tempo !== '-' && 
-                                         new Date(transaction.jatuh_tempo) < now && 
-                                         sisa > 0;
-                        
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${formatDate(transaction.tanggal)}</td>
-                            <td>
-                                ${formatDate(transaction.jatuh_tempo)}
-                                ${isOverdue ? '<span class="status-badge status-overdue">Telat</span>' : ''}
-                            </td>
-                            <td>
-                                <strong>${transaction.keterangan}</strong>
-                                ${transaction.riwayat_bayar && transaction.riwayat_bayar.length > 0 ? 
-                                    `<div class="payment-history">
-                                        ${transaction.riwayat_bayar.map(p => 
-                                            `<div class="payment-item">
-                                                <span>${p.metode || 'Pembayaran'}</span>
-                                                <span>Rp ${formatCurrency(p.nominal || 0)}</span>
-                                            </div>`
-                                        ).join('')}
-                                    </div>` : ''
-                                }
-                            </td>
-                            <td>
-                                <div>Rp ${formatCurrency(transaction.jumlah)}</div>
-                                <div style="font-size:12px; color:#666; margin-top:4px;">
-                                    Sisa: Rp ${formatCurrency(sisa)}
-                                </div>
-                            </td>
-                            <td>
-                                ${sisa > 0 ? 
-                                    `<button class="action-btn pay" onclick="addPayment(${transaction.id})">Bayar</button>` : 
-                                    '<span class="status-badge status-paid">Lunas</span>'
-                                }
-                                <button class="action-btn delete" onclick="deleteTransaction(${transaction.id})" style="margin-top:5px;">Hapus</button>
-                            </td>
-                        `;
-                        hutangTable.appendChild(row);
-                    });
-                }
-                
-                // Render piutang table
-                const piutangTable = document.getElementById('piutangTable');
-                if (piutangData.length === 0) {
-                    piutangTable.innerHTML = `
-                        <tr>
-                            <td colspan="5" style="text-align:center; padding:40px; color:#999;">
-                                Belum ada data piutang
-                            </td>
-                        </tr>`;
-                } else {
-                    piutangTable.innerHTML = '';
-                    
-                    piutangData.forEach(transaction => {
-                        const sisa = transaction.jumlah - (transaction.bayar || 0);
-                        totalPiutang += sisa;
-                        
-                        const isOverdue = transaction.jatuh_tempo !== '-' && 
-                                         new Date(transaction.jatuh_tempo) < now && 
-                                         sisa > 0;
-                        
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${formatDate(transaction.tanggal)}</td>
-                            <td>
-                                ${formatDate(transaction.jatuh_tempo)}
-                                ${isOverdue ? '<span class="status-badge status-overdue">Telat</span>' : ''}
-                            </td>
-                            <td>
-                                <strong>${transaction.keterangan}</strong>
-                                ${transaction.riwayat_bayar && transaction.riwayat_bayar.length > 0 ? 
-                                    `<div class="payment-history">
-                                        ${transaction.riwayat_bayar.map(p => 
-                                            `<div class="payment-item">
-                                                <span>${p.metode || 'Pembayaran'}</span>
-                                                <span>Rp ${formatCurrency(p.nominal || 0)}</span>
-                                            </div>`
-                                        ).join('')}
-                                    </div>` : ''
-                                }
-                            </td>
-                            <td>
-                                <div>Rp ${formatCurrency(transaction.jumlah)}</div>
-                                <div style="font-size:12px; color:#666; margin-top:4px;">
-                                    Sisa: Rp ${formatCurrency(sisa)}
-                                </div>
-                            </td>
-                            <td>
-                                ${sisa > 0 ? 
-                                    `<button class="action-btn pay" onclick="addPayment(${transaction.id})">Terima</button>` : 
-                                    '<span class="status-badge status-paid">Lunas</span>'
-                                }
-                                <button class="action-btn delete" onclick="deleteTransaction(${transaction.id})" style="margin-top:5px;">Hapus</button>
-                            </td>
-                        `;
-                        piutangTable.appendChild(row);
-                    });
-                }
-                
-                // Update totals
-                document.getElementById('totalHutang').textContent = formatCurrency(totalHutang);
-                document.getElementById('totalPiutang').textContent = formatCurrency(totalPiutang);
-                
-            } catch (error) {
-                console.error('Error loading data:', error);
-                showToast('Error memuat data', 'error');
-            }
+                    ${item.riwayat.length > 0 ? `
+                        <div class="history-box">
+                            ${item.riwayat.map(r => `<div class="history-item">📅 ${fmtTgl(r.tgl)}: ${fmtRp(r.nom)} (${r.met})</div>`).join('')}
+                        </div>
+                    ` : ''}
+
+                    <div class="btn-group">
+                        ${sisa > 0 ? `<button class="action-btn btn-pay" onclick="payItem(${item.id})">BAYAR</button>` : `<div style="color:green; font-weight:900; padding:10px; text-align:center;">LUNAS</div>`}
+                        <button class="action-btn btn-del" onclick="delItem(${item.id})">HAPUS</button>
+                    </div>
+                </div>`;
+
+                if(item.jenis === 'hutang') { listH.innerHTML += html; sumH += sisa; }
+                else { listP.innerHTML += html; sumP += sisa; }
+            });
+
+            document.getElementById('totalHutang').textContent = fmtRp(sumH);
+            document.getElementById('totalPiutang').textContent = fmtRp(sumP);
         }
 
-        // Tambah pembayaran
-        function addPayment(transactionId) {
-            try {
-                const transactions = JSON.parse(localStorage.getItem('keuangan_data')) || [];
-                const transactionIndex = transactions.findIndex(t => t.id === transactionId);
-                
-                if (transactionIndex === -1) {
-                    showToast('Transaksi tidak ditemukan', 'error');
-                    return;
-                }
-                
-                const transaction = transactions[transactionIndex];
-                const sisa = transaction.jumlah - (transaction.bayar || 0);
-                
-                if (sisa <= 0) {
-                    showToast('Transaksi sudah lunas', 'info');
-                    return;
-                }
-                
-                // Input nominal
-                const nominalInput = prompt(`Masukkan jumlah pembayaran (Sisa: Rp ${formatCurrency(sisa)}):`, sisa);
-                if (!nominalInput) return;
-                
-                const nominal = parseFloat(nominalInput);
-                if (isNaN(nominal) || nominal <= 0) {
-                    showToast('Nominal tidak valid', 'error');
-                    return;
-                }
-                
-                if (nominal > sisa) {
-                    showToast('Nominal melebihi sisa hutang/piutang', 'error');
-                    return;
-                }
-                
-                // Input metode
-                const metode = prompt('Metode pembayaran (Tunai/Transfer/etc):', 'Tunai') || 'Tunai';
-                
-                // Inisialisasi riwayat jika belum ada
-                if (!Array.isArray(transaction.riwayat_bayar)) {
-                    transaction.riwayat_bayar = [];
-                }
-                
-                // Tambah ke riwayat
-                transaction.riwayat_bayar.push({
-                    tanggal: new Date().toISOString().split('T')[0],
-                    nominal: nominal,
-                    metode: metode
-                });
-                
-                // Update total bayar
-                transaction.bayar = (transaction.bayar || 0) + nominal;
-                
-                // Update di array
-                transactions[transactionIndex] = transaction;
-                
-                // Simpan
-                localStorage.setItem('keuangan_data', JSON.stringify(transactions));
-                
-                showToast('✅ Pembayaran berhasil dicatat!', 'success');
-                
-                // Reload data setelah delay kecil
-                setTimeout(() => {
-                    loadData();
-                }, 300);
-                
-            } catch (error) {
-                console.error('Error adding payment:', error);
-                showToast('Error mencatat pembayaran', 'error');
-            }
-        }
-
-        // Hapus transaksi
-        function deleteTransaction(transactionId) {
-            if (!confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) return;
-            
-            try {
-                let transactions = JSON.parse(localStorage.getItem('keuangan_data')) || [];
-                const initialLength = transactions.length;
-                transactions = transactions.filter(t => t.id !== transactionId);
-                
-                if (transactions.length < initialLength) {
-                    localStorage.setItem('keuangan_data', JSON.stringify(transactions));
-                    showToast('✅ Transaksi berhasil dihapus', 'success');
-                    setTimeout(() => {
-                        loadData();
-                    }, 300);
-                } else {
-                    showToast('Transaksi tidak ditemukan', 'error');
-                }
-            } catch (error) {
-                console.error('Error deleting transaction:', error);
-                showToast('Error menghapus transaksi', 'error');
-            }
-        }
-
-        // Export data
-        function exportData() {
-            try {
-                const data = localStorage.getItem('keuangan_data') || '[]';
-                const blob = new Blob([data], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `backup-keuangan-${new Date().toISOString().split('T')[0]}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                showToast('✅ Backup berhasil diunduh!', 'success');
-            } catch (error) {
-                console.error('Error exporting data:', error);
-                showToast('Error mengunduh backup', 'error');
-            }
-        }
-
-        // Import data dari textarea
-        function importData() {
-            try {
-                const importText = document.getElementById('importData').value.trim();
-                
-                if (!importText) {
-                    showToast('Masukkan data JSON yang valid', 'error');
-                    return;
-                }
-                
-                const importedData = JSON.parse(importText);
-                
-                // Validasi data
-                if (!Array.isArray(importedData)) {
-                    throw new Error('Format data tidak valid. Harus array.');
-                }
-                
-                // Simpan data
-                localStorage.setItem('keuangan_data', JSON.stringify(importedData));
-                
-                // Reset input
-                document.getElementById('importData').value = '';
-                
-                showToast('✅ Data berhasil dipulihkan!', 'success');
-                
-                // Reload page setelah delay
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
-                
-            } catch (error) {
-                console.error('Error importing data:', error);
-                showToast('Format data tidak valid: ' + error.message, 'error');
-            }
-        }
-
-        // Restore dari file
-        function restoreFromFile(event) {
-            try {
-                const file = event.target.files[0];
-                if (!file) return;
-                
-                if (!file.name.endsWith('.json')) {
-                    showToast('File harus berformat .json', 'error');
-                    return;
-                }
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const data = JSON.parse(e.target.result);
-                        
-                        if (!Array.isArray(data)) {
-                            throw new Error('Format data tidak valid. Harus array.');
-                        }
-                        
-                        localStorage.setItem('keuangan_data', JSON.stringify(data));
-                        showToast('✅ Data berhasil dipulihkan dari file!', 'success');
-                        
-                        setTimeout(() => {
-                            location.reload();
-                        }, 1000);
-                        
-                    } catch (error) {
-                        console.error('Error parsing file:', error);
-                        showToast('Format file tidak valid: ' + error.message, 'error');
-                    }
-                };
-                reader.readAsText(file);
-                
-                // Reset file input
-                event.target.value = '';
-                
-            } catch (error) {
-                console.error('Error reading file:', error);
-                showToast('Error membaca file', 'error');
-            }
-        }
-
-        // Register Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(registration => {
-                        console.log('Service Worker terdaftar:', registration.scope);
-                    })
-                    .catch(error => {
-                        console.log('Service Worker gagal:', error);
-                    });
+        function filterList(target, val) {
+            const items = document.getElementById(target).getElementsByClassName('data-item');
+            const q = val.toLowerCase();
+            Array.from(items).forEach(it => {
+                const txt = it.querySelector('.ket-text').textContent.toLowerCase();
+                it.style.display = txt.includes(q) ? 'block' : 'none';
             });
         }
 
-        // Install PWA prompt
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            
-            // Show install button after 5 seconds
-            setTimeout(() => {
-                if (deferredPrompt) {
-                    showToast('📱 Instal aplikasi untuk pengalaman lebih baik', 'info');
-                }
-            }, 5000);
-        });
+        function payItem(id) {
+            const db = JSON.parse(localStorage.getItem('keuangan_pro'));
+            const idx = db.findIndex(i => i.id === id);
+            const sisa = db[idx].jumlah - db[idx].bayar;
+            const nom = prompt("Masukkan jumlah bayar:", sisa);
+            if(!nom || nom <= 0) return;
+            const met = prompt("Metode (Tunai/Transfer):", "Tunai");
+            db[idx].bayar += parseFloat(nom);
+            db[idx].riwayat.push({ tgl: new Date().toISOString().split('T')[0], nom: parseFloat(nom), met: met });
+            localStorage.setItem('keuangan_pro', JSON.stringify(db));
+            renderData();
+        }
+
+        function delItem(id) { if(confirm("Hapus data ini?")) { let db = JSON.parse(localStorage.getItem('keuangan_pro')); db = db.filter(i => i.id !== id); localStorage.setItem('keuangan_pro', JSON.stringify(db)); renderData(); } }
+        function fmtRp(v) { return "Rp " + new Intl.NumberFormat('id-ID').format(v); }
+        function fmtTgl(s) { if(s === '-') return '-'; const d = s.split('-'); return `${d[2]}/${d[1]}/${d[0]}`; }
+        function showToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.style.display = 'block'; setTimeout(()=>t.style.display='none', 2500); }
+        
+        function exportData() {
+            const data = localStorage.getItem('keuangan_pro') || '[]';
+            const blob = new Blob([data], {type: 'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `keuangan_backup_${Date.now()}.json`;
+            a.click();
+        }
+
+        function importData(e) {
+            const fr = new FileReader();
+            fr.onload = (ev) => { localStorage.setItem('keuangan_pro', ev.target.result); alert("Restore Berhasil!"); location.reload(); };
+            fr.readAsText(e.target.files[0]);
+        }
     </script>
 </body>
 </html>
