@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Keuangan Mobile</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#764ba2">
+    <style>
+        /* FONT BESAR & KONTRAS TINGGI */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; padding: 10px; color: #000; touch-action: manipulation;
+        }
+        .app-container {
+            max-width: 100%; background: white; border-radius: 15px; overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); min-height: 95vh;
+        }
+        .app-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 15px; text-align: center; }
+        .app-title { font-size: 26px; font-weight: 800; }
+        
+        .nav-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #ccc; }
+        .nav-btn { background: white; border: none; padding: 15px 5px; font-size: 14px; font-weight: 700; color: #444; display: flex; flex-direction: column; align-items: center; }
+        .nav-btn.active { color: #667eea; background: #f0f4ff; border-bottom: 4px solid #667eea; }
+        
+        .screen { display: none; padding: 20px 15px; }
+        .screen.active { display: block; }
+
+        /* FITUR PENCARIAN - BESAR & JELAS */
+        .search-container { margin-bottom: 20px; }
+        .search-input {
+            width: 100%; padding: 15px; border: 3px solid #667eea; border-radius: 30px;
+            font-size: 18px; font-weight: 700; text-align: center; color: #000;
+            background: #fdfdfd;
+        }
+
+        /* FORM */
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+        .form-input, .form-select, .form-textarea {
+            width: 100%; padding: 16px; border: 2px solid #999; border-radius: 10px; font-size: 18px; font-weight: 600; color: #000;
+        }
+        .btn { width: 100%; padding: 18px; border: none; border-radius: 10px; font-size: 20px; font-weight: 800; background: #667eea; color: white; }
+
+        /* ITEM LIST */
+        .summary-card { background: #764ba2; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; }
+        .summary-amount { font-size: 32px; font-weight: 900; }
+        .data-item { border: 2px solid #ddd; border-radius: 12px; padding: 15px; margin-bottom: 15px; background: #fff; }
+        
+        .ket-text { font-size: 24px; font-weight: 800; color: #000; margin-bottom: 5px; }
+        .amount-text { font-size: 26px; font-weight: 900; color: #2c3e50; }
+        .sisa-text { font-size: 20px; color: #e74c3c; font-weight: 800; background: #fff0f0; padding: 5px; display: inline-block; border-radius: 5px; }
+        .tempo-text { font-size: 15px; color: #d63031; margin-top: 8px; font-weight: bold; border-top: 1px dashed #ccc; padding-top: 5px; }
+        
+        /* RIWAYAT */
+        .history-box { background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 15px; border-left: 5px solid #28a745; }
+        .history-item { font-size: 15px; padding: 8px 0; border-bottom: 1px solid #eee; font-weight: 600; color: #333; }
+
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .action-btn { padding: 12px; border: none; border-radius: 8px; font-size: 16px; font-weight: 800; color: white; }
+        .btn-pay { background: #28a745; }
+        .btn-del { background: #dc3545; }
+
+        /* MODAL */
+        #paymentModal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85);
+            display: none; align-items: center; justify-content: center; z-index: 2000;
+        }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 95%; max-width: 450px; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="app-header"><div class="app-title">💰 Keuangan Mobile</div></div>
+
+        <div class="nav-tabs">
+            <button class="nav-btn active" onclick="openScreen('transaksi', this)">➕ Tambah</button>
+            <button class="nav-btn" onclick="openScreen('hutang', this)">📉 Hutang</button>
+            <button class="nav-btn" onclick="openScreen('piutang', this)">📈 Piutang</button>
+            <button class="nav-btn" onclick="openScreen('backup', this)">💾 Backup</button>
+        </div>
+
+        <div id="transaksi" class="screen active">
+            <form id="financeForm">
+                <div class="form-group">
+                    <label class="form-label">Jenis</label>
+                    <select id="jenis" class="form-select">
+                        <option value="hutang">Hutang</option>
+                        <option value="piutang">Piutang</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tgl Pinjam</label>
+                    <input type="date" id="tanggal" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Jatuh Tempo</label>
+                    <input type="date" id="jatuh_tempo" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nominal (Rp)</label>
+                    <input type="number" id="jumlah" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nama / Keterangan</label>
+                    <textarea id="keterangan" class="form-textarea" rows="2"></textarea>
+                </div>
+                <button type="submit" class="btn">SIMPAN DATA</button>
+            </form>
+        </div>
+
+        <div id="hutang" class="screen">
+            <div class="summary-card"><p>TOTAL HUTANG</p><div class="summary-amount" id="totalHutang">Rp 0</div></div>
+            
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="🔍 Cari Nama..." onkeyup="filterList('listHutang', this.value)">
+            </div>
+            
+            <div id="listHutang"></div>
+        </div>
+
+        <div id="piutang" class="screen">
+            <div class="summary-card" style="background: #28a745;"><p>TOTAL PIUTANG</p><div class="summary-amount" id="totalPiutang">Rp 0</div></div>
+            
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="🔍 Cari Nama..." onkeyup="filterList('listPiutang', this.value)">
+            </div>
+            
+            <div id="listPiutang"></div>
+        </div>
+
+        <div id="backup" class="screen">
+            <button onclick="exportData()" class="btn" style="background: #444; margin-bottom: 20px;">📥 BACKUP DATA</button>
+            <input type="file" accept=".json" class="form-input" onchange="importData(event)">
+        </div>
+    </div>
+
+    <div id="paymentModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 20px; text-align: center;">Input Bayar</h2>
+            <div class="form-group">
+                <label class="form-label">Tanggal Bayar</label>
+                <input type="date" id="payDate" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Nominal Bayar (Rp)</label>
+                <input type="number" id="payAmount" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Keterangan (Tunai/Transfer)</label>
+                <input type="text" id="payNote" class="form-input" placeholder="...">
+            </div>
+            <button class="btn" onclick="confirmPayment()" style="margin-bottom:10px">SIMPAN</button>
+            <button class="btn" onclick="closeModal()" style="background:#dc3545">BATAL</button>
+        </div>
+    </div>
+
+    <script>
+        let currentPayId = null;
+        const DB_NAME = 'keuangan_db_v3';
+
+        document.getElementById('tanggal').value = new Date().toISOString().split('T')[0];
+
+        function openScreen(id, btn) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            btn.classList.add('active');
+            if(id === 'hutang' || id === 'piutang') renderData();
+        }
+
+        document.getElementById('financeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = {
+                id: Date.now(),
+                jenis: document.getElementById('jenis').value,
+                tgl: document.getElementById('tanggal').value,
+                tempo: document.getElementById('jatuh_tempo').value || '-',
+                jumlah: parseFloat(document.getElementById('jumlah').value),
+                bayar: 0,
+                riwayat: [],
+                ket: document.getElementById('keterangan').value || '-'
+            };
+            const db = JSON.parse(localStorage.getItem(DB_NAME)) || [];
+            db.push(data);
+            localStorage.setItem(DB_NAME, JSON.stringify(db));
+            this.reset();
+            document.getElementById('tanggal').value = new Date().toISOString().split('T')[0];
+            alert("✅ Tersimpan!");
+            renderData();
+            openScreen(data.jenis, document.querySelector(`.nav-btn[onclick*="${data.jenis}"]`));
+        });
+
+        function renderData() {
+            const db = JSON.parse(localStorage.getItem(DB_NAME)) || [];
+            const listH = document.getElementById('listHutang');
+            const listP = document.getElementById('listPiutang');
+            listH.innerHTML = ''; listP.innerHTML = '';
+            let sumH = 0, sumP = 0;
+
+            db.sort((a,b) => b.id - a.id).forEach(item => {
+                const sisa = item.jumlah - item.bayar;
+                const html = `
+                <div class="data-item">
+                    <div style="font-size:15px; color:#555; font-weight:bold;">📅 ${fmtTgl(item.tgl)}</div>
+                    <div class="ket-text">${item.ket}</div>
+                    <div class="amount-text">${fmtRp(item.jumlah)}</div>
+                    <div class="sisa-text">SISA: ${fmtRp(sisa)}</div>
+                    <div class="tempo-text">⏳ Tempo: ${fmtTgl(item.tempo)}</div>
+                    
+                    ${item.riwayat.length > 0 ? `
+                        <div class="history-box">
+                            ${item.riwayat.map(r => `
+                                <div class="history-item">
+                                    ✅ ${fmtTgl(r.tgl)} | <b>${fmtRp(r.nom)}</b> (${r.note || 'Tunai'})
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+
+                    <div class="btn-group">
+                        ${sisa > 0 ? `<button class="action-btn btn-pay" onclick="openPayModal(${item.id})">BAYAR</button>` : `<div style="color:green; font-weight:900; padding:10px; text-align:center;">LUNAS</div>`}
+                        <button class="action-btn btn-del" onclick="delItem(${item.id})">HAPUS</button>
+                    </div>
+                </div>`;
+                
+                if(item.jenis === 'hutang') { listH.innerHTML += html; sumH += sisa; }
+                else { listP.innerHTML += html; sumP += sisa; }
+            });
+            document.getElementById('totalHutang').textContent = fmtRp(sumH);
+            document.getElementById('totalPiutang').textContent = fmtRp(sumP);
+        }
+
+        // FUNGSI PENCARIAN
+        function filterList(listId, query) {
+            const items = document.getElementById(listId).getElementsByClassName('data-item');
+            const q = query.toLowerCase();
+            Array.from(items).forEach(it => {
+                const text = it.querySelector('.ket-text').innerText.toLowerCase();
+                it.style.display = text.includes(q) ? 'block' : 'none';
+            });
+        }
+
+        function openPayModal(id) {
+            currentPayId = id;
+            const db = JSON.parse(localStorage.getItem(DB_NAME));
+            const item = db.find(i => i.id === id);
+            document.getElementById('payAmount').value = item.jumlah - item.bayar;
+            document.getElementById('payDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('payNote').value = "";
+            document.getElementById('paymentModal').style.display = 'flex';
+        }
+
+        function closeModal() { document.getElementById('paymentModal').style.display = 'none'; }
+
+        function confirmPayment() {
+            const nom = parseFloat(document.getElementById('payAmount').value);
+            const tgl = document.getElementById('payDate').value;
+            const note = document.getElementById('payNote').value || 'Tunai';
+            if(!nom || nom <= 0) return;
+            const db = JSON.parse(localStorage.getItem(DB_NAME));
+            const idx = db.findIndex(i => i.id === currentPayId);
+            db[idx].bayar += nom;
+            db[idx].riwayat.push({ tgl, nom, note });
+            localStorage.setItem(DB_NAME, JSON.stringify(db));
+            closeModal();
+            renderData();
+        }
+
+        function delItem(id) { 
+            if(confirm("Hapus catatan ini?")) { 
+                let db = JSON.parse(localStorage.getItem(DB_NAME)); 
+                db = db.filter(i => i.id !== id); 
+                localStorage.setItem(DB_NAME, JSON.stringify(db)); 
+                renderData(); 
+            } 
+        }
+
+        function fmtRp(v) { return "Rp " + new Intl.NumberFormat('id-ID').format(v); }
+        function fmtTgl(s) { if(!s || s === '-') return '-'; const d = s.split('-'); return `${d[2]}/${d[1]}/${d[0]}`; }
+        
+        function exportData() {
+            const blob = new Blob([localStorage.getItem(DB_NAME)], {type: 'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `keuangan_backup.json`;
+            a.click();
+        }
+
+        function importData(e) {
+            const fr = new FileReader();
+            fr.onload = (ev) => { localStorage.setItem(DB_NAME, ev.target.result); location.reload(); };
+            fr.readAsText(e.target.files[0]);
+        }
+    </script>
+</body>
+</html>
