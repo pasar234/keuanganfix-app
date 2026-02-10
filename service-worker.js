@@ -1,5 +1,5 @@
 // Service Worker untuk Keuangan Mobile
-const CACHE_NAME = 'keuangan-mobile-v2.0';
+const CACHE_NAME = 'keuangan-mobile-v2.1';
 const urlsToCache = [
   '/',
   '/index.html',
