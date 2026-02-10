@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Keuangan Mobile Pro</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#764ba2">
+    <style>
+        /* RESET & NATIVE FEEL */
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            -webkit-tap-highlight-color: transparent; 
+            user-select: none; /* Mencegah seleksi teks seperti app asli */
+            -webkit-user-select: none;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            color: #333;
+            touch-action: manipulation;
+        }
+
+        /* CONTAINER */
+        .app-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        /* HEADER */
+        .app-header { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            padding: 25px 15px; 
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .app-title { font-size: 22px; font-weight: 800; letter-spacing: 1px; }
+        
+        /* NAVIGATION */
+        .nav-tabs { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            background: #fff; 
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 72px;
+            z-index: 999;
+        }
+        .nav-btn { 
+            background: none; 
+            border: none; 
+            padding: 15px 5px; 
+            font-size: 12px; 
+            font-weight: 700; 
+            color: #888; 
+            transition: 0.3s;
+        }
+        .nav-btn.active { 
+            color: #764ba2; 
+            border-bottom: 3px solid #764ba2; 
+        }
+
+        /* SCREENS */
+        .screen { display: none; padding: 20px 15px; flex-grow: 1; }
+        .screen.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+
+        /* INPUTS */
+        .form-group { margin-bottom: 15px; }
+        .form-label { display: block; font-size: 14px; font-weight: 700; margin-bottom: 5px; color: #555; }
+        .form-input, .form-select, .form-textarea {
+            width: 100%; padding: 14px; border: 1.5px solid #ddd; border-radius: 12px; 
+            font-size: 16px; font-weight: 600; color: #000; background: #fafafa;
+        }
+        .form-input:focus { border-color: #764ba2; outline: none; background: #fff; }
+
+        /* BUTTONS */
+        .btn { 
+            width: 100%; padding: 16px; border: none; border-radius: 12px; 
+            font-size: 18px; font-weight: 800; background: #764ba2; color: white; 
+            transition: transform 0.1s; cursor: pointer;
+        }
+        .btn:active { transform: scale(0.96); opacity: 0.9; }
+
+        /* CARDS */
+        .summary-card { 
+            background: linear-gradient(135deg, #764ba2, #667eea); 
+            color: white; padding: 25px; border-radius: 15px; 
+            margin-bottom: 20px; text-align: center; box-shadow: 0 5px 15px rgba(118,75,162,0.3);
+        }
+        .summary-amount { font-size: 28px; font-weight: 900; margin-top: 5px; }
+
+        .data-item { 
+            border: 1px solid #eee; border-radius: 15px; padding: 18px; 
+            margin-bottom: 15px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .ket-text { font-size: 18px; font-weight: 800; color: #333; }
+        .amount-text { font-size: 20px; font-weight: 900; color: #764ba2; margin: 5px 0; }
+        .sisa-text { font-size: 14px; color: #e74c3c; font-weight: 700; background: #fff0f0; padding: 4px 10px; border-radius: 20px; }
+
+        /* TOAST NOTIFICATION (PENGGANTI ALERT) */
+        #snackbar {
+            visibility: hidden; min-width: 250px; background-color: #333; color: #fff;
+            text-align: center; border-radius: 30px; padding: 16px; position: fixed;
+            z-index: 3000; left: 50%; bottom: 30px; transform: translateX(-50%);
+            font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+        #snackbar.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        /* MODAL */
+        #paymentModal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.6); display: none; align-items: center; 
+            justify-content: center; z-index: 2000; backdrop-filter: blur(4px);
+        }
+        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; animation: slideUp 0.3s; }
+        @keyframes slideUp { from {transform: translateY(100px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
+
+        .search-input {
+            width: 100%; padding: 12px 20px; border: 2px solid #eee; border-radius: 25px;
+            font-size: 16px; margin-bottom: 15px; transition: 0.3s;
+        }
+        .search-input:focus { border-color: #764ba2; background: #fff; }
+        
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .action-btn { padding: 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: 800; color: white; }
+        .btn-pay { background: #28a745; }
+        .btn-del { background: #efefef; color: #dc3545; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="app-header"><div class="app-title">💰 KEUANGAN PRO</div></div>
+
+        <div class="nav-tabs">
+            <button class="nav-btn active" onclick="openScreen('transaksi', this)">TAMBAH</button>
+            <button class="nav-btn" onclick="openScreen('hutang', this)">HUTANG</button>
+            <button class="nav-btn" onclick="openScreen('piutang', this)">PIUTANG</button>
+            <button class="nav-btn" onclick="openScreen('backup', this)">PENGATURAN</button>
+        </div>
+
+        <div id="transaksi" class="screen active">
+            <form id="financeForm">
+                <div class="form-group">
+                    <label class="form-label">Jenis Transaksi</label>
+                    <select id="jenis" class="form-select">
+                        <option value="hutang">Hutang (Saya berhutang)</option>
+                        <option value="piutang">Piutang (Orang berhutang)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tanggal</label>
+                    <input type="date" id="tanggal" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Jatuh Tempo (Opsional)</label>
+                    <input type="date" id="jatuh_tempo" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nominal (Rp)</label>
+                    <input type="number" id="jumlah" class="form-input" placeholder="0" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nama / Keterangan</label>
+                    <textarea id="keterangan" class="form-textarea" rows="2" placeholder="Contoh: Pinjaman Bank, Nama Teman..."></textarea>
+                </div>
+                <button type="submit" class="btn">SIMPAN DATA</button>
+            </form>
+        </div>
+
+        <div id="hutang" class="screen">
+            <div class="summary-card"><p>TOTAL SISA HUTANG</p><div class="summary-amount" id="totalHutang">Rp 0</div></div>
+            <input type="text" class="search-input" placeholder="🔍 Cari nama..." onkeyup="filterList('listHutang', this.value)">
+            <div id="listHutang"></div>
+        </div>
+
+        <div id="piutang" class="screen">
+            <div class="summary-card" style="background: linear-gradient(135deg, #28a745, #1e7e34);"><p>TOTAL SISA PIUTANG</p><div class="summary-amount" id="totalPiutang">Rp 0</div></div>
+            <input type="text" class="search-input" placeholder="🔍 Cari nama..." onkeyup="filterList('listPiutang', this.value)">
+            <div id="listPiutang"></div>
+        </div>
+
+        <div id="backup" class="screen">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <p style="font-weight: bold; color: #666;">Manajemen Data</p>
+            </div>
+            <button onclick="exportData()" class="btn" style="background: #444; margin-bottom: 15px;">📥 DOWNLOAD BACKUP (JSON)</button>
+            <label class="form-label">Import Data Backup:</label>
+            <input type="file" accept=".json" class="form-input" onchange="importData(event)">
+            <p style="font-size: 12px; color: red; margin-top: 10px;">* Hati-hati, import data akan menimpa data saat ini.</p>
+        </div>
+    </div>
+
+    <div id="snackbar">✅ Berhasil!</div>
+
+    <div id="paymentModal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 15px; text-align: center; color: #764ba2;">Input Cicilan/Bayar</h3>
+            <div class="form-group">
+                <label class="form-label">Nominal Bayar (Rp)</label>
+                <input type="number" id="payAmount" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Keterangan</label>
+                <input type="text" id="payNote" class="form-input" placeholder="Tunai/Transfer">
+            </div>
+            <button class="btn" onclick="confirmPayment()" style="margin-bottom:10px">SIMPAN</button>
+            <button class="btn" onclick="closeModal()" style="background:#eee; color: #444;">BATAL</button>
+        </div>
+    </div>
+
+    <script>
+        let currentPayId = null;
+        const DB_NAME = 'keuangan_db_v3';
+
+        // Inisialisasi tanggal hari ini
+        document.getElementById('tanggal').value = new Date().toISOString().split('T')[0];
+
+        // Tampilkan Notifikasi ala Native
+        function showToast(msg) {
+            const x = document.getElementById("snackbar");
+            x.innerText = msg;
+            x.className = "show";
+            setTimeout(() => { x.className = x.className.replace("show", ""); }, 3000);
+        }
+
+        function openScreen(id, btn) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            btn.classList.add('active');
+            if(id === 'hutang' || id === 'piutang') renderData();
+        }
+
+        document.getElementById('financeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = {
+                id: Date.now(),
+                jenis: document.getElementById('jenis').value,
+                tgl: document.getElementById('tanggal').value,
+                tempo: document.getElementById('jatuh_tempo').value || '-',
+                jumlah: parseFloat(document.getElementById('jumlah').value),
+                bayar: 0,
+                riwayat: [],
+                ket: document.getElementById('keterangan').value || 'Tanpa Keterangan'
+            };
+            const db = JSON.parse(localStorage.getItem(DB_NAME)) || [];
+            db.push(data);
+            localStorage.setItem(DB_NAME, JSON.stringify(db));
+            this.reset();
+            document.getElementById('tanggal').value = new Date().toISOString().split('T')[0];
+            
+            showToast("✅ Data Berhasil Disimpan!"); // Pengganti alert() browser
+            renderData();
+            setTimeout(() => openScreen(data.jenis, document.querySelector(`.nav-btn[onclick*="${data.jenis}"]`)), 500);
+        });
+
+        function renderData() {
+            const db = JSON.parse(localStorage.getItem(DB_NAME)) || [];
+            const listH = document.getElementById('listHutang');
+            const listP = document.getElementById('listPiutang');
+            listH.innerHTML = ''; listP.innerHTML = '';
+            let sumH = 0, sumP = 0;
+
+            db.sort((a,b) => b.id - a.id).forEach(item => {
+                const sisa = item.jumlah - item.bayar;
+                const html = `
+                <div class="data-item">
+                    <div style="font-size:12px; color:#888; font-weight:bold;">📅 ${fmtTgl(item.tgl)}</div>
+                    <div class="ket-text">${item.ket}</div>
+                    <div class="amount-text">${fmtRp(item.jumlah)}</div>
+                    <div class="sisa-text">SISA: ${fmtRp(sisa)}</div>
+                    <div style="font-size: 12px; color: #999; margin-top: 10px;">⏳ Tempo: ${fmtTgl(item.tempo)}</div>
+                    
+                    <div class="btn-group">
+                        ${sisa > 0 ? `<button class="action-btn btn-pay" onclick="openPayModal(${item.id})">BAYAR/CICIL</button>` : `<div style="color:#28a745; font-weight:bold; padding:10px;">LUNAS ✅</div>`}
+                        <button class="action-btn btn-del" onclick="delItem(${item.id})">HAPUS</button>
+                    </div>
+                </div>`;
+                
+                if(item.jenis === 'hutang') { listH.innerHTML += html; sumH += sisa; }
+                else { listP.innerHTML += html; sumP += sisa; }
+            });
+            document.getElementById('totalHutang').textContent = fmtRp(sumH);
+            document.getElementById('totalPiutang').textContent = fmtRp(sumP);
+        }
+
+        function filterList(listId, query) {
+            const items = document.getElementById(listId).getElementsByClassName('data-item');
+            const q = query.toLowerCase();
+            Array.from(items).forEach(it => {
+                const text = it.querySelector('.ket-text').innerText.toLowerCase();
+                it.style.display = text.includes(q) ? 'block' : 'none';
+            });
+        }
+
+        function openPayModal(id) {
+            currentPayId = id;
+            const db = JSON.parse(localStorage.getItem(DB_NAME));
+            const item = db.find(i => i.id === id);
+            document.getElementById('payAmount').value = item.jumlah - item.bayar;
+            document.getElementById('paymentModal').style.display = 'flex';
+        }
+
+        function closeModal() { document.getElementById('paymentModal').style.display = 'none'; }
+
+        function confirmPayment() {
+            const nom = parseFloat(document.getElementById('payAmount').value);
+            const note = document.getElementById('payNote').value || 'Tunai';
+            if(!nom || nom <= 0) return;
+            const db = JSON.parse(localStorage.getItem(DB_NAME));
+            const idx = db.findIndex(i => i.id === currentPayId);
+            db[idx].bayar += nom;
+            db[idx].riwayat.push({ tgl: new Date().toISOString().split('T')[0], nom, note });
+            localStorage.setItem(DB_NAME, JSON.stringify(db));
+            closeModal();
+            showToast("✅ Pembayaran Berhasil!");
+            renderData();
+        }
+
+        function delItem(id) { 
+            if(confirm("Hapus catatan ini secara permanen?")) { 
+                let db = JSON.parse(localStorage.getItem(DB_NAME)); 
+                db = db.filter(i => i.id !== id); 
+                localStorage.setItem(DB_NAME, JSON.stringify(db)); 
+                showToast("🗑️ Data Dihapus");
+                renderData(); 
+            } 
+        }
+
+        function fmtRp(v) { return "Rp " + new Intl.NumberFormat('id-ID').format(v); }
+        function fmtTgl(s) { if(!s || s === '-') return '-'; const d = s.split('-'); return `${d[2]}/${d[1]}/${d[0]}`; }
+        
+        function exportData() {
+            const data = localStorage.getItem(DB_NAME);
+            if(!data) return showToast("❌ Tidak ada data untuk di-backup");
+            const blob = new Blob([data], {type: 'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `backup_keuangan_${new Date().getTime()}.json`;
+            a.click();
+        }
+
+        function importData(e) {
+            const fr = new FileReader();
+            fr.onload = (ev) => { 
+                localStorage.setItem(DB_NAME, ev.target.result); 
+                showToast("✅ Data Berhasil Di-import!");
+                setTimeout(() => location.reload(), 1000);
+            };
+            fr.readAsText(e.target.files[0]);
+        }
+    </script>
+</body>
+</html>
