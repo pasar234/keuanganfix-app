@@ -8,19 +8,29 @@
   "theme_color": "#1e293b",
   "orientation": "portrait",
   "scope": "./",
-  "id": "stok-strip-pro-pwa",
+  "id": "stok-strip-pro-app",
+  "categories": ["business", "productivity"],
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/pasar234/strippwa/main/icon-512.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/2897/2897830.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://raw.githubusercontent.com/pasar234/strippwa/main/icon-512.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/2897/2897830.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2897/2897830.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Tampilan Stok"
     }
   ]
 }
