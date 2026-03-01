@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stok Strip Pro - Final</title>
+    <style>
+        /* CSS REFINED */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background: #f1f5f9; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        .header { background: #3b5998; color: white; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; }
+        .sub-header-blue { background: #2563eb; color: white; padding: 10px 20px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+        
+        .menu-btn { background: rgba(255,255,255,0.2); border: none; color: white; font-size: 1.4rem; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        /* DROPDOWN */
+        .menu-dropdown { position: absolute; top: 60px; right: 16px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 240px; z-index: 1000; display: none; border: 1px solid #e2e8f0; overflow: hidden; }
+        .menu-dropdown.show { display: block; }
+        .menu-item { padding: 12px 16px; display: flex; align-items: center; gap: 12px; font-weight: 500; cursor: pointer; border-bottom: 1px solid #f1f5f9; color: #333; font-size: 0.9rem; }
+
+        /* TABS */
+        .tabs { display: flex; background: white; border-bottom: 1px solid #e2e8f0; overflow-x: auto; flex-shrink: 0; }
+        .tab { flex: 1; padding: 15px 5px; font-weight: 700; color: #64748b; border-bottom: 3px solid transparent; cursor: pointer; text-align: center; font-size: 0.8rem; }
+        .tab.active { border-bottom: 3px solid #2563eb; color: #2563eb; }
+
+        .main-content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        
+        /* FORM */
+        .form-label { font-weight: 700; font-size: 0.75rem; color: #64748b; margin-bottom: 8px; display: block; }
+        .form-input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 18px; font-size: 1rem; outline: none; background: #fff; }
+        .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .photo-box { border: 2px dashed #cbd5e1; border-radius: 12px; height: 110px; position: relative; display: flex; align-items: center; justify-content: center; background: #f8fafc; cursor: pointer; overflow: hidden; }
+        .photo-box img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-label { font-size: 0.7rem; font-weight: bold; color: #64748b; position: absolute; }
+
+        .btn-primary { width: 100%; padding: 16px; background: #2563eb; color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; }
+        .btn-cancel { width: 100%; padding: 16px; background: #64748b; color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 10px; }
+        
+        /* LIST */
+        .product-item { background: white; border-radius: 18px; padding: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 12px; }
+        .prod-img-stack { position: relative; width: 70px; height: 70px; flex-shrink: 0; cursor: pointer; }
+        .prod-img-main { width: 70px; height: 70px; border-radius: 12px; object-fit: cover; border: 1px solid #eee; }
+        .prod-img-sub { position: absolute; right: -4px; bottom: -4px; width: 35px; height: 35px; border-radius: 8px; border: 2px solid white; object-fit: cover; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .btn-edit-text { color: #2563eb; font-size: 0.75rem; font-weight: 800; cursor: pointer; display: inline-block; margin-top: 4px; }
+        .stock-ctrl { display: flex; align-items: center; gap: 6px; }
+        .btn-s { width: 34px; height: 34px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; font-weight: bold; }
+
+        /* MODAL ZOOM (SWIPEABLE) */
+        .modal-full { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 3000; }
+        .close-full { position: absolute; top: 20px; right: 20px; color: white; font-size: 2.5rem; z-index: 3100; font-weight: bold; cursor: pointer; }
+        .slide-container { width: 100%; height: 100%; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
+        .slide-item { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; scroll-snap-align: start; }
+        .slide-item img { max-width: 100%; max-height: 85vh; object-fit: contain; }
+
+        /* BOTTOM NAV */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid #e2e8f0; height: 75px; z-index: 100; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; font-weight: 700; font-size: 0.75rem; gap: 4px; }
+        .nav-item.active { color: #2563eb; }
+        .hidden { display: none !important; }
+
+        .modal-backup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 5000; align-items: center; justify-content: center; padding: 20px; }
+        .backup-box { background: white; width: 100%; max-width: 350px; padding: 25px; border-radius: 20px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div id="app-content">
+    <div class="header">
+        <div>Striping Pro</div>
+        <button class="menu-btn" onclick="toggleMenu()">⋮</button>
+    </div>
+    <div class="sub-header-blue">⚡ STOK BARANG</div>
+
+    <div id="menuDropdown" class="menu-dropdown">
+        <div class="menu-item" onclick="downloadBackupSqlite()">💾 Backup ke File (.sqlite)</div>
+        <div class="menu-item" onclick="showFileRestoreModal()">📂 Restore dari File (.sqlite)</div>
+    </div>
+
+    <div id="tabs-container" class="tabs hidden"></div>
+
+    <div class="main-content">
+        <div id="screen-add">
+            <div class="card">
+                <h3 id="form-title" style="margin-bottom:15px;">Tambah Produk</h3>
+                <input type="hidden" id="f-id">
+                <label class="form-label">MEREK MOTOR</label>
+                <select id="f-kategori" class="form-input">
+                    <option value="HONDA">HONDA</option>
+                    <option value="YAMAHA">YAMAHA</option>
+                    <option value="SUZUKI">SUZUKI</option>
+                    <option value="KAWASAKI">KAWASAKI</option>
+                </select>
+                <label class="form-label">NAMA PRODUK</label>
+                <input type="text" id="f-nama" class="form-input" placeholder="Nama Produk...">
+                
+                <div class="photo-grid">
+                    <div class="photo-box" onclick="document.getElementById('in-img-1').click()">
+                        <img id="prev-1" class="hidden">
+                        <div id="lab-1" class="photo-label">📷 FOTO 1</div>
+                        <input type="file" id="in-img-1" accept="image/*" class="hidden" onchange="handleImage(this, 1)">
+                    </div>
+                    <div class="photo-box" onclick="document.getElementById('in-img-2').click()">
+                        <img id="prev-2" class="hidden">
+                        <div id="lab-2" class="photo-label">📷 FOTO 2</div>
+                        <input type="file" id="in-img-2" accept="image/*" class="hidden" onchange="handleImage(this, 2)">
+                    </div>
+                </div>
+                <button class="btn-primary" id="btn-save" onclick="simpanProduk()">SIMPAN PRODUK</button>
+                <button class="btn-cancel hidden" id="btn-cancel" onclick="resetForm()">BATAL</button>
+            </div>
+        </div>
+
+        <div id="screen-list" class="hidden">
+            <input type="text" id="q-search" class="form-input" style="border-radius:25px;" placeholder="🔍 Cari barang..." oninput="renderProduk()">
+            <div id="list-render"></div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="navKe('add')" id="nav-add"><span>➕</span>TAMBAH</div>
+        <div class="nav-item" onclick="navKe('list')" id="nav-list"><span>📦</span>STOK</div>
+    </div>
+</div>
+
+<div id="fullModal" class="modal-full">
+    <span class="close-full" onclick="closeZoom()">&times;</span>
+    <div class="slide-container" id="slide-wrap"></div>
+</div>
+
+<div id="modalRestoreFile" class="modal-backup">
+    <div class="backup-box">
+        <h3 style="margin-bottom:15px">📂 Restore .sqlite</h3>
+        <input type="file" id="restore-file-sqlite" accept=".sqlite" style="width:100%; margin-bottom:15px;">
+        <button class="btn-primary" onclick="uploadRestoreSqlite()">PROSES RESTORE</button>
+        <button onclick="document.getElementById('modalRestoreFile').style.display='none'" style="margin-top:10px; border:none; background:none; color:gray">Batal</button>
+    </div>
+</div>
+
+<script>
+    let db = JSON.parse(localStorage.getItem('stok_strip_v9')) || [];
+    let curCat = "HONDA";
+    let img1 = "", img2 = "";
+
+    function toggleMenu() { document.getElementById('menuDropdown').classList.toggle('show'); }
+
+    // --- ZOOM & SWIPE ---
+    function showZoom(id) {
+        const p = db.find(x => x.id === id);
+        if(!p) return;
+        let images = [p.img1];
+        if(p.img2) images.push(p.img2);
+        
+        document.getElementById('slide-wrap').innerHTML = images.map(src => `<div class="slide-item"><img src="${src}"></div>`).join('');
+        document.getElementById('fullModal').style.display = 'block';
+    }
+    function closeZoom() { document.getElementById('fullModal').style.display = 'none'; }
+
+    // --- SQLITE BACKUP/RESTORE (FIXED) ---
+    function downloadBackupSqlite() {
+        const data = JSON.stringify({ app: "StokStripPro", payload: db });
+        const blob = new Blob([data], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Stok_Backup_${new Date().toISOString().slice(0,10)}.sqlite`;
+        a.click();
+        toggleMenu();
+    }
+
+    function showFileRestoreModal() {
+        document.getElementById('modalRestoreFile').style.display = 'flex';
+        toggleMenu();
+    }
+
+    function uploadRestoreSqlite() {
+        const file = document.getElementById('restore-file-sqlite').files[0];
+        if(!file) return alert("Pilih file!");
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const res = JSON.parse(e.target.result);
+                if(res.app === "StokStripPro") {
+                    db = res.payload;
+                    localStorage.setItem('stok_strip_v9', JSON.stringify(db));
+                    alert("Berhasil restore!");
+                    location.reload();
+                } else { alert("File bukan cadangan asli!"); }
+            } catch(err) { alert("File korup atau format salah!"); }
+        };
+        reader.readAsText(file);
+    }
+
+    // --- IMAGE HANDLING ---
+    function handleImage(input, index) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgObj = new Image();
+                imgObj.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const maxW = 500;
+                    const scale = maxW / imgObj.width;
+                    canvas.width = maxW; canvas.height = imgObj.height * scale;
+                    canvas.getContext('2d').drawImage(imgObj, 0, 0, canvas.width, canvas.height);
+                    const data = canvas.toDataURL('image/jpeg', 0.6);
+                    if(index === 1) img1 = data; else img2 = data;
+                    document.getElementById('prev-'+index).src = data;
+                    document.getElementById('prev-'+index).classList.remove('hidden');
+                    document.getElementById('lab-'+index).classList.add('hidden');
+                };
+                imgObj.src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // --- CRUD ---
+    function simpanProduk() {
+        const id = document.getElementById('f-id').value;
+        const nama = document.getElementById('f-nama').value;
+        const kategori = document.getElementById('f-kategori').value;
+        if(!nama || !img1) return alert("Nama & Foto 1 wajib!");
+
+        if(id) {
+            const idx = db.findIndex(p => p.id == id);
+            db[idx] = { ...db[idx], nama, kategori, img1, img2 };
+        } else {
+            db.push({ id: Date.now(), nama, kategori, img1, img2, stok: 0 });
+        }
+        localStorage.setItem('stok_strip_v9', JSON.stringify(db));
+        resetForm(); navKe('list');
+    }
+
+    function editProduk(id) {
+        const p = db.find(x => x.id == id);
+        document.getElementById('f-id').value = p.id;
+        document.getElementById('f-nama').value = p.nama;
+        document.getElementById('f-kategori').value = p.kategori;
+        img1 = p.img1; img2 = p.img2 || "";
+        document.getElementById('prev-1').src = img1;
+        document.getElementById('prev-1').classList.remove('hidden');
+        document.getElementById('lab-1').classList.add('hidden');
+        if(img2) {
+            document.getElementById('prev-2').src = img2;
+            document.getElementById('prev-2').classList.remove('hidden');
+            document.getElementById('lab-2').classList.add('hidden');
+        }
+        document.getElementById('form-title').innerText = "Edit Produk";
+        document.getElementById('btn-cancel').classList.remove('hidden');
+        navKe('add');
+    }
+
+    function renderProduk() {
+        const q = document.getElementById('q-search').value.toLowerCase();
+        const filtered = db.filter(i => i.kategori === curCat && i.nama.toLowerCase().includes(q));
+        document.getElementById('list-render').innerHTML = filtered.map(item => `
+            <div class="product-item">
+                <div class="prod-img-stack" onclick="showZoom(${item.id})">
+                    <img src="${item.img1}" class="prod-img-main">
+                    ${item.img2 ? `<img src="${item.img2}" class="prod-img-sub">` : ''}
+                </div>
+                <div class="prod-info">
+                    <div style="font-weight:700;">${item.nama}</div>
+                    <div style="font-size:0.8rem; color:gray;">Stok: <b>${item.stok}</b></div>
+                    <div class="btn-edit-text" onclick="editProduk(${item.id})">✎ EDIT</div>
+                </div>
+                <div class="stock-ctrl">
+                    <button class="btn-s" onclick="adjustStok(${item.id},-1)">−</button>
+                    <button class="btn-s" onclick="adjustStok(${item.id},1)">+</button>
+                    <button class="btn-s" style="background:#fee2e2;color:red;border:none" onclick="hapus(${item.id})">🗑️</button>
+                </div>
+            </div>
+        `).reverse().join('');
+    }
+
+    function resetForm() {
+        document.getElementById('f-id').value = "";
+        document.getElementById('f-nama').value = "";
+        img1 = ""; img2 = "";
+        document.querySelectorAll('.photo-box img').forEach(i => i.classList.add('hidden'));
+        document.querySelectorAll('.photo-label').forEach(l => l.classList.remove('hidden'));
+        document.getElementById('form-title').innerText = "Tambah Produk";
+        document.getElementById('btn-cancel').classList.add('hidden');
+    }
+
+    function adjustStok(id, v) {
+        const idx = db.findIndex(p => p.id === id);
+        db[idx].stok = Math.max(0, (db[idx].stok || 0) + v);
+        localStorage.setItem('stok_strip_v9', JSON.stringify(db));
+        renderProduk();
+    }
+
+    function hapus(id) { if(confirm("Hapus?")) { db=db.filter(x=>x.id!==id); localStorage.setItem('stok_strip_v9', JSON.stringify(db)); renderProduk(); } }
+
+    function navKe(page) {
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById('nav-'+page).classList.add('active');
+        document.getElementById('screen-add').classList.toggle('hidden', page !== 'add');
+        document.getElementById('screen-list').classList.toggle('hidden', page !== 'list');
+        document.getElementById('tabs-container').classList.toggle('hidden', page !== 'list');
+        if(page === 'list') { renderTabs(); renderProduk(); }
+    }
+
+    function renderTabs() {
+        const cats = ["HONDA", "YAMAHA", "SUZUKI", "KAWASAKI"];
+        document.getElementById('tabs-container').innerHTML = cats.map(c => 
+            `<div class="tab ${c === curCat ? 'active' : ''}" onclick="curCat='${c}';renderTabs();renderProduk();">${c}</div>`
+        ).join('');
+    }
+
+    navKe('add');
+</script>
+</body>
+</html>
