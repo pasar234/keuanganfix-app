@@ -10,47 +10,26 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
         body { background: #f1f5f9; height: 100vh; overflow: hidden; }
-        
-        /* Layout Header & Nav */
         header { background: #1e293b; color: white; padding: 15px; text-align: center; font-weight: bold; }
-        nav { display: flex; background: #fff; overflow-x: auto; border-bottom: 2px solid #e2e8f0; }
-        nav button { flex: 1; padding: 12px; border: none; background: none; cursor: pointer; font-weight: bold; color: #64748b; min-width: 100px; }
+        nav { display: flex; background: #fff; border-bottom: 2px solid #e2e8f0; }
+        nav button { flex: 1; padding: 12px; border: none; background: none; font-weight: bold; color: #64748b; }
         nav button.active { color: #2563eb; border-bottom: 3px solid #2563eb; }
-
-        /* Container & Search */
         .container { height: calc(100vh - 110px); display: flex; flex-direction: column; }
-        .search-box { padding: 10px; background: #fff; }
-        input[type="text"] { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; }
-
-        /* List Produk */
         #product-list { flex: 1; overflow-y: auto; padding: 10px; }
         .card { background: #fff; border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 15px; }
-        .card img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; background: #eee; }
+        .card img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; background: #eee; }
         .info { flex: 1; }
-        .info h3 { font-size: 16px; margin-bottom: 5px; }
-        .info p { color: #2563eb; font-weight: bold; }
-
-        /* Action Buttons */
-        .actions { display: flex; flex-direction: column; gap: 8px; }
-        .btn-edit { background: #eab308; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-hapus { background: #ef4444; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        
-        .counter { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
-        .counter button { width: 35px; height: 35px; border: 1px solid #cbd5e1; border-radius: 5px; background: #fff; font-size: 20px; }
-
-        /* Zoom Layer */
-        #zoom-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 100; display: none; justify-content: center; align-items: center; }
-        #zoom-layer img { max-width: 95%; max-height: 95%; border-radius: 10px; }
-
-        /* Floating Button */
-        .fab { position: fixed; bottom: 20px; right: 20px; background: #2563eb; color: white; padding: 15px 25px; border-radius: 50px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .actions { display: flex; flex-direction: column; gap: 5px; }
+        .btn-edit { background: #eab308; color: white; border: none; padding: 6px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .btn-hapus { background: #ef4444; color: white; border: none; padding: 6px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .fab { position: fixed; bottom: 20px; right: 20px; background: #2563eb; color: white; padding: 15px 25px; border-radius: 50px; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <header>STOK STRIP v5.6</header>
 
-<nav id="category-nav">
+<nav>
     <button class="active" onclick="filterCat('HONDA', this)">HONDA</button>
     <button onclick="filterCat('YAMAHA', this)">YAMAHA</button>
     <button onclick="filterCat('SUZUKI', this)">SUZUKI</button>
@@ -58,14 +37,7 @@
 </nav>
 
 <div class="container">
-    <div class="search-box">
-        <input type="text" id="search" placeholder="Cari nama barang..." oninput="tampilkanProduk()">
-    </div>
     <div id="product-list"></div>
-</div>
-
-<div id="zoom-layer" onclick="this.style.display='none'">
-    <img id="zoom-img" src="">
 </div>
 
 <a href="#" class="fab" onclick="tambahProduk()">+ INPUT</a>
@@ -75,17 +47,17 @@
     let currentCategory = 'HONDA';
 
     async function initDb() {
-        const SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${file}` });
-        const savedData = localStorage.getItem('stok_db');
-        
-        if (savedData) {
-            const u8 = new Uint8Array(JSON.parse(savedData));
-            db = new SQL.Database(u8);
-        } else {
-            db = new SQL.Database();
-            db.run("CREATE TABLE produk (id INTEGER PRIMARY KEY AUTOINCREMENT, nama TEXT, kategori TEXT, stok INTEGER, foto TEXT)");
-        }
-        tampilkanProduk();
+        try {
+            const SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${file}` });
+            const savedData = localStorage.getItem('stok_db');
+            if (savedData) {
+                db = new SQL.Database(new Uint8Array(JSON.parse(savedData)));
+            } else {
+                db = new SQL.Database();
+                db.run("CREATE TABLE produk (id INTEGER PRIMARY KEY AUTOINCREMENT, nama TEXT, kategori TEXT, stok INTEGER, foto TEXT)");
+            }
+            tampilkanProduk();
+        } catch (e) { console.error(e); }
     }
 
     function filterCat(cat, btn) {
@@ -97,77 +69,53 @@
 
     function tampilkanProduk() {
         const list = document.getElementById('product-list');
-        const search = document.getElementById('search').value.toLowerCase();
         list.innerHTML = '';
-
-        const res = db.exec("SELECT * FROM produk WHERE kategori = ? ORDER BY id DESC", [currentCategory]);
+        const res = db.exec("SELECT * FROM produk WHERE kategori = ?", [currentCategory]);
         if (res.length > 0) {
             res[0].values.forEach(row => {
-                if (row[1].toLowerCase().includes(search)) {
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    card.innerHTML = `
-                        <img src="${row[4] || 'https://via.placeholder.com/80'}" onclick="zoom('${row[4]}')">
-                        <div class="info">
-                            <h3>${row[1]}</h3>
-                            <p>Stok: ${row[3]}</p>
-                            <div class="counter">
-                                <button onclick="updateStok(${row[0]}, 1)">+</button>
-                                <button onclick="updateStok(${row[0]}, -1)">-</button>
-                            </div>
-                        </div>
-                        <div class="actions">
-                            <button class="btn-edit" onclick="editProduk(${row[0]})">EDIT</button>
-                            <button class="btn-hapus" onclick="hapusProduk(${row[0]})">HAPUS</button>
-                        </div>
-                    `;
-                    list.appendChild(card);
-                }
+                const div = document.createElement('div');
+                div.className = 'card';
+                div.innerHTML = `
+                    <img src="${row[4] || 'https://via.placeholder.com/60'}">
+                    <div class="info">
+                        <h3>${row[1]}</h3>
+                        <p>Stok: ${row[3]}</p>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-edit" onclick="editProduk(${row[0]})">EDIT</button>
+                        <button class="btn-hapus" onclick="hapusProduk(${row[0]})">HAPUS</button>
+                    </div>
+                `;
+                list.appendChild(div);
             });
         }
     }
 
     function hapusProduk(id) {
-        if (confirm("Hapus produk ini secara permanen?")) {
+        if (confirm("Hapus barang ini?")) {
             db.run("DELETE FROM produk WHERE id = ?", [id]);
-            simpanDb();
+            const data = db.export();
+            localStorage.setItem('stok_db', JSON.stringify(Array.from(data)));
             tampilkanProduk();
         }
     }
 
-    function updateStok(id, val) {
-        db.run("UPDATE produk SET stok = stok + ? WHERE id = ?", [val, id]);
-        simpanDb();
-        tampilkanProduk();
-    }
-
-    function zoom(src) {
-        if(!src) return;
-        document.getElementById('zoom-img').src = src;
-        document.getElementById('zoom-layer').style.display = 'flex';
-    }
-
-    function simpanDb() {
-        const data = db.export();
-        const array = Array.from(data);
-        localStorage.setItem('stok_db', JSON.stringify(array));
-    }
-
-    // Fungsi tambah & edit (Disederhanakan untuk contoh)
     function tambahProduk() {
-        const nama = prompt("Nama Produk:");
-        if(nama) {
-            db.run("INSERT INTO produk (nama, kategori, stok, foto) VALUES (?, ?, 0, '')", [nama, currentCategory]);
-            simpanDb();
+        const n = prompt("Nama barang:");
+        if(n) {
+            db.run("INSERT INTO produk (nama, kategori, stok) VALUES (?, ?, 0)", [n, currentCategory]);
+            const data = db.export();
+            localStorage.setItem('stok_db', JSON.stringify(Array.from(data)));
             tampilkanProduk();
         }
     }
 
     function editProduk(id) {
-        const baru = prompt("Ganti Nama Produk:");
-        if(baru) {
-            db.run("UPDATE produk SET nama = ? WHERE id = ?", [baru, id]);
-            simpanDb();
+        const n = prompt("Nama baru:");
+        if(n) {
+            db.run("UPDATE produk SET nama = ? WHERE id = ?", [n, id]);
+            const data = db.export();
+            localStorage.setItem('stok_db', JSON.stringify(Array.from(data)));
             tampilkanProduk();
         }
     }
