@@ -1,7 +1,6 @@
 {
-  "name": "Stok Strip Pro PWA",
+  "name": "Stok Strip Pro",
   "short_name": "StokStrip",
-  "description": "Aplikasi Manajemen Stok Strip Offline",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#1e293b",
