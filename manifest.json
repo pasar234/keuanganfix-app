@@ -9,35 +9,18 @@
   "orientation": "portrait",
   "scope": "./",
   "id": "stok-strip-pro-pwa",
-  "categories": ["business", "productivity"],
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2897/2897830.png",
+      "src": "https://raw.githubusercontent.com/pasar234/strippwa/main/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2897/2897830.png",
+      "src": "https://raw.githubusercontent.com/pasar234/strippwa/main/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/2897/2897830.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Tampilan Mobile"
-    },
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/2897/2897830.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Tampilan Desktop"
     }
   ]
 }
