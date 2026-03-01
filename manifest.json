@@ -7,6 +7,8 @@
   "background_color": "#1e293b",
   "theme_color": "#1e293b",
   "orientation": "portrait",
+  "scope": "./",
+  "id": "stok-strip-pro-pwa",
   "categories": ["business", "productivity"],
   "icons": [
     {
@@ -28,7 +30,7 @@
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Halaman Utama Stok"
+      "label": "Tampilan Mobile"
     },
     {
       "src": "https://cdn-icons-png.flaticon.com/512/2897/2897830.png",
