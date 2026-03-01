@@ -1,37 +1,15 @@
-function openPayModal(id) {
-    currentPayId = id;
-    const db = JSON.parse(localStorage.getItem(DB_NAME));
-    const item = db.find(i => i.id === id);
-    
-    // Set default tanggal hari ini saat modal dibuka
-    document.getElementById('payDate').value = new Date().toISOString().split('T')[0];
-    document.getElementById('payAmount').value = item.jumlah - item.bayar;
-    document.getElementById('payNote').value = "";
-    document.getElementById('paymentModal').style.display = 'flex';
+{
+  "name": "Stok Strip Pro",
+  "short_name": "StokStrip",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#1e293b",
+  "theme_color": "#1e293b",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2897/2897830.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
-
-function confirmPayment() {
-    const tgl = document.getElementById('payDate').value; // Ambil tanggal dari input
-    const nom = parseFloat(document.getElementById('payAmount').value);
-    const note = document.getElementById('payNote').value || 'Tunai';
-    
-    if(!tgl) return showToast("❌ Pilih tanggal bayar!");
-    if(!nom || nom <= 0) return showToast("❌ Masukkan nominal valid!");
-    
-    const db = JSON.parse(localStorage.getItem(DB_NAME));
-    const idx = db.findIndex(i => i.id === currentPayId);
-    
-    db[idx].bayar += nom;
-    // Simpan tanggal yang dipilih ke dalam riwayat
-    db[idx].riwayat.push({ 
-        tgl: tgl, 
-        nom: nom, 
-        note: note 
-    });
-    
-    localStorage.setItem(DB_NAME, JSON.stringify(db));
-    closeModal();
-    showToast("✅ Pembayaran Berhasil!");
-    renderData();
-}
-
