@@ -8,28 +8,41 @@
     <meta name="theme-color" content="#1e293b">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: #f1f5f9; height: 100vh; overflow: hidden; }
+        
+        /* ZOOM LAYER */
+        #zoom-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 999999; visibility: hidden; opacity: 0; display: flex; flex-direction: column; transition: opacity 0.2s; }
+        #zoom-layer.active { visibility: visible; opacity: 1; }
+        .zoom-header { position: absolute; top: 15px; right: 15px; z-index: 1000001; }
+        .zoom-close { color: white; font-size: 16px; font-weight: bold; background: #ff0000; padding: 12px 20px; border-radius: 5px; border: 2px solid #fff; }
+        .swipe-wrapper { width: 100%; height: 100%; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; background: #000; }
+        .swipe-slide { min-width: 100vw; height: 100vh; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; overflow: auto; }
+        .swipe-slide img { width: 100vw; height: auto; object-fit: contain; display: block; }
+
+        /* UI UTAMA */
         .header { background: #1e293b; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
         .main-content { height: calc(100vh - 140px); overflow-y: auto; padding: 15px; }
         .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .form-input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
-        .btn-save { width: 100%; padding: 15px; background: #2563eb; color: white; border: none; border-radius: 10px; font-weight: bold; }
-        #install-banner { display: none; background: #fbbf24; color: #000; padding: 15px; text-align: center; font-weight: bold; border-radius: 8px; margin-bottom: 15px; cursor: pointer; }
+        
+        /* TOMBOL INSTAL */
+        #install-banner { display: none; background: #2563eb; color: white; padding: 15px; text-align: center; font-weight: bold; cursor: pointer; border-radius: 8px; margin-bottom: 15px; border: 2px solid white; }
+
         .item-list { background: white; border-radius: 12px; padding: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; border: 1px solid #eee; }
-        .thumb { width: 80px; height: 80px; border-radius: 10px; overflow: hidden; background: #ddd; flex-shrink: 0; }
+        .thumb { width: 80px; height: 80px; border-radius: 10px; overflow: hidden; background: #ddd; flex-shrink: 0; border: 1px solid #eee; }
         .thumb img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .btn-save { width: 100%; padding: 15px; background: #2563eb; color: white; border: none; border-radius: 10px; font-weight: bold; margin-top: 10px; }
+        .btn-batal { width: 100%; padding: 10px; background: #94a3b8; color: white; border: none; border-radius: 10px; margin-top: 8px; }
+        
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; height: 70px; border-top: 1px solid #ddd; }
         .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: #999; }
         .nav-btn.active { color: #2563eb; }
+        
         .hidden { display: none !important; }
-        #zoom-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 999999; visibility: hidden; opacity: 0; display: flex; flex-direction: column; transition: opacity 0.2s; }
-        #zoom-layer.active { visibility: visible; opacity: 1; }
-        .zoom-header { position: absolute; top: 15px; right: 15px; z-index: 1000001; }
-        .zoom-close { color: white; background: #ff0000; padding: 10px 15px; border-radius: 5px; font-weight: bold; }
-        .swipe-wrapper { width: 100%; height: 100%; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
-        .swipe-slide { min-width: 100vw; height: 100vh; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
-        .swipe-slide img { width: 100%; height: auto; object-fit: contain; }
+        .dropdown { position: absolute; top: 55px; right: 10px; background: white; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 2000; display: none; width: 180px; }
+        .dropdown div { padding: 15px; border-bottom: 1px solid #eee; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -44,37 +57,48 @@
     <button onclick="toggleMenu()" style="background:none; border:none; color:white; font-size:24px;">⋮</button>
 </div>
 
-<div id="drop-menu" style="position:absolute; top:55px; right:10px; background:white; border-radius:8px; box-shadow:0 5px 15px rgba(0,0,0,0.2); z-index:2000; display:none; width:180px;">
-    <div style="padding:15px; border-bottom:1px solid #eee" onclick="exportDB()">📤 Export Backup</div>
-    <div style="padding:15px; border-bottom:1px solid #eee" onclick="document.getElementById('in-restore').click()">📥 Restore Data</div>
+<div id="drop-menu" class="dropdown">
+    <div onclick="exportDB()">📤 Export Backup</div>
+    <div onclick="document.getElementById('in-restore').click()">📥 Restore Data</div>
+    <div onclick="fullReset()" style="color:red">⚠️ Reset Data</div>
 </div>
 <input type="file" id="in-restore" class="hidden" onchange="importDB(event)">
 
 <div class="main-content">
-    <div id="install-banner" onclick="installApp()">📲 KLIK DISINI UNTUK INSTAL KE TABLET</div>
+    <div id="install-banner" onclick="installApp()">📲 INSTAL APLIKASI DI TABLET</div>
 
     <div id="sc-add">
         <div class="card">
             <h3 id="form-title" style="margin-bottom:15px">Input Produk</h3>
             <input type="hidden" id="f-id">
+            
+            <label style="font-size:12px; color:#666">Kategori:</label>
             <select id="f-kat" class="form-input">
                 <option value="HONDA">HONDA</option>
                 <option value="YAMAHA">YAMAHA</option>
+                <option value="SUZUKI">SUZUKI</option>
+                <option value="KAWASAKI">KAWASAKI</option>
             </select>
-            <input type="text" id="f-nama" class="form-input" placeholder="Nama Barang...">
+            
+            <label style="font-size:12px; color:#666">Nama Barang:</label>
+            <input type="text" id="f-nama" class="form-input" placeholder="Contoh: Vario 150 New">
+            
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px">
-                <button onclick="openCam(1)" style="padding:15px; border:1px dashed #2563eb; border-radius:8px;">📸 Foto 1</button>
-                <button onclick="openCam(2)" style="padding:15px; border:1px dashed #2563eb; border-radius:8px;">📸 Foto 2</button>
+                <button onclick="openCam(1)" style="padding:15px; border:2px dashed #2563eb; border-radius:8px; background:#f0f7ff; color:#2563eb; font-weight:bold">📸 Foto 1</button>
+                <button onclick="openCam(2)" style="padding:15px; border:2px dashed #2563eb; border-radius:8px; background:#f0f7ff; color:#2563eb; font-weight:bold">📸 Foto 2</button>
             </div>
+            
             <div id="pre-img" style="display:flex; gap:10px; margin-bottom:10px"></div>
+            
             <input type="file" id="cam-input" class="hidden" accept="image/*" onchange="procImg(this)">
             <button class="btn-save" id="btn-main-action" onclick="simpan()">SIMPAN PRODUK</button>
-            <button class="hidden" id="btn-batal" onclick="batal()" style="width:100%; margin-top:10px; padding:10px;">BATAL</button>
+            <button class="btn-batal hidden" id="btn-batal" onclick="batal()">BATAL / RESET</button>
         </div>
     </div>
 
     <div id="sc-list" class="hidden">
-        <input type="text" id="q" class="form-input" placeholder="🔍 Cari..." oninput="render()">
+        <div id="tab-area" style="display:flex; background:white; overflow-x:auto; border-bottom:1px solid #ddd"></div>
+        <input type="text" id="q" class="form-input" style="margin-top:10px" placeholder="🔍 Cari nama barang..." oninput="render()">
         <div id="list-render"></div>
     </div>
 </div>
@@ -85,18 +109,16 @@
 </div>
 
 <script>
-    // PWA & INSTALL LOGIC
+    // SERVICE WORKER & INSTALL LOGIC
     let deferredPrompt;
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').then(() => console.log("SW OK"));
+        navigator.serviceWorker.register('./sw.js').then(() => console.log("SW Registered"));
     }
-
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
         document.getElementById('install-banner').style.display = 'block';
     });
-
     function installApp() {
         if (deferredPrompt) {
             deferredPrompt.prompt();
@@ -107,7 +129,7 @@
         }
     }
 
-    // DATABASE LOGIC (Tetap Sempurna)
+    // DATABASE LOGIC
     let SQL, db, curCat = "HONDA", slot = 1, imgs = { p1: '', p2: '' };
 
     async function init() {
@@ -116,6 +138,7 @@
         const saved = localStorage.getItem('stok_db');
         db = saved ? new SQL.Database(new Uint8Array(JSON.parse(saved))) : new SQL.Database();
         db.run("CREATE TABLE IF NOT EXISTS produk (id INTEGER PRIMARY KEY AUTOINCREMENT, nama TEXT, kategori TEXT, img1 TEXT, img2 TEXT, stok INTEGER DEFAULT 0);");
+        nav('add');
     }
 
     function openCam(s) { slot = s; document.getElementById('cam-input').click(); }
@@ -126,10 +149,10 @@
                 const img = new Image();
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const scale = 1000 / Math.max(img.width, img.height);
+                    const scale = 1200 / Math.max(img.width, img.height);
                     canvas.width = img.width * scale; canvas.height = img.height * scale;
                     canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                    imgs['p'+slot] = canvas.toDataURL('image/jpeg', 0.7);
+                    imgs['p'+slot] = canvas.toDataURL('image/jpeg', 0.8);
                     updatePreview();
                 };
                 img.src = e.target.result;
@@ -150,49 +173,60 @@
         else db.run("INSERT INTO produk (nama, kategori, img1, img2, stok) VALUES (?,?,?,?,0)", [n, k, imgs.p1, imgs.p2]);
         persist(); batal(); nav('list');
     }
-    function persist() { localStorage.setItem('stok_db', JSON.stringify(Array.from(db.export()))); }
-    function nav(p) {
-        document.getElementById('sc-add').classList.toggle('hidden', p!=='add');
-        document.getElementById('sc-list').classList.toggle('hidden', p!=='list');
-        document.getElementById('n-add').classList.toggle('active', p==='add');
-        document.getElementById('n-list').classList.toggle('active', p==='list');
-        if(p==='list') render();
+    function edit(id) {
+        const r = db.exec("SELECT * FROM produk WHERE id=?", [id])[0].values[0];
+        document.getElementById('f-id').value = r[0]; document.getElementById('f-nama').value = r[1]; document.getElementById('f-kat').value = r[2];
+        imgs.p1 = r[3] || ''; imgs.p2 = r[4] || '';
+        document.getElementById('form-title').innerText = "Edit Produk"; document.getElementById('btn-main-action').innerText = "UPDATE PRODUK";
+        document.getElementById('btn-batal').classList.remove('hidden'); updatePreview(); nav('add');
     }
+    function openZoom(i1, i2) {
+        const wrapper = document.getElementById('swipe-wrapper');
+        let html = `<div class="swipe-slide"><img src="${i1}"></div>`;
+        if(i2 && i2 !== 'null' && i2 !== '') html += `<div class="swipe-slide"><img src="${i2}"></div>`;
+        wrapper.innerHTML = html; document.getElementById('zoom-layer').classList.add('active'); wrapper.scrollLeft = 0;
+    }
+    function closeZoom() { document.getElementById('zoom-layer').classList.remove('active'); }
     function render() {
         const q = document.getElementById('q').value;
-        const res = db.exec(`SELECT * FROM produk WHERE nama LIKE '%${q}%' ORDER BY id DESC`)[0];
+        const res = db.exec(`SELECT * FROM produk WHERE kategori='${curCat}' AND nama LIKE '%${q}%' ORDER BY id DESC`)[0];
         let h = '';
         if(res) {
             res.values.forEach(r => {
                 h += `<div class="item-list">
                     <div class="thumb" onclick="openZoom('${r[3]}','${r[4]}')"><img src="${r[3]}"></div>
-                    <div style="flex:1">
+                    <div style="flex:1" onclick="openZoom('${r[3]}','${r[4]}')">
                         <div style="font-weight:bold">${r[1]}</div>
-                        <div style="color:#2563eb; font-weight:bold">Stok: ${r[5]}</div>
-                        <button onclick="adj(${r[0]},1)">+</button> <button onclick="adj(${r[0]},-1)">-</button>
+                        <div style="color:#2563eb; font-weight:bold; margin:5px 0">Stok: ${r[5]}</div>
+                        <div style="display:flex; gap:10px">
+                            <button style="padding:10px 25px; font-weight:bold; border-radius:5px; border:1px solid #ccc; background:#fff" onclick="event.stopPropagation(); adj(${r[0]},1)">+</button>
+                            <button style="padding:10px 25px; font-weight:bold; border-radius:5px; border:1px solid #ccc; background:#fff" onclick="event.stopPropagation(); adj(${r[0]},-1)">-</button>
+                        </div>
                     </div>
-                    <button onclick="edit(${r[0]})" style="background:orange; color:white; border:none; padding:10px; border-radius:5px">EDIT</button>
+                    <button onclick="edit(${r[0]})" style="background:orange; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold">EDIT</button>
                 </div>`;
             });
         }
-        document.getElementById('list-render').innerHTML = h || 'Kosong';
+        document.getElementById('list-render').innerHTML = h || '<p style="text-align:center; padding:20px; color:#999">Kosong</p>';
     }
-    function adj(id, v) { db.run("UPDATE produk SET stok=MAX(0, stok+?) WHERE id=?", [v, id]); persist(); render(); }
-    function edit(id) {
-        const r = db.exec("SELECT * FROM produk WHERE id=?", [id])[0].values[0];
-        document.getElementById('f-id').value = r[0]; document.getElementById('f-nama').value = r[1];
-        imgs.p1 = r[3]; imgs.p2 = r[4]; updatePreview(); nav('add');
+    function nav(p) {
+        document.getElementById('sc-add').classList.toggle('hidden', p!=='add');
+        document.getElementById('sc-list').classList.toggle('hidden', p!=='list');
+        document.getElementById('n-add').classList.toggle('active', p==='add');
+        document.getElementById('n-list').classList.toggle('active', p==='list');
+        if(p==='list') {
+            const cats = ["HONDA", "YAMAHA", "SUZUKI", "KAWASAKI"];
+            document.getElementById('tab-area').innerHTML = cats.map(c => `<div style="flex:1; text-align:center; padding:15px; font-size:12px; font-weight:bold; border-bottom:3px solid ${c===curCat?'#2563eb':'#eee'}; color:${c===curCat?'#2563eb':'#666'}" onclick="curCat='${c}';nav('list')">${c}</div>`).join('');
+            render();
+        }
     }
-    function batal() { document.getElementById('f-id').value=''; document.getElementById('f-nama').value=''; imgs={p1:'',p2:''}; updatePreview(); }
-    function openZoom(i1, i2) {
-        const w = document.getElementById('swipe-wrapper');
-        w.innerHTML = `<div class="swipe-slide"><img src="${i1}"></div>` + (i2 ? `<div class="swipe-slide"><img src="${i2}"></div>` : '');
-        document.getElementById('zoom-layer').classList.add('active');
-    }
-    function closeZoom() { document.getElementById('zoom-layer').classList.remove('active'); }
-    function toggleMenu() { const m = document.getElementById('drop-menu'); m.style.display = m.style.display === 'block' ? 'none' : 'block'; }
-    function exportDB() { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([db.export()], {type:"application/octet-stream"})); a.download = "stok_backup.sqlite"; a.click(); }
+    function batal() { document.getElementById('f-id').value=''; document.getElementById('f-nama').value=''; imgs = { p1: '', p2: '' }; document.getElementById('form-title').innerText = "Input Produk"; document.getElementById('btn-main-action').innerText = "SIMPAN PRODUK"; document.getElementById('btn-batal').classList.add('hidden'); updatePreview(); }
+    function persist() { localStorage.setItem('stok_db', JSON.stringify(Array.from(db.export()))); }
+    function toggleMenu() { const d = document.getElementById('drop-menu'); d.style.display = d.style.display === 'block' ? 'none' : 'block'; }
+    function exportDB() { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([db.export()], {type:"application/octet-stream"})); a.download = "stok_backup.sqlite"; a.click(); toggleMenu(); }
     function importDB(e) { const reader = new FileReader(); reader.onload = function() { db = new SQL.Database(new Uint8Array(this.result)); persist(); location.reload(); }; reader.readAsArrayBuffer(e.target.files[0]); }
+    function adj(id, v) { db.run("UPDATE produk SET stok=MAX(0, stok+?) WHERE id=?", [v, id]); persist(); render(); }
+    function fullReset() { if(confirm("Reset semua data?")) { localStorage.clear(); location.reload(); } }
     window.onload = init;
 </script>
 </body>
