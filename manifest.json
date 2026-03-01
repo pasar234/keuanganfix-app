@@ -1,16 +1,26 @@
 {
-  "name": "StokStrip Pro",
+  "name": "Stok Strip Pro",
   "short_name": "StokStrip",
-  "start_url": "index.html",
+  "description": "Aplikasi manajemen stok strip profesional.",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#1e293b",
   "theme_color": "#1e293b",
+  "orientation": "portrait",
+  "scope": "./",
+  "id": "stok-strip-pro",
   "icons": [
     {
       "src": "icon.png",
-      "sizes": "256x256",
+      "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
