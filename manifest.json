@@ -1,24 +1,23 @@
 {
   "name": "Stok Strip Pro",
   "short_name": "StokStrip",
-  "description": "Aplikasi manajemen stok strip profesional dengan fitur offline dan backup data.",
+  "description": "Aplikasi manajemen stok strip profesional.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#1e293b",
   "theme_color": "#1e293b",
   "orientation": "portrait",
   "scope": "./",
-  "id": "stok-strip-pro-app",
-  "categories": ["business", "productivity"],
+  "id": "stok-strip-pro",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2897/2897830.png",
+      "src": "icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2897/2897830.png",
+      "src": "icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -26,11 +25,10 @@
   ],
   "screenshots": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2897/2897830.png",
+      "src": "icon.png",
       "sizes": "512x512",
       "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Tampilan Stok"
+      "form_factor": "narrow"
     }
   ]
 }
