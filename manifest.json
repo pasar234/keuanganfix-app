@@ -1,7 +1,8 @@
 {
-  "name": "Stok Strip Pro",
+  "name": "Stok Strip Pro PWA",
   "short_name": "StokStrip",
-  "start_url": "index.html",
+  "description": "Aplikasi Manajemen Stok Strip Offline",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#1e293b",
   "theme_color": "#1e293b",
@@ -9,7 +10,8 @@
     {
       "src": "https://cdn-icons-png.flaticon.com/512/2897/2897830.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
