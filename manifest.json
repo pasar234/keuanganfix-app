@@ -7,7 +7,7 @@
   "theme_color": "#1e293b",
   "icons": [
     {
-      "src": "real-madrid_109486.png",
+      "src": "icon.png",
       "sizes": "256x256",
       "type": "image/png",
       "purpose": "any maskable"
