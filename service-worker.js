@@ -1,4 +1,4 @@
-const CACHE_NAME = 'stok-strip-v5.6-pwa';
+const CACHE_NAME = 'stok-v5.6';
 const ASSETS = [
   './',
   './index.html',
