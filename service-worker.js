@@ -1,4 +1,4 @@
-const CACHE_NAME = 'stok-v5.6';
+const CACHE_NAME = 'stok-strip-v5.6-pwa';
 const ASSETS = [
   './',
   './index.html',
@@ -10,14 +10,6 @@ const ASSETS = [
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
-  );
-});
-
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)));
-    })
   );
 });
 
