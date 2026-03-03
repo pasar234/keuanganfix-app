@@ -3,34 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stok Strip Pro - Scroll Fix</title>
+    <title>Stok Strip Pro - Fixed</title>
     <style>
+        /* CSS UNTUK STRUKTUR & SCROLL */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f0f2f5; min-height: 100vh; display: flex; flex-direction: column; overflow-y: auto; }
         
-        /* PERBAIKAN SCROLL: Ubah overflow:hidden menjadi auto atau remove */
-        body { 
-            background: #f0f2f5; 
-            min-height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-        }
-        
-        /* Header tetap di atas */
         .header { 
-            background: #3b5998; 
-            color: white; 
-            padding: 15px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            position: sticky; 
-            top: 0; 
-            z-index: 1000; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background: #3b5998; color: white; padding: 15px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         .menu-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px 10px; }
-        
         .menu-dropdown { 
             display: none; position: absolute; top: 55px; right: 10px; 
             background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
@@ -40,37 +25,14 @@
         .menu-item { padding: 12px 15px; border-bottom: 1px solid #eee; color: #333; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; }
         .menu-item:active { background: #f0f0f0; }
 
-        /* Area Konten Utama */
-        #main-content { 
-            flex: 1; 
-            padding: 15px; 
-            display: none; /* Akan muncul setelah login */
-            overflow-y: visible; /* Izinkan scroll di sini */
-        }
+        #main-content { padding: 15px; display: none; }
+        .btn-input { background: #28a745; color: white; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; margin-bottom: 20px; cursor: pointer; }
 
-        .btn-input { 
-            background: #28a745; 
-            color: white; 
-            padding: 15px; 
-            border-radius: 10px; 
-            text-align: center; 
-            font-weight: bold; 
-            margin-bottom: 20px; 
-            cursor: pointer; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
+        /* CARD BARANG & TOMBOL HAPUS */
+        .card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .btn-hapus { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer; float: right; }
 
-        /* Simulasi Card Barang untuk Tes Scroll */
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            border-left: 5px solid #3b5998;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        /* Layar Login Tetap Kunci Scroll */
+        /* LAYAR LOGIN */
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #3b5998; display: flex; align-items: center; justify-content: center;
@@ -100,66 +62,90 @@
                 <div class="menu-item" onclick="restoreFromClipboard()">📥 Restore dari Clipboard</div>
                 <div class="menu-item" onclick="backupToFile()">💾 Backup ke File</div>
                 <div class="menu-item" onclick="restoreFromFile()">📂 Restore dari File</div>
-                <div class="menu-item" onclick="alert('Ganti Password')">🔑 Ganti Password</div>
+                <div class="menu-item" onclick="gantiPin()">🔑 Ganti Password</div>
                 <div class="menu-item" onclick="location.reload()" style="color: red;">🔒 Kunci Aplikasi</div>
             </div>
         </div>
     </div>
 
     <div id="main-content">
-        <div class="btn-input" onclick="addNewItem()">➕ INPUT BARANG BARU</div>
-        <div id="item-list">
-            </div>
-        <div style="height: 50px;"></div>
+        <div class="btn-input" onclick="tambahBarang()">➕ TAMBAH DATA TESTING</div>
+        <div id="item-list"></div>
+        <div style="height: 80px;"></div>
     </div>
 
 <script>
-    const STORAGE_KEY = 'stok_strip_data_sqlite';
-    const DEFAULT_PIN = '123456';
+    const STORAGE_KEY = 'stok_strip_data_v1';
+    // PIN DEFAULT SEKARANG 8989
+    let currentData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 
     function checkLogin() {
-        const pin = document.getElementById('pinInput').value;
-        if (pin === (localStorage.getItem('app_pin') || DEFAULT_PIN)) {
+        const pinMasuk = document.getElementById('pinInput').value;
+        const pinBenar = localStorage.getItem('app_pin') || '8989'; 
+
+        if (pinMasuk === pinBenar) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
-            // Izinkan body untuk scroll setelah login
-            document.body.style.overflow = 'auto'; 
+            renderData();
         } else {
-            alert("PIN Salah!");
+            alert("PIN Salah! Coba 8989");
         }
     }
 
-    function toggleMenu() {
-        document.getElementById('menuDropdown').classList.toggle('show');
-    }
+    function toggleMenu() { document.getElementById('menuDropdown').classList.toggle('show'); }
 
-    // Fungsi untuk menambah box dummy agar bisa tes scroll
-    function addNewItem() {
+    // FUNGSI RENDER DATA & HAPUS (FIXED LOADING)
+    function renderData() {
         const list = document.getElementById('item-list');
-        const count = list.getElementsByClassName('card').length + 1;
-        const newCard = document.createElement('div');
-        newCard.className = 'card';
-        newCard.innerHTML = `<h3>Barang #${count}</h3><p>Data stok tersimpan otomatis.</p>`;
-        list.prepend(newCard); // Tambah di atas
+        list.innerHTML = '';
+        
+        if (currentData.length === 0) {
+            list.innerHTML = '<p style="text-align:center; color:#888;">Data Kosong</p>';
+            return;
+        }
+
+        currentData.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <button class="btn-hapus" onclick="hapusData(${index})">Hapus</button>
+                <h3>${item.nama}</h3>
+                <p>Jumlah: ${item.stok}</p>
+            `;
+            list.appendChild(card);
+        });
     }
 
-    // --- FITUR BACKUP/RESTORE ---
-    function backupToClipboard() {
-        const data = localStorage.getItem(STORAGE_KEY) || "[]";
-        navigator.clipboard.writeText(data).then(() => alert("Disalin ke Clipboard!"));
+    function tambahBarang() {
+        const nama = "Barang " + (currentData.length + 1);
+        currentData.push({ nama: nama, stok: Math.floor(Math.random() * 100) });
+        saveAndRefresh();
     }
 
-    function restoreFromClipboard() {
-        const data = prompt("Paste data backup:");
-        if (data) {
-            localStorage.setItem(STORAGE_KEY, data);
+    function hapusData(index) {
+        if (confirm("Hapus data ini?")) {
+            currentData.splice(index, 1);
+            saveAndRefresh();
+        }
+    }
+
+    function saveAndRefresh() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(currentData));
+        renderData();
+    }
+
+    function gantiPin() {
+        const baru = prompt("Masukkan PIN Baru:");
+        if (baru) {
+            localStorage.setItem('app_pin', baru);
+            alert("PIN diganti ke " + baru);
             location.reload();
         }
     }
 
+    // FUNGSI BACKUP/RESTORE FILE .SQLITE
     function backupToFile() {
-        const data = localStorage.getItem(STORAGE_KEY) || "[]";
-        const blob = new Blob([data], { type: 'application/octet-stream' });
+        const blob = new Blob([JSON.stringify(currentData)], { type: 'application/octet-stream' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = 'stok_strip_backup.sqlite';
@@ -171,23 +157,30 @@
         input.type = 'file';
         input.accept = '.sqlite';
         input.onchange = e => {
-            const file = e.target.files[0];
             const reader = new FileReader();
-            reader.onload = event => {
-                localStorage.setItem(STORAGE_KEY, event.target.result);
-                alert("Restore Berhasil!");
-                location.reload();
+            reader.onload = ev => {
+                currentData = JSON.parse(ev.target.result);
+                saveAndRefresh();
+                alert("Data Berhasil di Restore!");
             };
-            reader.readAsText(file);
+            reader.readAsText(e.target.files[0]);
         };
         input.click();
     }
 
-    window.onclick = function(event) {
-        if (!event.target.matches('.menu-btn')) {
-            document.getElementById('menuDropdown').classList.remove('show');
+    function backupToClipboard() {
+        navigator.clipboard.writeText(JSON.stringify(currentData)).then(() => alert("Disalin ke Clipboard!"));
+    }
+
+    function restoreFromClipboard() {
+        const txt = prompt("Tempel data di sini:");
+        if (txt) {
+            currentData = JSON.parse(txt);
+            saveAndRefresh();
         }
     }
+
+    window.onclick = e => { if (!e.target.matches('.menu-btn')) document.getElementById('menuDropdown').classList.remove('show'); }
 </script>
 </body>
 </html>
