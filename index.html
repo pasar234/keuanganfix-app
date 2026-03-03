@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stok Strip Pro - Secure</title>
+    <style>
+        /* CSS SEBELUMNYA TETAP SAMA */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background: #f8fafc; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* LAYAR LOGIN */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #3b5998; display: flex; align-items: center; justify-content: center;
+            z-index: 9999; color: white; flex-direction: column; padding: 30px;
+        }
+        .login-box { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 320px; text-align: center; color: #333; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .login-input { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #ddd; margin: 15px 0; text-align: center; font-size: 1.2rem; letter-spacing: 5px; }
+
+        /* HEADER & STYLE LAIN */
+        .header { background: #3b5998; color: white; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; }
+        .sub-header { background: #2563eb; color: white; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; }
+        .menu-btn { background: rgba(255,255,255,0.2); border: none; color: white; font-size: 1.4rem; width: 40px; height: 40px; border-radius: 50%; }
+        .menu-dropdown { position: absolute; top: 110px; right: 16px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 220px; z-index: 1000; display: none; border: 1px solid #e2e8f0; }
+        .menu-dropdown.show { display: block; }
+        .menu-item { padding: 14px 16px; display: flex; align-items: center; gap: 10px; font-weight: 600; cursor: pointer; border-bottom: 1px solid #f1f5f9; color: #333; }
+        .tabs { display: flex; background: white; border-bottom: 1px solid #e2e8f0; overflow-x: auto; flex-shrink: 0; padding: 0 10px; }
+        .tab { padding: 15px 12px; font-weight: 700; color: #ef4444; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; font-size: 0.9rem; text-transform: uppercase; }
+        .tab.active { border-bottom: 3px solid #2563eb; color: #2563eb; background: #f0f7ff; }
+        .main-content { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 100px; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .form-label { font-weight: 700; font-size: 0.75rem; color: #64748b; margin-bottom: 8px; display: block; }
+        .form-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; font-size: 1rem; outline: none; background: #f8fafc; }
+        .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .photo-box { border: 2px dashed #cbd5e1; border-radius: 12px; height: 120px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #f8fafc; cursor: pointer; }
+        .photo-box img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-label { font-size: 0.7rem; font-weight: bold; color: #64748b; text-align: center; }
+        .btn-primary { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; }
+        .btn-secondary { width: 100%; padding: 14px; background: #64748b; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 8px; }
+        .product-item { background: white; border-radius: 12px; padding: 12px; margin-bottom: 8px; border: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px; }
+        .prod-img-stack { display: flex; position: relative; width: 65px; height: 65px; flex-shrink: 0; }
+        .prod-img { width: 65px; height: 65px; border-radius: 10px; object-fit: cover; background: #f1f5f9; border: 1px solid #e2e8f0; }
+        .prod-img.secondary { position: absolute; right: -5px; bottom: -5px; width: 35px; height: 35px; border: 2px solid white; z-index: 2; }
+        .stock-ctrl { display: flex; align-items: center; gap: 6px; }
+        .btn-s { width: 35px; height: 35px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; font-weight: bold; }
+        .btn-del { width: 35px; height: 35px; border-radius: 8px; border: none; background: #fee2e2; color: #ef4444; }
+        .modal-full { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 3000; overflow: hidden; }
+        .slide-container { width: 100%; height: 100%; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
+        .slide-item { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; scroll-snap-align: start; }
+        .slide-item img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .close-full { position: absolute; top: 20px; right: 20px; color: white; font-size: 2.5rem; z-index: 3100; }
+        .modal-backup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 5000; align-items: center; justify-content: center; padding: 20px; }
+        .backup-box { background: white; width: 100%; max-width: 400px; padding: 20px; border-radius: 15px; text-align: center; max-height: 80vh; overflow-y: auto; }
+        #txt-backup { width: 100%; height: 150px; margin: 15px 0; padding: 10px; font-size: 0.7rem; background: #f1f5f9; border: 1px solid #ddd; overflow-y: auto; word-break: break-all; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid #e2e8f0; height: 75px; z-index: 100; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; font-weight: 700; font-size: 0.75rem; }
+        .nav-item.active { color: #2563eb; }
+        .hidden { display: none !important; }
+        .password-form { margin-top: 15px; }
+        .password-input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 5px; }
+        .backup-info { background: #e6f7ff; padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 0.8rem; border-left: 3px solid #1890ff; text-align: left; }
+        .copy-btn { background: #52c41a; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="login-screen">
+    <div class="login-box">
+        <h2 style="margin-bottom: 5px;">Akses Terkunci</h2>
+        <p style="font-size: 0.8rem; color: #666;">Masukkan PIN Keamanan</p>
+        <input type="password" id="pin-input" class="login-input" placeholder="****" inputmode="numeric" maxlength="4">
+        <button class="btn-primary" onclick="cekLogin()">BUKA APLIKASI</button>
+        <p id="error-msg" style="color: red; font-size: 0.7rem; margin-top: 10px; display: none;">PIN Salah! Silakan coba lagi.</p>
+    </div>
+</div>
+
+<div id="app-content" class="hidden">
+    <div class="header">
+        <div>Striping Pro</div>
+        <button class="menu-btn" onclick="toggleMenu()">⋮</button>
+    </div>
+    <div class="sub-header">
+        <div>⚡ STOK BARANG</div>
+    </div>
+
+    <div id="menuDropdown" class="menu-dropdown">
+        <div class="menu-item" onclick="showBackupModal()">📤 Backup Data (Copy ke Clipboard)</div>
+        <div class="menu-item" onclick="showRestoreTextModal()">📥 Restore Data (Paste dari Clipboard)</div>
+        <div class="menu-item" onclick="downloadBackupFile()">💾 Backup ke File (Download)</div>
+        <div class="menu-item" onclick="showFileRestoreModal()">📂 Restore dari File (Upload)</div>
+        <div class="menu-item" onclick="showChangePasswordModal()">🔑 Ganti Password</div>
+        <div class="menu-item" onclick="logout()" style="color: red;">🔒 Kunci Aplikasi</div>
+    </div>
+
+    <div id="tabs-container" class="tabs hidden"></div>
+
+    <div class="main-content">
+        <div id="screen-add">
+            <div class="card">
+                <h3 id="form-title" style="margin-bottom:15px;">Tambah Produk</h3>
+                <input type="hidden" id="f-id">
+                <label class="form-label">MEREK MOTOR</label>
+                <select id="f-kategori" class="form-input">
+                    <option value="HONDA">HONDA</option>
+                    <option value="YAMAHA">YAMAHA</option>
+                    <option value="SUZUKI">SUZUKI</option>
+                    <option value="KAWASAKI">KAWASAKI</option>
+                </select>
+                <label class="form-label">NAMA PRODUK</label>
+                <input type="text" id="f-nama" class="form-input" placeholder="Nama Produk...">
+                <div class="photo-grid">
+                    <div class="photo-box" onclick="document.getElementById('in-img-1').click()">
+                        <img id="prev-1" class="hidden">
+                        <div id="lab-1" class="photo-label">📷 FOTO 1</div>
+                        <input type="file" id="in-img-1" accept="image/*" class="hidden" onchange="handleImage(this, 1)">
+                    </div>
+                    <div class="photo-box" onclick="document.getElementById('in-img-2').click()">
+                        <img id="prev-2" class="hidden">
+                        <div id="lab-2" class="photo-label">📷 FOTO 2</div>
+                        <input type="file" id="in-img-2" accept="image/*" class="hidden" onchange="handleImage(this, 2)">
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="simpanProduk()">SIMPAN PRODUK</button>
+                <button class="btn-primary hidden" id="btn-cancel" onclick="resetForm()" style="background:#64748b; margin-top:10px;">BATAL</button>
+            </div>
+        </div>
+
+        <div id="screen-list" class="hidden">
+            <input type="text" id="q-search" class="form-input" style="border-radius:25px;" placeholder="🔍 Cari barang..." oninput="renderProduk()">
+            <div id="list-render"></div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="navKe('add')" id="nav-add"><span>➕</span>TAMBAH</div>
+        <div class="nav-item" onclick="navKe('list')" id="nav-list"><span>📦</span>STOK</div>
+    </div>
+</div>
+
+<!-- Modal Zoom Foto -->
+<div id="fullModal" class="modal-full">
+    <span class="close-full" onclick="closeZoom()">&times;</span>
+    <div class="slide-container" id="slide-wrap"></div>
+</div>
+
+<!-- Modal Backup Text -->
+<div id="modalBackupText" class="modal-backup">
+    <div class="backup-box">
+        <h3>📋 Backup Data (Copy)</h3>
+        <div class="backup-info">
+            <strong>Instruksi:</strong><br>
+            1. Klik "SALIN KODE"<br>
+            2. Paste di WhatsApp/Notes sebagai cadangan<br>
+            3. Untuk restore nanti, copy kode lalu paste
+        </div>
+        <textarea id="txt-backup" readonly onclick="this.select()"></textarea>
+        <button class="btn-primary copy-btn" onclick="copyBackup()">📋 SALIN KODE</button>
+        <button class="btn-secondary" onclick="document.getElementById('modalBackupText').style.display='none'">TUTUP</button>
+    </div>
+</div>
+
+<!-- Modal Restore Text -->
+<div id="modalRestoreText" class="modal-backup">
+    <div class="backup-box">
+        <h3>📋 Restore Data (Paste)</h3>
+        <div class="backup-info">
+            <strong>Instruksi:</strong><br>
+            1. Copy kode backup dari WhatsApp/Notes<br>
+            2. Paste di kolom bawah<br>
+            3. Klik "RESTORE DATA"
+        </div>
+        <textarea id="txt-restore" placeholder="Paste kode backup di sini..." style="width:100%; height:150px; margin:15px 0; padding:10px;"></textarea>
+        <button class="btn-primary" onclick="restoreFromText()">🔄 RESTORE DATA</button>
+        <button class="btn-secondary" onclick="document.getElementById('modalRestoreText').style.display='none'">TUTUP</button>
+    </div>
+</div>
+
+<!-- Modal Backup File -->
+<div id="modalBackupFile" class="modal-backup">
+    <div class="backup-box">
+        <h3>💾 Backup ke File</h3>
+        <div class="backup-info">
+            <strong>Info:</strong> File akan didownload otomatis.<br>
+            Jika tidak muncul, cek:
+            <ul style="margin-top:5px; margin-left:20px;">
+                <li>Chrome: ⋮ → Downloads</li>
+                <li>HP: Buka app "File Manager"</li>
+                <li>Cari folder "Downloads"</li>
+            </ul>
+        </div>
+        <p style="font-weight:bold; color:#2563eb; margin:15px 0;">Total data: <span id="total-produk">0</span> produk</p>
+        <button class="btn-primary" onclick="downloadBackupFile()">📥 DOWNLOAD FILE</button>
+        <button class="btn-secondary" onclick="document.getElementById('modalBackupFile').style.display='none'">TUTUP</button>
+    </div>
+</div>
+
+<!-- Modal Restore File -->
+<div id="modalRestoreFile" class="modal-backup">
+    <div class="backup-box">
+        <h3>📂 Restore dari File</h3>
+        <div class="backup-info">
+            <strong>Instruksi:</strong><br>
+            1. Klik "PILIH FILE"<br>
+            2. Cari file backup .json di Downloads<br>
+            3. Klik "RESTORE"
+        </div>
+        <input type="file" id="restore-file" accept=".json,application/json" style="margin:15px 0; padding:10px; border:1px solid #ddd; border-radius:5px; width:100%;">
+        <button class="btn-primary" onclick="uploadRestore()">🔄 RESTORE DATA</button>
+        <button class="btn-secondary" onclick="closeRestoreFileModal()">TUTUP</button>
+    </div>
+</div>
+
+<!-- Modal Ganti Password -->
+<div id="modalChangePassword" class="modal-backup">
+    <div class="backup-box">
+        <h3>🔑 Ganti Password</h3>
+        <div class="password-form">
+            <input type="password" id="old-password" class="password-input" placeholder="Password Lama (4 digit)" maxlength="4" inputmode="numeric">
+            <input type="password" id="new-password" class="password-input" placeholder="Password Baru (4 digit)" maxlength="4" inputmode="numeric">
+            <input type="password" id="confirm-password" class="password-input" placeholder="Konfirmasi Password Baru" maxlength="4" inputmode="numeric">
+        </div>
+        <button class="btn-primary" onclick="changePassword()">SIMPAN PASSWORD BARU</button>
+        <button class="btn-secondary" onclick="closeChangePasswordModal()">BATAL</button>
+    </div>
+</div>
+
+<script>
+    // --- KEAMANAN PASSWORD ---
+    const DEFAULT_PIN = "1234";
+    let PIN_BENAR = localStorage.getItem('app_password') || DEFAULT_PIN;
+
+    function cekLogin() {
+        const input = document.getElementById('pin-input').value;
+        if(input === PIN_BENAR) {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-content').classList.remove('hidden');
+            sessionStorage.setItem('isLoggedIn', 'true');
+            document.getElementById('pin-input').value = "";
+            document.getElementById('error-msg').style.display = 'none';
+        } else {
+            document.getElementById('error-msg').style.display = 'block';
+            document.getElementById('pin-input').value = "";
+        }
+    }
+
+    function logout() {
+        sessionStorage.removeItem('isLoggedIn');
+        location.reload();
+    }
+
+    if(sessionStorage.getItem('isLoggedIn') === 'true') {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('app-content').classList.remove('hidden');
+    }
+
+    // --- LOGIKA APLIKASI ---
+    let db = JSON.parse(localStorage.getItem('stok_strip_v9')) || [];
+    let curCat = "HONDA";
+    let img1 = "", img2 = "";
+
+    function save() { 
+        localStorage.setItem('stok_strip_v9', JSON.stringify(db)); 
+    }
+
+    function handleImage(input, index) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgObj = new Image();
+                imgObj.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const maxW = 500;
+                    const scale = maxW / imgObj.width;
+                    canvas.width = maxW; 
+                    canvas.height = imgObj.height * scale;
+                    canvas.getContext('2d').drawImage(imgObj, 0, 0, canvas.width, canvas.height);
+                    const data = canvas.toDataURL('image/jpeg', 0.6);
+                    if(index === 1) img1 = data; else img2 = data;
+                    document.getElementById('prev-'+index).src = data;
+                    document.getElementById('prev-'+index).classList.remove('hidden');
+                    document.getElementById('lab-'+index).classList.add('hidden');
+                };
+                imgObj.src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function simpanProduk() {
+        const nama = document.getElementById('f-nama').value;
+        const id = document.getElementById('f-id').value;
+        if(!nama || !img1) return alert("Nama dan Foto 1 wajib!");
+        if(id) {
+            const idx = db.findIndex(p => p.id == id);
+            db[idx] = { ...db[idx], nama, kategori: document.getElementById('f-kategori').value, img1, img2 };
+        } else {
+            db.push({ id: Date.now(), nama, kategori: document.getElementById('f-kategori').value, img1, img2, stok: 0 });
+        }
+        save(); 
+        resetForm(); 
+        navKe('list');
+    }
+
+    function renderProduk() {
+        const q = document.getElementById('q-search').value.toLowerCase();
+        const filtered = db.filter(i => i.kategori === curCat && i.nama.toLowerCase().includes(q));
+        document.getElementById('list-render').innerHTML = filtered.map(item => `
+            <div class="product-item">
+                <div class="prod-img-stack" onclick="showZoom(${item.id})">
+                    <img src="${item.img1}" class="prod-img">
+                    ${item.img2 ? `<img src="${item.img2}" class="prod-img secondary">` : ''}
+                </div>
+                <div class="prod-info">
+                    <div class="prod-name">${item.nama}</div>
+                    <div style="font-size:0.85rem">Stok: <b>${item.stok || 0}</b></div>
+                    <div style="color:#2563eb; font-size:0.75rem; font-weight:bold" onclick="editProduk(${item.id})">✎ EDIT</div>
+                </div>
+                <div class="stock-ctrl">
+                    <button class="btn-s" onclick="adjustStok(${item.id}, -1)">−</button>
+                    <button class="btn-s" onclick="adjustStok(${item.id}, 1)">+</button>
+                    <button class="btn-del" onclick="hapusProduk(${item.id})">🗑️</button>
+                </div>
+            </div>
+        `).reverse().join('') || '<p style="text-align:center; padding:20px;">Tidak ada produk</p>';
+    }
+
+    function showZoom(id) {
+        const p = db.find(x => x.id === id);
+        let imgs = [p.img1]; 
+        if(p.img2) imgs.push(p.img2);
+        document.getElementById('slide-wrap').innerHTML = imgs.map(s => `<div class="slide-item"><img src="${s}"></div>`).join('');
+        document.getElementById('fullModal').style.display = 'block';
+    }
+
+    function closeZoom() { 
+        document.getElementById('fullModal').style.display = 'none'; 
+    }
+
+    function navKe(page) {
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById('nav-'+page).classList.add('active');
+        document.getElementById('screen-add').classList.toggle('hidden', page !== 'add');
+        document.getElementById('screen-list').classList.toggle('hidden', page !== 'list');
+        document.getElementById('tabs-container').classList.toggle('hidden', page !== 'list');
+        if(page === 'list') { 
+            renderTabs(); 
+            renderProduk(); 
+        }
+    }
+
+    function renderTabs() {
+        const cats = ["HONDA", "YAMAHA", "SUZUKI", "KAWASAKI"];
+        document.getElementById('tabs-container').innerHTML = cats.map(c => `<div class="tab ${c === curCat ? 'active' : ''}" onclick="curCat='${c}';renderTabs();renderProduk();">${c}</div>`).join('');
+    }
+
+    function adjustStok(id, v) {
+        const idx = db.findIndex(p => p.id === id);
+        db[idx].stok = Math.max(0, (db[idx].stok || 0) + v); 
+        save(); 
+        renderProduk();
+    }
+
+    function hapusProduk(id) { 
+        if(confirm("Hapus produk?")) { 
+            db = db.filter(p => p.id !== id); 
+            save(); 
+            renderProduk(); 
+        } 
+    }
+
+    function editProduk(id) {
+        const p = db.find(x => x.id == id);
+        document.getElementById('f-id').value = p.id;
+        document.getElementById('f-nama').value = p.nama;
+        document.getElementById('f-kategori').value = p.kategori;
+        img1 = p.img1; 
+        img2 = p.img2;
+        document.getElementById('prev-1').src = img1; 
+        document.getElementById('prev-1').classList.remove('hidden');
+        document.getElementById('lab-1').classList.add('hidden');
+        if(img2) { 
+            document.getElementById('prev-2').src = img2; 
+            document.getElementById('prev-2').classList.remove('hidden'); 
+            document.getElementById('lab-2').classList.add('hidden'); 
+        }
+        document.getElementById('btn-cancel').classList.remove('hidden');
+        navKe('add');
+    }
+
+    function resetForm() {
+        document.getElementById('f-id').value = ""; 
+        document.getElementById('f-nama').value = "";
+        img1 = ""; 
+        img2 = "";
+        document.getElementById('prev-1').classList.add('hidden'); 
+        document.getElementById('lab-1').classList.remove('hidden');
+        document.getElementById('prev-2').classList.add('hidden'); 
+        document.getElementById('lab-2').classList.remove('hidden');
+        document.getElementById('btn-cancel').classList.add('hidden');
+    }
+
+    function toggleMenu() { 
+        document.getElementById('menuDropdown').classList.toggle('show'); 
+    }
+
+    // --- BACKUP VIA CLIPBOARD (PASTI BISA) ---
+    function showBackupModal() {
+        const backupData = {
+            version: '1.0',
+            date: new Date().toISOString(),
+            data: db
+        };
+        document.getElementById('txt-backup').value = JSON.stringify(backupData);
+        document.getElementById('modalBackupText').style.display = 'flex';
+        toggleMenu();
+    }
+
+    function copyBackup() {
+        const txt = document.getElementById('txt-backup');
+        txt.select();
+        navigator.clipboard.writeText(txt.value).then(() => {
+            alert("✅ Kode berhasil disalin! Sekarang paste di WhatsApp/Catatan.");
+        }).catch(() => {
+            alert("📋 Copy manual: Tekan lama teks, lalu pilih Salin");
+        });
+    }
+
+    function showRestoreTextModal() {
+        document.getElementById('modalRestoreText').style.display = 'flex';
+        toggleMenu();
+    }
+
+    function restoreFromText() {
+        const text = document.getElementById('txt-restore').value;
+        if(!text) return alert("Paste kode backup terlebih dahulu!");
+        
+        try {
+            const backupData = JSON.parse(text);
+            if (backupData.version && backupData.data) {
+                db = backupData.data;
+            } else if (Array.isArray(backupData)) {
+                db = backupData;
+            } else {
+                throw new Error('Format tidak valid');
+            }
+            save();
+            document.getElementById('modalRestoreText').style.display = 'none';
+            renderProduk();
+            alert("✅ Data berhasil direstore!");
+        } catch (error) {
+            alert("❌ Error: Kode backup tidak valid!");
+        }
+    }
+
+    // --- BACKUP VIA FILE (ALTERNATIF) ---
+    function showBackupFileModal() {
+        document.getElementById('total-produk').textContent = db.length;
+        document.getElementById('modalBackupFile').style.display = 'flex';
+        toggleMenu();
+    }
+
+    function downloadBackupFile() {
+        const backupData = {
+            version: '1.0',
+            date: new Date().toISOString(),
+            data: db
+        };
+        
+        const jsonString = JSON.stringify(backupData, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        // Cara 1: Menggunakan link download
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `backup-strip-${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        // Cara 2: Alternatif untuk HP
+        setTimeout(() => {
+            URL.revokeObjectURL(url);
+        }, 100);
+        
+        alert("📥 File backup mulai didownload! Cek folder Downloads.");
+        
+        // Tutup modal
+        document.getElementById('modalBackupFile').style.display = 'none';
+        document.getElementById('modalBackupText').style.display = 'none';
+    }
+
+    function showFileRestoreModal() {
+        document.getElementById('modalRestoreFile').style.display = 'flex';
+        toggleMenu();
+    }
+
+    function closeRestoreFileModal() {
+        document.getElementById('modalRestoreFile').style.display = 'none';
+        document.getElementById('restore-file').value = '';
+    }
+
+    function uploadRestore() {
+        const fileInput = document.getElementById('restore-file');
+        const file = fileInput.files[0];
+        
+        if (!file) {
+            alert('Pilih file backup terlebih dahulu!');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const backupData = JSON.parse(e.target.result);
+                if (backupData.version && backupData.data) {
+                    db = backupData.data;
+                } else if (Array.isArray(backupData)) {
+                    db = backupData;
+                } else {
+                    throw new Error('Format tidak valid');
+                }
+                save();
+                closeRestoreFileModal();
+                renderProduk();
+                alert("✅ Data berhasil direstore!");
+            } catch (error) {
+                alert("❌ Error: File backup tidak valid!");
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    // --- GANTI PASSWORD ---
+    function showChangePasswordModal() {
+        document.getElementById('modalChangePassword').style.display = 'flex';
+        toggleMenu();
+        document.getElementById('old-password').value = '';
+        document.getElementById('new-password').value = '';
+        document.getElementById('confirm-password').value = '';
+    }
+
+    function closeChangePasswordModal() {
+        document.getElementById('modalChangePassword').style.display = 'none';
+    }
+
+    function changePassword() {
+        const oldPass = document.getElementById('old-password').value;
+        const newPass = document.getElementById('new-password').value;
+        const confirmPass = document.getElementById('confirm-password').value;
+
+        if (!oldPass || !newPass || !confirmPass) {
+            alert('Semua field harus diisi!');
+            return;
+        }
+
+        if (oldPass !== PIN_BENAR) {
+            alert('Password lama salah!');
+            return;
+        }
+
+        if (newPass.length !== 4 || !/^\d+$/.test(newPass)) {
+            alert('Password baru harus 4 digit angka!');
+            return;
+        }
+
+        if (newPass !== confirmPass) {
+            alert('Konfirmasi password baru tidak cocok!');
+            return;
+        }
+
+        localStorage.setItem('app_password', newPass);
+        PIN_BENAR = newPass;
+        
+        alert('✅ Password berhasil diganti! Silakan login ulang.');
+        closeChangePasswordModal();
+        logout();
+    }
+
+    // Update menu untuk menambahkan opsi baru
+    window.onload = function() {
+        // Update menu dropdown
+        const menu = document.getElementById('menuDropdown');
+        menu.innerHTML = `
+            <div class="menu-item" onclick="showBackupModal()">📤 Backup ke Clipboard</div>
+            <div class="menu-item" onclick="showRestoreTextModal()">📥 Restore dari Clipboard</div>
+            <div class="menu-item" onclick="showBackupFileModal()">💾 Backup ke File</div>
+            <div class="menu-item" onclick="showFileRestoreModal()">📂 Restore dari File</div>
+            <div class="menu-item" onclick="showChangePasswordModal()">🔑 Ganti Password</div>
+            <div class="menu-item" onclick="logout()" style="color: red;">🔒 Kunci Aplikasi</div>
+        `;
+    };
+
+    // Tutup modal jika klik di luar
+    window.onclick = function(event) {
+        const modals = ['modalBackupText', 'modalRestoreText', 'modalBackupFile', 'modalRestoreFile', 'modalChangePassword'];
+        modals.forEach(id => {
+            const modal = document.getElementById(id);
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+        
+        const menu = document.getElementById('menuDropdown');
+        if (!event.target.closest('.menu-dropdown') && !event.target.closest('.menu-btn')) {
+            menu.classList.remove('show');
+        }
+    };
+</script>
+</body>
+</html>
