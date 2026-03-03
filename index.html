@@ -251,6 +251,11 @@
             height: 70px; 
             flex-shrink: 0; 
             cursor: pointer; 
+            transition: transform 0.2s;
+        }
+        
+        .prod-img-stack:active {
+            transform: scale(0.95);
         }
         
         .prod-img-main { 
@@ -306,7 +311,7 @@
             justify-content: center;
         }
 
-        /* MODAL ZOOM */
+        /* MODAL ZOOM - ENHANCED */
         .modal-full { 
             display: none; 
             position: fixed; 
@@ -316,6 +321,7 @@
             height: 100%; 
             background: rgba(0,0,0,0.95); 
             z-index: 3000; 
+            backdrop-filter: blur(5px);
         }
         
         .close-full { 
@@ -326,7 +332,20 @@
             font-size: 2.5rem; 
             z-index: 3100; 
             font-weight: bold; 
-            cursor: pointer; 
+            cursor: pointer;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+        
+        .close-full:hover,
+        .close-full:active {
+            background: rgba(255,255,255,0.3);
         }
         
         .slide-container { 
@@ -334,7 +353,9 @@
             height: 100%; 
             display: flex; 
             overflow-x: auto; 
-            scroll-snap-type: x mandatory; 
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
         }
         
         .slide-item { 
@@ -344,12 +365,56 @@
             align-items: center; 
             justify-content: center; 
             scroll-snap-align: start; 
+            position: relative;
         }
         
         .slide-item img { 
-            max-width: 100%; 
-            max-height: 85vh; 
+            max-width: 90%; 
+            max-height: 80vh; 
             object-fit: contain; 
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 0.3s;
+        }
+        
+        /* Image counter */
+        .image-counter {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        /* Navigation hints */
+        .nav-hint {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 2rem;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+        
+        .nav-hint.left {
+            left: 20px;
+        }
+        
+        .nav-hint.right {
+            right: 20px;
+        }
+        
+        .slide-container:hover .nav-hint,
+        .slide-container:active .nav-hint {
+            opacity: 1;
         }
 
         /* BOTTOM NAV */
@@ -376,6 +441,7 @@
             font-size: 0.75rem; 
             gap: 4px; 
             cursor: pointer;
+            transition: color 0.3s;
         }
         
         .nav-item.active { 
@@ -399,6 +465,7 @@
             align-items: center; 
             justify-content: center; 
             padding: 20px; 
+            backdrop-filter: blur(5px);
         }
         
         .backup-box { 
@@ -408,11 +475,19 @@
             padding: 25px; 
             border-radius: 20px; 
             text-align: center; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
 
         /* Search input */
         #q-search {
             margin-bottom: 15px;
+        }
+
+        /* Loading indicator for images */
+        .image-loading {
+            position: absolute;
+            color: white;
+            font-size: 1rem;
         }
     </style>
 </head>
@@ -476,6 +551,7 @@
     </div>
 </div>
 
+<!-- ENHANCED ZOOM MODAL -->
 <div id="fullModal" class="modal-full">
     <span class="close-full" onclick="closeZoom()">&times;</span>
     <div class="slide-container" id="slide-wrap"></div>
@@ -494,24 +570,91 @@
     let db = JSON.parse(localStorage.getItem('stok_strip_v9')) || [];
     let curCat = "HONDA";
     let img1 = "", img2 = "";
+    let currentZoomIndex = 0;
 
     function toggleMenu() { 
         document.getElementById('menuDropdown').classList.toggle('show'); 
     }
 
-    // --- ZOOM & SWIPE ---
-    function showZoom(id) {
+    // Close menu when clicking outside
+    document.addEventListener('click', function(event) {
+        const menu = document.getElementById('menuDropdown');
+        const menuBtn = document.querySelector('.menu-btn');
+        if (menu.classList.contains('show') && !menu.contains(event.target) && !menuBtn.contains(event.target)) {
+            menu.classList.remove('show');
+        }
+    });
+
+    // --- ENHANCED ZOOM & SWIPE ---
+    function showZoom(id, imageIndex = 0) {
         const p = db.find(x => x.id === id);
         if(!p) return;
-        let images = [p.img1];
-        if(p.img2) images.push(p.img2);
         
-        document.getElementById('slide-wrap').innerHTML = images.map(src => `<div class="slide-item"><img src="${src}"></div>`).join('');
+        let images = [p.img1];
+        if(p.img2 && p.img2.trim() !== '') images.push(p.img2);
+        
+        currentZoomIndex = imageIndex;
+        
+        // Create slides with counter
+        const slidesHtml = images.map((src, idx) => `
+            <div class="slide-item" data-index="${idx}">
+                <img src="${src}" alt="Product image ${idx + 1}" onclick="handleImageClick(event)">
+                ${images.length > 1 ? '<div class="image-counter">' + (idx + 1) + ' dari ' + images.length + '</div>' : ''}
+            </div>
+        `).join('');
+        
+        document.getElementById('slide-wrap').innerHTML = slidesHtml;
         document.getElementById('fullModal').style.display = 'block';
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        
+        // Scroll to specific image
+        setTimeout(() => {
+            const slideContainer = document.getElementById('slide-wrap');
+            if (slideContainer && images.length > 0) {
+                slideContainer.scrollLeft = imageIndex * slideContainer.clientWidth;
+            }
+        }, 100);
+    }
+    
+    function handleImageClick(event) {
+        event.stopPropagation();
+        // Optional: Add double-tap to zoom functionality here
     }
     
     function closeZoom() { 
         document.getElementById('fullModal').style.display = 'none'; 
+        document.body.style.overflow = ''; // Restore scrolling
+    }
+
+    // Handle swipe with keyboard
+    document.addEventListener('keydown', function(e) {
+        if (document.getElementById('fullModal').style.display === 'block') {
+            if (e.key === 'Escape') {
+                closeZoom();
+            } else if (e.key === 'ArrowLeft') {
+                navigateZoom('prev');
+            } else if (e.key === 'ArrowRight') {
+                navigateZoom('next');
+            }
+        }
+    });
+
+    function navigateZoom(direction) {
+        const slideContainer = document.getElementById('slide-wrap');
+        const slides = slideContainer.querySelectorAll('.slide-item');
+        if (slides.length <= 1) return;
+        
+        const currentScroll = slideContainer.scrollLeft;
+        const slideWidth = slideContainer.clientWidth;
+        const currentIndex = Math.round(currentScroll / slideWidth);
+        
+        let newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+        if (newIndex >= 0 && newIndex < slides.length) {
+            slideContainer.scrollTo({
+                left: newIndex * slideWidth,
+                behavior: 'smooth'
+            });
+        }
     }
 
     // --- SQLITE BACKUP/RESTORE ---
@@ -523,6 +666,7 @@
         a.href = url;
         a.download = `Stok_Backup_${new Date().toISOString().slice(0,10)}.sqlite`;
         a.click();
+        URL.revokeObjectURL(url);
         toggleMenu();
     }
 
@@ -534,6 +678,7 @@
     function uploadRestoreSqlite() {
         const file = document.getElementById('restore-file-sqlite').files[0];
         if(!file) return alert("Pilih file!");
+        
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
@@ -542,9 +687,14 @@
                     db = res.payload;
                     localStorage.setItem('stok_strip_v9', JSON.stringify(db));
                     alert("Berhasil restore!");
+                    document.getElementById('modalRestoreFile').style.display = 'none';
                     location.reload();
-                } else { alert("File bukan cadangan asli!"); }
-            } catch(err) { alert("File korup atau format salah!"); }
+                } else { 
+                    alert("File bukan cadangan asli!"); 
+                }
+            } catch(err) { 
+                alert("File korup atau format salah!"); 
+            }
         };
         reader.readAsText(file);
     }
@@ -563,10 +713,15 @@
                     canvas.height = imgObj.height * scale;
                     canvas.getContext('2d').drawImage(imgObj, 0, 0, canvas.width, canvas.height);
                     const data = canvas.toDataURL('image/jpeg', 0.6);
+                    
                     if(index === 1) img1 = data; else img2 = data;
+                    
                     document.getElementById('prev-'+index).src = data;
                     document.getElementById('prev-'+index).classList.remove('hidden');
                     document.getElementById('lab-'+index).classList.add('hidden');
+                    
+                    // Clear file input
+                    input.value = '';
                 };
                 imgObj.src = e.target.result;
             };
@@ -577,9 +732,11 @@
     // --- CRUD ---
     function simpanProduk() {
         const id = document.getElementById('f-id').value;
-        const nama = document.getElementById('f-nama').value;
+        const nama = document.getElementById('f-nama').value.trim();
         const kategori = document.getElementById('f-kategori').value;
-        if(!nama || !img1) return alert("Nama & Foto 1 wajib!");
+        
+        if(!nama) return alert("Nama produk wajib diisi!");
+        if(!img1) return alert("Foto 1 wajib diupload!");
 
         if(id) {
             const idx = db.findIndex(p => p.id == id);
@@ -587,6 +744,7 @@
         } else {
             db.push({ id: Date.now(), nama, kategori, img1, img2, stok: 0 });
         }
+        
         localStorage.setItem('stok_strip_v9', JSON.stringify(db));
         resetForm(); 
         navKe('list');
@@ -594,19 +752,27 @@
 
     function editProduk(id) {
         const p = db.find(x => x.id == id);
+        if (!p) return;
+        
         document.getElementById('f-id').value = p.id;
         document.getElementById('f-nama').value = p.nama;
         document.getElementById('f-kategori').value = p.kategori;
         img1 = p.img1; 
         img2 = p.img2 || "";
+        
         document.getElementById('prev-1').src = img1;
         document.getElementById('prev-1').classList.remove('hidden');
         document.getElementById('lab-1').classList.add('hidden');
+        
         if(img2) {
             document.getElementById('prev-2').src = img2;
             document.getElementById('prev-2').classList.remove('hidden');
             document.getElementById('lab-2').classList.add('hidden');
+        } else {
+            document.getElementById('prev-2').classList.add('hidden');
+            document.getElementById('lab-2').classList.remove('hidden');
         }
+        
         document.getElementById('form-title').innerText = "Edit Produk";
         document.getElementById('btn-cancel').classList.remove('hidden');
         navKe('add');
@@ -623,7 +789,7 @@
         
         document.getElementById('list-render').innerHTML = filtered.map(item => `
             <div class="product-item">
-                <div class="prod-img-stack" onclick="showZoom(${item.id})">
+                <div class="prod-img-stack" onclick="showZoom(${item.id}, 0)">
                     <img src="${item.img1}" class="prod-img-main">
                     ${item.img2 ? `<img src="${item.img2}" class="prod-img-sub">` : ''}
                 </div>
@@ -644,12 +810,21 @@
     function resetForm() {
         document.getElementById('f-id').value = "";
         document.getElementById('f-nama').value = "";
+        document.getElementById('f-kategori').value = "HONDA";
         img1 = ""; 
         img2 = "";
-        document.querySelectorAll('.photo-box img').forEach(i => i.classList.add('hidden'));
-        document.querySelectorAll('.photo-label').forEach(l => l.classList.remove('hidden'));
+        
+        document.getElementById('prev-1').classList.add('hidden');
+        document.getElementById('prev-2').classList.add('hidden');
+        document.getElementById('lab-1').classList.remove('hidden');
+        document.getElementById('lab-2').classList.remove('hidden');
+        
         document.getElementById('form-title').innerText = "Tambah Produk";
         document.getElementById('btn-cancel').classList.add('hidden');
+        
+        // Clear file inputs
+        document.getElementById('in-img-1').value = '';
+        document.getElementById('in-img-2').value = '';
     }
 
     function adjustStok(id, v) {
@@ -660,8 +835,8 @@
     }
 
     function hapus(id) { 
-        if(confirm("Hapus?")) { 
-            db=db.filter(x=>x.id!==id); 
+        if(confirm("Hapus produk ini?")) { 
+            db = db.filter(x => x.id !== id); 
             localStorage.setItem('stok_strip_v9', JSON.stringify(db)); 
             renderProduk(); 
         } 
@@ -673,9 +848,12 @@
         document.getElementById('screen-add').classList.toggle('hidden', page !== 'add');
         document.getElementById('screen-list').classList.toggle('hidden', page !== 'list');
         document.getElementById('tabs-container').classList.toggle('hidden', page !== 'list');
+        
         if(page === 'list') { 
             renderTabs(); 
             renderProduk(); 
+        } else {
+            document.getElementById('q-search').value = '';
         }
     }
 
@@ -686,6 +864,7 @@
         ).join('');
     }
 
+    // Initialize
     navKe('add');
 </script>
 </body>
