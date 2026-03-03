@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stok Strip Pro</title>
+    <title>Stok Strip Pro - Restorasi</title>
     <link rel="manifest" href="manifest.json">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         
-        /* FIX SCROLL: Body harus bisa scroll */
+        /* PERBAIKAN SCROLL: Body harus bisa digulir */
         body { 
             background: #f0f2f5; 
             min-height: 100vh; 
@@ -17,7 +17,6 @@
             overflow-y: auto; 
         }
         
-        /* HEADER TETAP DI ATAS */
         .header { 
             background: #3b5998; color: white; padding: 15px; 
             display: flex; justify-content: space-between; align-items: center; 
@@ -33,17 +32,13 @@
         }
         .menu-dropdown.show { display: block; }
         .menu-item { padding: 12px 15px; border-bottom: 1px solid #eee; color: #333; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; }
-        .menu-item:active { background: #f0f0f0; }
 
-        /* KONTEN */
         #main-content { padding: 15px; display: none; flex: 1; }
         .btn-input { background: #28a745; color: white; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; margin-bottom: 20px; cursor: pointer; }
 
-        /* LIST BARANG */
         .card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid #3b5998; }
-        .btn-hapus { background: #ff4d4d; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; float: right; }
+        .btn-hapus { background: #ff4d4d; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; float: right; }
 
-        /* LOGIN SCREEN */
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #3b5998; display: flex; align-items: center; justify-content: center;
@@ -51,7 +46,7 @@
         }
         .login-box { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 320px; text-align: center; }
         .login-input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; text-align: center; font-size: 18px; }
-        .login-btn { background: #3b5998; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; }
+        .login-btn { background: #3b5998; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
     </style>
 </head>
 <body>
@@ -80,77 +75,78 @@
     </div>
 
     <div id="main-content">
-        <div class="btn-input" onclick="tambahDataManual()">➕ TAMBAH DATA (TESTING)</div>
+        <div class="btn-input" onclick="tambahData()">➕ INPUT BARANG</div>
         <div id="item-list"></div>
-        <div style="height: 100px;"></div> </div>
+        <div style="height: 100px;"></div> 
+    </div>
 
 <script>
-    const STORAGE_KEY = 'stok_data_final';
-    let database = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    // KUNCI PENYIMPANAN DATA (Sama dengan versi terdahulu)
+    const STORAGE_KEY = 'stok_strip_data'; 
+    let db = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 
-    // LOGIN DENGAN PIN 8989
     function checkLogin() {
         const input = document.getElementById('pinInput').value;
-        const pinBenar = localStorage.getItem('app_pin') || '8989';
-        if (input === pinBenar) {
+        const pinSaved = localStorage.getItem('app_pin') || '8989';
+        if (input === pinSaved) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-content').style.display = 'block';
             render();
         } else {
-            alert("PIN SALAH! Gunakan 8989");
+            alert("PIN SALAH! Gunakan PIN Anda yang lama atau 8989.");
         }
     }
 
     function toggleMenu() { document.getElementById('menuDropdown').classList.toggle('show'); }
 
-    // RENDER & HAPUS DATA
     function render() {
         const container = document.getElementById('item-list');
         container.innerHTML = '';
-        if (database.length === 0) {
-            container.innerHTML = '<p style="text-align:center;color:grey;margin-top:20px;">Belum ada data.</p>';
+        if (db.length === 0) {
+            container.innerHTML = '<p style="text-align:center;color:grey;margin-top:20px;">Data kosong atau belum di-restore.</p>';
             return;
         }
-        database.forEach((item, i) => {
+        db.forEach((item, i) => {
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
                 <button class="btn-hapus" onclick="hapus(${i})">Hapus</button>
-                <h3>${item.nama}</h3>
-                <p>Stok: ${item.jumlah}</p>
+                <h3 style="color:#3b5998;">${item.nama || 'Tanpa Nama'}</h3>
+                <p>Jumlah Stok: <strong>${item.stok || 0}</strong></p>
             `;
             container.appendChild(card);
         });
     }
 
-    function hapus(index) {
-        if (confirm("Hapus item ini?")) {
-            database.splice(index, 1);
-            save();
+    function tambahData() {
+        const nm = prompt("Nama Barang:");
+        const sk = prompt("Jumlah Stok:", "0");
+        if (nm) {
+            db.push({ nama: nm, stok: sk });
+            simpan();
         }
     }
 
-    function tambahDataManual() {
-        const nama = prompt("Nama Barang:");
-        if (nama) {
-            database.push({ nama: nama, jumlah: 10 });
-            save();
+    function hapus(idx) {
+        if (confirm("Hapus data ini secara permanen?")) {
+            db.splice(idx, 1);
+            simpan();
         }
     }
 
-    function save() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(database));
+    function simpan() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
         render();
     }
 
     function gantiPin() {
-        const baru = prompt("PIN Baru:");
-        if (baru) { localStorage.setItem('app_pin', baru); alert("PIN diganti!"); location.reload(); }
+        const baru = prompt("Masukkan PIN Baru:");
+        if (baru) { localStorage.setItem('app_pin', baru); alert("PIN Berhasil Diganti!"); }
     }
 
-    // BACKUP & RESTORE
+    // --- FUNGSI BACKUP/RESTORE ---
     function backupToFile() {
-        const blob = new Blob([JSON.stringify(database)], { type: 'application/octet-stream' });
+        const blob = new Blob([JSON.stringify(db)], { type: 'application/octet-stream' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = 'stok_strip_backup.sqlite';
@@ -163,9 +159,9 @@
         input.onchange = e => {
             const reader = new FileReader();
             reader.onload = ev => {
-                database = JSON.parse(ev.target.result);
-                save();
-                alert("Berhasil Restore!");
+                db = JSON.parse(ev.target.result);
+                simpan();
+                alert("Data Berhasil Dikembalikan!");
             };
             reader.readAsText(e.target.files[0]);
         };
@@ -173,12 +169,12 @@
     }
 
     function backupToClipboard() {
-        navigator.clipboard.writeText(JSON.stringify(database)).then(() => alert("Data dicopy!"));
+        navigator.clipboard.writeText(JSON.stringify(db)).then(() => alert("Data dicopy ke clipboard!"));
     }
 
     function restoreFromClipboard() {
-        const txt = prompt("Tempel data backup:");
-        if (txt) { database = JSON.parse(txt); save(); }
+        const txt = prompt("Tempel data backup di sini:");
+        if (txt) { db = JSON.parse(txt); simpan(); }
     }
 
     window.onclick = e => { if (!e.target.matches('.menu-btn')) document.getElementById('menuDropdown').classList.remove('show'); }
