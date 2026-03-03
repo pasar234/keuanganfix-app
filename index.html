@@ -132,8 +132,8 @@
             -webkit-overflow-scrolling: touch;
             padding: 20px;
             padding-bottom: 100px;
-            height: 0; /* Force flex item to respect overflow */
-            min-height: 0; /* Important for Firefox */
+            height: 0;
+            min-height: 0;
         }
         
         /* Screen containers */
@@ -251,11 +251,10 @@
             height: 70px; 
             flex-shrink: 0; 
             cursor: pointer; 
-            transition: transform 0.2s;
         }
         
         .prod-img-stack:active {
-            transform: scale(0.95);
+            opacity: 0.8;
         }
         
         .prod-img-main { 
@@ -311,7 +310,7 @@
             justify-content: center;
         }
 
-        /* MODAL ZOOM - ENHANCED */
+        /* MODAL ZOOM - FIXED */
         .modal-full { 
             display: none; 
             position: fixed; 
@@ -321,7 +320,6 @@
             height: 100%; 
             background: rgba(0,0,0,0.95); 
             z-index: 3000; 
-            backdrop-filter: blur(5px);
         }
         
         .close-full { 
@@ -340,12 +338,6 @@
             justify-content: center;
             background: rgba(255,255,255,0.2);
             border-radius: 50%;
-            transition: background 0.3s;
-        }
-        
-        .close-full:hover,
-        .close-full:active {
-            background: rgba(255,255,255,0.3);
         }
         
         .slide-container { 
@@ -355,7 +347,6 @@
             overflow-x: auto; 
             scroll-snap-type: x mandatory;
             -webkit-overflow-scrolling: touch;
-            scroll-behavior: smooth;
         }
         
         .slide-item { 
@@ -365,56 +356,26 @@
             align-items: center; 
             justify-content: center; 
             scroll-snap-align: start; 
-            position: relative;
         }
         
         .slide-item img { 
             max-width: 90%; 
             max-height: 80vh; 
             object-fit: contain; 
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            transition: transform 0.3s;
+            border-radius: 8px;
         }
         
-        /* Image counter */
         .image-counter {
             position: absolute;
-            bottom: 20px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(0,0,0,0.6);
             color: white;
             padding: 8px 16px;
-            border-radius: 30px;
+            border-radius: 20px;
             font-size: 0.9rem;
-            font-weight: 600;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        /* Navigation hints */
-        .nav-hint {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            color: white;
-            font-size: 2rem;
-            opacity: 0.5;
-            transition: opacity 0.3s;
-        }
-        
-        .nav-hint.left {
-            left: 20px;
-        }
-        
-        .nav-hint.right {
-            right: 20px;
-        }
-        
-        .slide-container:hover .nav-hint,
-        .slide-container:active .nav-hint {
-            opacity: 1;
+            z-index: 3200;
         }
 
         /* BOTTOM NAV */
@@ -441,7 +402,6 @@
             font-size: 0.75rem; 
             gap: 4px; 
             cursor: pointer;
-            transition: color 0.3s;
         }
         
         .nav-item.active { 
@@ -465,7 +425,6 @@
             align-items: center; 
             justify-content: center; 
             padding: 20px; 
-            backdrop-filter: blur(5px);
         }
         
         .backup-box { 
@@ -475,19 +434,11 @@
             padding: 25px; 
             border-radius: 20px; 
             text-align: center; 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
 
         /* Search input */
         #q-search {
             margin-bottom: 15px;
-        }
-
-        /* Loading indicator for images */
-        .image-loading {
-            position: absolute;
-            color: white;
-            font-size: 1rem;
         }
     </style>
 </head>
@@ -551,7 +502,7 @@
     </div>
 </div>
 
-<!-- ENHANCED ZOOM MODAL -->
+<!-- FIXED ZOOM MODAL -->
 <div id="fullModal" class="modal-full">
     <span class="close-full" onclick="closeZoom()">&times;</span>
     <div class="slide-container" id="slide-wrap"></div>
@@ -562,15 +513,20 @@
         <h3 style="margin-bottom:15px">📂 Restore .sqlite</h3>
         <input type="file" id="restore-file-sqlite" accept=".sqlite" style="width:100%; margin-bottom:15px;">
         <button class="btn-primary" onclick="uploadRestoreSqlite()">PROSES RESTORE</button>
-        <button onclick="document.getElementById('modalRestoreFile').style.display='none'" style="margin-top:10px; border:none; background:none; color:gray">Batal</button>
+        <button onclick="document.getElementById('modalRestoreFile').style.display='none'" style="margin-top:10px; border:none; background:none; color:gray; cursor:pointer;">Batal</button>
     </div>
 </div>
 
 <script>
+    // Initialize database
     let db = JSON.parse(localStorage.getItem('stok_strip_v9')) || [];
     let curCat = "HONDA";
     let img1 = "", img2 = "";
-    let currentZoomIndex = 0;
+
+    // Debug function
+    function debug(message) {
+        console.log(message);
+    }
 
     function toggleMenu() { 
         document.getElementById('menuDropdown').classList.toggle('show'); 
@@ -580,82 +536,81 @@
     document.addEventListener('click', function(event) {
         const menu = document.getElementById('menuDropdown');
         const menuBtn = document.querySelector('.menu-btn');
-        if (menu.classList.contains('show') && !menu.contains(event.target) && !menuBtn.contains(event.target)) {
+        if (menu && menu.classList.contains('show') && !menu.contains(event.target) && !menuBtn.contains(event.target)) {
             menu.classList.remove('show');
         }
     });
 
-    // --- ENHANCED ZOOM & SWIPE ---
-    function showZoom(id, imageIndex = 0) {
+    // --- FIXED ZOOM FUNCTION ---
+    function showZoom(id) {
+        debug('showZoom called with id: ' + id);
+        
+        // Find product
         const p = db.find(x => x.id === id);
-        if(!p) return;
+        if(!p) {
+            debug('Product not found');
+            return;
+        }
         
-        let images = [p.img1];
-        if(p.img2 && p.img2.trim() !== '') images.push(p.img2);
+        debug('Product found: ' + p.nama);
         
-        currentZoomIndex = imageIndex;
+        // Prepare images array
+        let images = [];
+        if (p.img1) images.push(p.img1);
+        if (p.img2 && p.img2.trim() !== '') images.push(p.img2);
         
-        // Create slides with counter
-        const slidesHtml = images.map((src, idx) => `
-            <div class="slide-item" data-index="${idx}">
-                <img src="${src}" alt="Product image ${idx + 1}" onclick="handleImageClick(event)">
-                ${images.length > 1 ? '<div class="image-counter">' + (idx + 1) + ' dari ' + images.length + '</div>' : ''}
-            </div>
-        `).join('');
+        debug('Number of images: ' + images.length);
         
-        document.getElementById('slide-wrap').innerHTML = slidesHtml;
-        document.getElementById('fullModal').style.display = 'block';
-        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        if (images.length === 0) {
+            alert('Tidak ada foto untuk produk ini');
+            return;
+        }
         
-        // Scroll to specific image
-        setTimeout(() => {
-            const slideContainer = document.getElementById('slide-wrap');
-            if (slideContainer && images.length > 0) {
-                slideContainer.scrollLeft = imageIndex * slideContainer.clientWidth;
-            }
-        }, 100);
-    }
-    
-    function handleImageClick(event) {
-        event.stopPropagation();
-        // Optional: Add double-tap to zoom functionality here
+        // Create slides
+        const slideWrap = document.getElementById('slide-wrap');
+        if (!slideWrap) {
+            debug('slide-wrap element not found');
+            return;
+        }
+        
+        let slidesHtml = '';
+        images.forEach((src, index) => {
+            slidesHtml += `
+                <div class="slide-item">
+                    <img src="${src}" alt="Product image ${index + 1}">
+                    ${images.length > 1 ? `<div class="image-counter">${index + 1} / ${images.length}</div>` : ''}
+                </div>
+            `;
+        });
+        
+        slideWrap.innerHTML = slidesHtml;
+        
+        // Show modal
+        const modal = document.getElementById('fullModal');
+        modal.style.display = 'block';
+        
+        // Prevent body scroll
+        document.body.style.overflow = 'hidden';
+        
+        debug('Zoom modal displayed');
     }
     
     function closeZoom() { 
-        document.getElementById('fullModal').style.display = 'none'; 
+        const modal = document.getElementById('fullModal');
+        modal.style.display = 'none';
         document.body.style.overflow = ''; // Restore scrolling
+        debug('Zoom modal closed');
     }
 
-    // Handle swipe with keyboard
+    // Handle keyboard events for zoom modal
     document.addEventListener('keydown', function(e) {
-        if (document.getElementById('fullModal').style.display === 'block') {
+        const modal = document.getElementById('fullModal');
+        if (modal.style.display === 'block') {
             if (e.key === 'Escape') {
                 closeZoom();
-            } else if (e.key === 'ArrowLeft') {
-                navigateZoom('prev');
-            } else if (e.key === 'ArrowRight') {
-                navigateZoom('next');
             }
         }
     });
-
-    function navigateZoom(direction) {
-        const slideContainer = document.getElementById('slide-wrap');
-        const slides = slideContainer.querySelectorAll('.slide-item');
-        if (slides.length <= 1) return;
-        
-        const currentScroll = slideContainer.scrollLeft;
-        const slideWidth = slideContainer.clientWidth;
-        const currentIndex = Math.round(currentScroll / slideWidth);
-        
-        let newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
-        if (newIndex >= 0 && newIndex < slides.length) {
-            slideContainer.scrollTo({
-                left: newIndex * slideWidth,
-                behavior: 'smooth'
-            });
-        }
-    }
 
     // --- SQLITE BACKUP/RESTORE ---
     function downloadBackupSqlite() {
@@ -683,12 +638,16 @@
         reader.onload = function(e) {
             try {
                 const res = JSON.parse(e.target.result);
-                if(res.app === "StokStripPro") {
+                if(res.app === "StokStripPro" && Array.isArray(res.payload)) {
                     db = res.payload;
                     localStorage.setItem('stok_strip_v9', JSON.stringify(db));
                     alert("Berhasil restore!");
                     document.getElementById('modalRestoreFile').style.display = 'none';
-                    location.reload();
+                    
+                    // Refresh current view
+                    if (!document.getElementById('screen-list').classList.contains('hidden')) {
+                        renderProduk();
+                    }
                 } else { 
                     alert("File bukan cadangan asli!"); 
                 }
@@ -706,6 +665,7 @@
             reader.onload = function(e) {
                 const imgObj = new Image();
                 imgObj.onload = function() {
+                    // Compress image
                     const canvas = document.createElement('canvas');
                     const maxW = 500;
                     const scale = maxW / imgObj.width;
@@ -714,14 +674,21 @@
                     canvas.getContext('2d').drawImage(imgObj, 0, 0, canvas.width, canvas.height);
                     const data = canvas.toDataURL('image/jpeg', 0.6);
                     
+                    // Store image data
                     if(index === 1) img1 = data; else img2 = data;
                     
-                    document.getElementById('prev-'+index).src = data;
-                    document.getElementById('prev-'+index).classList.remove('hidden');
-                    document.getElementById('lab-'+index).classList.add('hidden');
+                    // Update preview
+                    const prevImg = document.getElementById('prev-'+index);
+                    const label = document.getElementById('lab-'+index);
+                    
+                    prevImg.src = data;
+                    prevImg.classList.remove('hidden');
+                    label.classList.add('hidden');
                     
                     // Clear file input
                     input.value = '';
+                    
+                    debug('Image ' + index + ' processed');
                 };
                 imgObj.src = e.target.result;
             };
@@ -779,7 +746,7 @@
     }
 
     function renderProduk() {
-        const q = document.getElementById('q-search').value.toLowerCase();
+        const q = document.getElementById('q-search').value.toLowerCase().trim();
         const filtered = db.filter(i => i.kategori === curCat && i.nama.toLowerCase().includes(q));
         
         if (filtered.length === 0) {
@@ -787,24 +754,26 @@
             return;
         }
         
-        document.getElementById('list-render').innerHTML = filtered.map(item => `
-            <div class="product-item">
-                <div class="prod-img-stack" onclick="showZoom(${item.id}, 0)">
-                    <img src="${item.img1}" class="prod-img-main">
-                    ${item.img2 ? `<img src="${item.img2}" class="prod-img-sub">` : ''}
+        document.getElementById('list-render').innerHTML = filtered.map(item => {
+            return `
+                <div class="product-item">
+                    <div class="prod-img-stack" onclick="showZoom(${item.id})">
+                        <img src="${item.img1}" class="prod-img-main">
+                        ${item.img2 ? `<img src="${item.img2}" class="prod-img-sub">` : ''}
+                    </div>
+                    <div class="prod-info">
+                        <div style="font-weight:700;">${item.nama}</div>
+                        <div style="font-size:0.8rem; color:gray;">Stok: <b>${item.stok}</b></div>
+                        <div class="btn-edit-text" onclick="editProduk(${item.id})">✎ EDIT</div>
+                    </div>
+                    <div class="stock-ctrl">
+                        <button class="btn-s" onclick="adjustStok(${item.id},-1)">−</button>
+                        <button class="btn-s" onclick="adjustStok(${item.id},1)">+</button>
+                        <button class="btn-s" style="background:#fee2e2;color:red;border:none" onclick="hapus(${item.id})">🗑️</button>
+                    </div>
                 </div>
-                <div class="prod-info">
-                    <div style="font-weight:700;">${item.nama}</div>
-                    <div style="font-size:0.8rem; color:gray;">Stok: <b>${item.stok}</b></div>
-                    <div class="btn-edit-text" onclick="editProduk(${item.id})">✎ EDIT</div>
-                </div>
-                <div class="stock-ctrl">
-                    <button class="btn-s" onclick="adjustStok(${item.id},-1)">−</button>
-                    <button class="btn-s" onclick="adjustStok(${item.id},1)">+</button>
-                    <button class="btn-s" style="background:#fee2e2;color:red;border:none" onclick="hapus(${item.id})">🗑️</button>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     function resetForm() {
@@ -814,6 +783,7 @@
         img1 = ""; 
         img2 = "";
         
+        // Reset preview images
         document.getElementById('prev-1').classList.add('hidden');
         document.getElementById('prev-2').classList.add('hidden');
         document.getElementById('lab-1').classList.remove('hidden');
@@ -866,6 +836,21 @@
 
     // Initialize
     navKe('add');
+    
+    // Test data if database is empty
+    if (db.length === 0) {
+        // Add sample data for testing
+        const sampleImg = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 100 100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%233b5998\'/%3E%3Ctext x=\'50\' y=\'55\' font-size=\'12\' text-anchor=\'middle\' fill=\'white\' font-family=\'Arial\'%3ESample%3C/text%3E%3C/svg%3E';
+        db.push({
+            id: Date.now(),
+            nama: "Sample Product",
+            kategori: "HONDA",
+            img1: sampleImg,
+            img2: sampleImg,
+            stok: 10
+        });
+        localStorage.setItem('stok_strip_v9', JSON.stringify(db));
+    }
 </script>
 </body>
 </html>
