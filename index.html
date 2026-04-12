@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <title>Stok Strip Pro - Firebase Sync</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif; 
+        }
+        
+        body { 
+            background: #f1f5f9; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+            position: fixed;
+            width: 100%;
+        }
+        
+        #app-content {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .header { 
+            background: #0f172a; 
+            color: white; 
+            padding: 14px 20px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            font-weight: 700; 
+            flex-shrink: 0;
+        }
+        
+        .sub-header-blue { 
+            background: #2563eb; 
+            color: white; 
+            padding: 8px 20px; 
+            font-weight: 600; 
+            font-size: 0.85rem; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            gap: 8px; 
+            flex-shrink: 0;
+        }
+        
+        .sync-status {
+            background: rgba(255,255,255,0.2);
+            border-radius: 40px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            font-weight: normal;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .sync-status:active {
+            background: rgba(255,255,255,0.35);
+        }
+        
+        .status-connected { background: #10b981; }
+        .status-error { background: #ef4444; }
+        .status-syncing { background: #f59e0b; animation: pulse 1s infinite; }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        .menu-btn { 
+            background: rgba(255,255,255,0.15); 
+            border: none; 
+            color: white; 
+            font-size: 1.4rem; 
+            width: 38px; 
+            height: 38px; 
+            border-radius: 30px; 
+            cursor: pointer; 
+        }
+        
+        .menu-dropdown { 
+            position: absolute; 
+            top: 65px; 
+            right: 16px; 
+            background: white; 
+            border-radius: 20px; 
+            box-shadow: 0 20px 35px rgba(0,0,0,0.2); 
+            width: 260px; 
+            z-index: 1000; 
+            display: none; 
+            overflow: hidden; 
+        }
+        .menu-dropdown.show { display: block; }
+        
+        .menu-item { 
+            padding: 14px 18px; 
+            display: flex; 
+            align-items: center; 
+            gap: 14px; 
+            font-weight: 500; 
+            cursor: pointer; 
+            border-bottom: 1px solid #f1f5f9; 
+            color: #1e293b; 
+        }
+        .menu-item:active { background: #f8fafc; }
+        
+        .tabs { 
+            display: flex; 
+            background: white; 
+            border-bottom: 1px solid #e2e8f0; 
+            overflow-x: auto; 
+            flex-shrink: 0; 
+        }
+        .tab { 
+            flex: 1; 
+            padding: 14px 5px; 
+            font-weight: 700; 
+            color: #64748b; 
+            border-bottom: 3px solid transparent; 
+            cursor: pointer; 
+            text-align: center; 
+            font-size: 0.8rem; 
+            white-space: nowrap; 
+        }
+        .tab.active { border-bottom: 3px solid #2563eb; color: #2563eb; background: #eff6ff; }
+        
+        .main-content { 
+            flex: 1 1 auto;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch;
+            padding: 18px;
+            padding-bottom: 90px;
+        }
+        
+        .card { 
+            background: white; 
+            padding: 22px; 
+            border-radius: 28px; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05); 
+        }
+        
+        .form-label { font-weight: 700; font-size: 0.7rem; color: #475569; margin-bottom: 6px; display: block; }
+        .form-input { width: 100%; padding: 14px; border-radius: 18px; border: 1.5px solid #e2e8f0; margin-bottom: 18px; font-size: 0.95rem; outline: none; }
+        .form-input:focus { border-color: #3b82f6; }
+        
+        .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+        .photo-box { border: 2px dashed #cbd5e1; border-radius: 24px; height: 130px; display: flex; align-items: center; justify-content: center; background: #fafcff; cursor: pointer; overflow: hidden; position: relative; }
+        .photo-box img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-label { font-size: 0.7rem; font-weight: 600; color: #64748b; background: rgba(255,255,255,0.8); padding: 4px 10px; border-radius: 40px; }
+        
+        .btn-primary { width: 100%; padding: 16px; background: #2563eb; color: white; border: none; border-radius: 40px; font-weight: 700; cursor: pointer; }
+        .btn-primary:active { transform: scale(0.97); background: #1d4ed8; }
+        .btn-cancel { width: 100%; padding: 16px; background: #e2e8f0; color: #334155; border: none; border-radius: 40px; margin-top: 12px; cursor: pointer; }
+        
+        .product-item { background: white; border-radius: 24px; padding: 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 14px; border: 1px solid #eef2ff; }
+        .prod-img-stack { position: relative; width: 75px; height: 75px; flex-shrink: 0; cursor: pointer; border-radius: 18px; overflow: hidden; }
+        .prod-img-main { width: 100%; height: 100%; object-fit: cover; }
+        .prod-img-sub { position: absolute; right: -6px; bottom: -6px; width: 38px; height: 38px; border-radius: 12px; border: 2px solid white; object-fit: cover; }
+        .prod-info { flex: 1; }
+        .btn-edit-text { color: #3b82f6; font-size: 0.7rem; font-weight: 700; cursor: pointer; display: inline-block; margin-top: 6px; background: #eff6ff; padding: 4px 12px; border-radius: 40px; }
+        .stock-ctrl { display: flex; gap: 8px; }
+        .btn-s { width: 40px; height: 40px; border-radius: 30px; border: 1px solid #e2e8f0; background: white; font-weight: bold; cursor: pointer; }
+        
+        /* ZOOM MODAL */
+        .modal-full { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000000e6; z-index: 3000; }
+        .close-full { position: absolute; top: 20px; right: 20px; color: white; font-size: 2.4rem; z-index: 3100; cursor: pointer; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.2); border-radius: 60px; }
+        .slide-container { width: 100%; height: 100%; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
+        .slide-item { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; scroll-snap-align: start; }
+        .zoomable-image { max-width: 100%; max-height: 90%; object-fit: contain; transition: transform 0.05s linear; }
+        .image-counter { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: white; padding: 6px 18px; border-radius: 40px; font-size: 0.85rem; }
+        .nav-arrow { position: absolute; top: 50%; transform: translateY(-50%); color: white; font-size: 3rem; cursor: pointer; z-index: 3300; padding: 16px; opacity: 0.6; display: none; }
+        @media (min-width: 768px) { .nav-arrow { display: block; } }
+        .nav-arrow.left { left: 12px; } .nav-arrow.right { right: 12px; }
+        
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid #eef2ff; height: 72px; z-index: 100; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; font-weight: 700; font-size: 0.7rem; gap: 4px; cursor: pointer; }
+        .nav-item.active { color: #2563eb; background: #eff6ff; }
+        .hidden { display: none !important; }
+        
+        .toast-message {
+            position: fixed;
+            bottom: 90px;
+            left: 20px;
+            right: 20px;
+            background: #1e293b;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 60px;
+            text-align: center;
+            z-index: 2000;
+            font-size: 0.85rem;
+            animation: fadeInUp 0.3s ease;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-backup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 5000; align-items: center; justify-content: center; padding: 20px; }
+        .backup-box { background: white; width: 100%; max-width: 340px; padding: 28px; border-radius: 40px; text-align: center; }
+        
+        #q-search { margin-bottom: 18px; border-radius: 60px; background: #f8fafc; }
+        
+        .connection-info {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .connection-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        .dot-green { background: #10b981; box-shadow: 0 0 4px #10b981; }
+        .dot-red { background: #ef4444; }
+        .dot-yellow { background: #f59e0b; }
+    </style>
+</head>
+<body>
+
+<div id="app-content">
+    <div class="header">
+        <div>🏍️ Striping Pro • Cloud</div>
+        <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    </div>
+    <div class="sub-header-blue">
+        <span>⚡ MANAJEMEN STOK</span>
+        <div id="syncStatus" class="sync-status" onclick="testConnectionAndSync()">
+            🔄 Memeriksa...
+        </div>
+    </div>
+
+    <div id="menuDropdown" class="menu-dropdown">
+        <div class="menu-item" onclick="exportBackup()">💾 Backup ke File</div>
+        <div class="menu-item" onclick="showRestoreModal()">📂 Restore dari File</div>
+        <div class="menu-item" onclick="testConnectionAndSync()">🔄 Test Koneksi & Sync</div>
+        <div class="menu-item" onclick="viewConnectionInfo()">📡 Info Koneksi Firebase</div>
+    </div>
+
+    <div id="tabs-container" class="tabs hidden"></div>
+
+    <div class="main-content">
+        <div id="screen-add">
+            <div class="card">
+                <h3 id="form-title" style="margin-bottom:18px;">➕ Tambah Produk</h3>
+                <input type="hidden" id="f-id">
+                <label class="form-label">🏍️ MEREK MOTOR</label>
+                <select id="f-kategori" class="form-input">
+                    <option value="HONDA">HONDA</option>
+                    <option value="YAMAHA">YAMAHA</option>
+                    <option value="SUZUKI">SUZUKI</option>
+                    <option value="KAWASAKI">KAWASAKI</option>
+                </select>
+                <label class="form-label">📛 NAMA PRODUK</label>
+                <input type="text" id="f-nama" class="form-input" placeholder="Nama produk...">
+                
+                <div class="photo-grid">
+                    <div class="photo-box" onclick="triggerFile(1)">
+                        <img id="prev-1" class="hidden">
+                        <div id="lab-1" class="photo-label">📸 FOTO UTAMA</div>
+                        <input type="file" id="in-img-1" accept="image/*" class="hidden" onchange="handleImage(this, 1)">
+                    </div>
+                    <div class="photo-box" onclick="triggerFile(2)">
+                        <img id="prev-2" class="hidden">
+                        <div id="lab-2" class="photo-label">🖼️ FOTO 2</div>
+                        <input type="file" id="in-img-2" accept="image/*" class="hidden" onchange="handleImage(this, 2)">
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="simpanProduk()">💾 SIMPAN PRODUK</button>
+                <button class="btn-cancel hidden" id="btn-cancel" onclick="resetForm()">BATAL EDIT</button>
+            </div>
+        </div>
+
+        <div id="screen-list" class="hidden">
+            <div class="connection-info" id="connectionInfoPanel" style="display: none;">
+                <span id="connectionText">📡 Status Koneksi</span>
+                <span id="connectionDetail">-</span>
+            </div>
+            <input type="text" id="q-search" class="form-input" placeholder="🔍 Cari produk..." oninput="renderProduk()">
+            <div id="list-render"></div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="navKe('add')" id="nav-add"><span>➕</span>TAMBAH</div>
+        <div class="nav-item" onclick="navKe('list')" id="nav-list"><span>📦</span>STOK</div>
+    </div>
+</div>
+
+<!-- ZOOM MODAL -->
+<div id="fullModal" class="modal-full">
+    <span class="close-full" onclick="closeZoom()">&times;</span>
+    <div class="nav-arrow left" onclick="swipeGallery('prev')">❮</div>
+    <div class="nav-arrow right" onclick="swipeGallery('next')">❯</div>
+    <div class="slide-container" id="slide-wrap"></div>
+</div>
+
+<div id="modalRestore" class="modal-backup">
+    <div class="backup-box">
+        <h3>📂 Restore Data</h3>
+        <input type="file" id="restoreFile" accept=".sqlite" style="width:100%; margin:15px 0;">
+        <button class="btn-primary" onclick="restoreFromFile()">RESTORE</button>
+        <button onclick="closeRestoreModal()" style="margin-top:12px; background:none; border:none;">Batal</button>
+    </div>
+</div>
+
+<script>
+    // ==================== FIREBASE KONFIGURASI ====================
+    // ⚠️ GANTI DENGAN KONFIGURASI FIREBASE ANDA ⚠️
+    const firebaseConfig = {
+        apiKey: "AIzaSyDummyFirebaseKey1234567890",    // Ganti dengan API Key asli
+        authDomain: "stokstrip-demo.firebaseapp.com",  // Ganti domain
+        databaseURL: "https://stokstrip-demo-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "stokstrip-demo",
+        storageBucket: "stokstrip-demo.appspot.com",
+        messagingSenderId: "123456789012",
+        appId: "1:123456789012:web:abcdef123456"
+    };
+    
+    let firebaseApp = null;
+    let database = null;
+    let isFirebaseConnected = false;
+    let db = [];
+    let currentCategory = "HONDA";
+    let img1Base64 = "", img2Base64 = "";
+    let currentZoomImages = [];
+    let currentZoomIndex = 0;
+    
+    // Inisialisasi Firebase
+    function initFirebase() {
+        try {
+            if (!firebase.apps.length) {
+                firebaseApp = firebase.initializeApp(firebaseConfig);
+                database = firebaseApp.database();
+            } else {
+                firebaseApp = firebase.app();
+                database = firebaseApp.database();
+            }
+            
+            // Test koneksi dengan listener sekali
+            database.ref('.info/connected').on('value', (snap) => {
+                isFirebaseConnected = snap.val() === true;
+                updateConnectionStatus();
+                if (isFirebaseConnected) {
+                    showToast("✅ Terhubung ke Firebase!");
+                    loadFromFirebase(); // Auto load data saat konek
+                } else {
+                    showToast("⚠️ Tidak terhubung ke Firebase, mode offline");
+                }
+            });
+            
+            console.log("Firebase initialized");
+            return true;
+        } catch(e) {
+            console.error("Firebase init error:", e);
+            isFirebaseConnected = false;
+            updateConnectionStatus();
+            showToast("❌ Gagal inisialisasi Firebase: " + e.message);
+            return false;
+        }
+    }
+    
+    function updateConnectionStatus() {
+        const statusEl = document.getElementById('syncStatus');
+        const infoPanel = document.getElementById('connectionInfoPanel');
+        const connectionText = document.getElementById('connectionText');
+        const connectionDetail = document.getElementById('connectionDetail');
+        
+        if (isFirebaseConnected) {
+            statusEl.innerHTML = '✅ Cloud • Online';
+            statusEl.style.background = '#10b981';
+            if (infoPanel) {
+                infoPanel.style.display = 'flex';
+                connectionText.innerHTML = '🟢 Firebase: Terhubung';
+                connectionDetail.innerHTML = '✓ Data dapat disimpan ke cloud';
+            }
+        } else {
+            statusEl.innerHTML = '⚠️ Offline Mode';
+            statusEl.style.background = '#ef4444';
+            if (infoPanel) {
+                infoPanel.style.display = 'flex';
+                connectionText.innerHTML = '🔴 Firebase: Tidak Terhubung';
+                connectionDetail.innerHTML = '⚠️ Data hanya tersimpan lokal';
+            }
+        }
+    }
+    
+    async function testConnectionAndSync() {
+        const statusEl = document.getElementById('syncStatus');
+        statusEl.innerHTML = '🔄 Mengecek...';
+        statusEl.style.background = '#f59e0b';
+        
+        if (!database) {
+            showToast("❌ Firebase belum diinisialisasi");
+            updateConnectionStatus();
+            return;
+        }
+        
+        try {
+            // Coba baca data dari Firebase
+            const testRef = database.ref('.info/connected');
+            const snapshot = await testRef.once('value');
+            const connected = snapshot.val();
+            
+            if (connected) {
+                isFirebaseConnected = true;
+                showToast("✅ Koneksi Firebase OK! Mengambil data...");
+                await loadFromFirebase();
+            } else {
+                isFirebaseConnected = false;
+                showToast("❌ Tidak terhubung ke Firebase. Periksa koneksi internet dan konfigurasi.");
+            }
+        } catch(e) {
+            console.error("Connection test failed:", e);
+            isFirebaseConnected = false;
+            showToast("❌ Gagal konek ke Firebase: " + e.message);
+        }
+        updateConnectionStatus();
+    }
+    
+    async function loadFromFirebase() {
+        if (!database) {
+            showToast("Firebase tidak tersedia");
+            return false;
+        }
+        
+        const statusEl = document.getElementById('syncStatus');
+        statusEl.innerHTML = '📡 Mengambil data...';
+        statusEl.style.background = '#f59e0b';
+        
+        try {
+            const snapshot = await database.ref('produk_strip').once('value');
+            const remoteData = snapshot.val();
+            
+            if (remoteData && Array.isArray(remoteData) && remoteData.length > 0) {
+                db = remoteData;
+                saveToLocal();
+                renderProduk();
+                showToast(`✅ Berhasil sync ${db.length} produk dari Firebase`);
+                statusEl.innerHTML = '✅ Cloud • Online';
+                statusEl.style.background = '#10b981';
+                return true;
+            } else if (remoteData && remoteData.length === 0) {
+                showToast("📭 Data Firebase kosong, akan upload data lokal");
+                await syncToFirebase();
+                return true;
+            } else {
+                showToast("📭 Belum ada data di Firebase, akan sync dari lokal");
+                await syncToFirebase();
+                return true;
+            }
+        } catch(e) {
+            console.error("Load from Firebase error:", e);
+            showToast("❌ Gagal mengambil data: " + e.message);
+            statusEl.innerHTML = '⚠️ Gagal sync';
+            statusEl.style.background = '#ef4444';
+            return false;
+        }
+    }
+    
+    async function syncToFirebase() {
+        if (!database || !isFirebaseConnected) {
+            showToast("⚠️ Tidak terhubung ke Firebase, data disimpan lokal saja");
+            saveToLocal();
+            return false;
+        }
+        
+        const statusEl = document.getElementById('syncStatus');
+        statusEl.innerHTML = '🔄 Menyimpan ke cloud...';
+        statusEl.style.background = '#f59e0b';
+        
+        try {
+            await database.ref('produk_strip').set(db);
+            showToast(`✅ ${db.length} produk tersimpan ke Firebase`);
+            statusEl.innerHTML = '✅ Cloud • Online';
+            statusEl.style.background = '#10b981';
+            return true;
+        } catch(e) {
+            console.error("Sync to Firebase error:", e);
+            showToast("❌ Gagal sync ke Firebase: " + e.message);
+            statusEl.innerHTML = '⚠️ Gagal sync';
+            statusEl.style.background = '#ef4444';
+            return false;
+        }
+    }
+    
+    function viewConnectionInfo() {
+        const info = {
+            firebaseInitialized: !!database,
+            connected: isFirebaseConnected,
+            databaseURL: firebaseConfig.databaseURL,
+            projectId: firebaseConfig.projectId,
+            localDataCount: db.length
+        };
+        showToast(`📡 Firebase: ${isFirebaseConnected ? 'Terhubung' : 'Tidak terhubung'}\n📦 Data lokal: ${db.length} produk\n🔗 ${firebaseConfig.projectId}`);
+        console.log("Connection Info:", info);
+        toggleMenu();
+    }
+    
+    // Local storage functions
+    function loadLocalData() {
+        const stored = localStorage.getItem('stok_strip_firebase');
+        if (stored) {
+            try {
+                db = JSON.parse(stored);
+            } catch(e) { db = []; }
+        }
+        if (db.length === 0) initSampleData();
+        renderProduk();
+    }
+    
+    function saveToLocal() {
+        localStorage.setItem('stok_strip_firebase', JSON.stringify(db));
+    }
+    
+    function persistAndSync() {
+        saveToLocal();
+        if (isFirebaseConnected) {
+            syncToFirebase();
+        }
+        if (!document.getElementById('screen-list').classList.contains('hidden')) {
+            renderProduk();
+        }
+    }
+    
+    function initSampleData() {
+        const sampleImg = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Crect width="200" height="200" fill="%233b82f6"/%3E%3Ctext x="100" y="120" fill="white" font-size="20" text-anchor="middle"%3ESTRIP%3C/text%3E%3C/svg%3E';
+        db = [
+            { id: Date.now(), nama: "SCOOPY 23 24 FASHION", kategori: "HONDA", img1: sampleImg, img2: "", stok: 1 },
+            { id: Date.now()+1, nama: "SCOOPY 23 24 FASHION BROWN", kategori: "HONDA", img1: sampleImg, img2: "", stok: 0 },
+            { id: Date.now()+2, nama: "SCOOPY 24 25 energetic", kategori: "HONDA", img1: sampleImg, img2: "", stok: 0 },
+            { id: Date.now()+3, nama: "SCOOPP 24 25 ENERGETIC", kategori: "HONDA", img1: sampleImg, img2: "", stok: 0 }
+        ];
+        saveToLocal();
+    }
+    
+    function showToast(msg) {
+        let toast = document.querySelector('.toast-message');
+        if (toast) toast.remove();
+        toast = document.createElement('div');
+        toast.className = 'toast-message';
+        toast.innerHTML = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+    
+    // UI Functions
+    function triggerFile(idx) { document.getElementById('in-img-'+idx).click(); }
+    
+    function handleImage(input, idx) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height;
+                    const maxW = 800;
+                    if (w > maxW) { h = (h * maxW) / w; w = maxW; }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    if (idx === 1) img1Base64 = dataUrl;
+                    else img2Base64 = dataUrl;
+                    document.getElementById('prev-'+idx).src = dataUrl;
+                    document.getElementById('prev-'+idx).classList.remove('hidden');
+                    document.getElementById('lab-'+idx).classList.add('hidden');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    
+    function simpanProduk() {
+        const id = document.getElementById('f-id').value;
+        const nama = document.getElementById('f-nama').value.trim();
+        const kategori = document.getElementById('f-kategori').value;
+        if (!nama) return showToast("Nama produk wajib!");
+        if (!img1Base64 && !id) return showToast("Foto utama wajib!");
+        
+        if (id) {
+            const idx = db.findIndex(p => p.id == id);
+            if (idx !== -1) db[idx] = { ...db[idx], nama, kategori, img1: img1Base64, img2: img2Base64 };
+        } else {
+            db.push({ id: Date.now(), nama, kategori, img1: img1Base64, img2: img2Base64 || "", stok: 0 });
+        }
+        persistAndSync();
+        resetForm();
+        navKe('list');
+        showToast("Produk tersimpan!");
+    }
+    
+    function editProduk(id) {
+        const p = db.find(x => x.id == id);
+        if (!p) return;
+        document.getElementById('f-id').value = p.id;
+        document.getElementById('f-nama').value = p.nama;
+        document.getElementById('f-kategori').value = p.kategori;
+        img1Base64 = p.img1;
+        img2Base64 = p.img2 || "";
+        document.getElementById('prev-1').src = img1Base64;
+        document.getElementById('prev-1').classList.remove('hidden');
+        document.getElementById('lab-1').classList.add('hidden');
+        if (img2Base64) {
+            document.getElementById('prev-2').src = img2Base64;
+            document.getElementById('prev-2').classList.remove('hidden');
+            document.getElementById('lab-2').classList.add('hidden');
+        }
+        document.getElementById('form-title').innerText = "✏️ Edit Produk";
+        document.getElementById('btn-cancel').classList.remove('hidden');
+        navKe('add');
+    }
+    
+    function resetForm() {
+        document.getElementById('f-id').value = "";
+        document.getElementById('f-nama').value = "";
+        document.getElementById('f-kategori').value = "HONDA";
+        img1Base64 = ""; img2Base64 = "";
+        document.getElementById('prev-1').classList.add('hidden');
+        document.getElementById('prev-2').classList.add('hidden');
+        document.getElementById('lab-1').classList.remove('hidden');
+        document.getElementById('lab-2').classList.remove('hidden');
+        document.getElementById('form-title').innerText = "➕ Tambah Produk";
+        document.getElementById('btn-cancel').classList.add('hidden');
+    }
+    
+    function adjustStok(id, delta) {
+        const idx = db.findIndex(p => p.id === id);
+        if (idx !== -1) {
+            db[idx].stok = Math.max(0, (db[idx].stok || 0) + delta);
+            persistAndSync();
+            renderProduk();
+        }
+    }
+    
+    function hapus(id) {
+        if (confirm("Hapus produk?")) {
+            db = db.filter(p => p.id !== id);
+            persistAndSync();
+            renderProduk();
+            showToast("Produk dihapus");
+        }
+    }
+    
+    function renderProduk() {
+        const keyword = document.getElementById('q-search')?.value.toLowerCase() || "";
+        const filtered = db.filter(p => p.kategori === currentCategory && p.nama.toLowerCase().includes(keyword));
+        const container = document.getElementById('list-render');
+        if (!container) return;
+        if (filtered.length === 0) {
+            container.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8;">✨ Tidak ada produk</div>';
+            return;
+        }
+        container.innerHTML = filtered.map(item => `
+            <div class="product-item">
+                <div class="prod-img-stack" onclick="openZoom(${item.id})">
+                    <img src="${item.img1}" class="prod-img-main" onerror="this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20fill%3D%22%23ddd%22%20width%3D%22100%22%20height%3D%22100%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2255%22%20fill%3D%22%23999%22%20text-anchor%3D%22middle%22%3ENo%20img%3C%2Ftext%3E%3C%2Fsvg%3E'">
+                    ${item.img2 ? `<img src="${item.img2}" class="prod-img-sub">` : ''}
+                </div>
+                <div class="prod-info">
+                    <div style="font-weight:800;">${escapeHtml(item.nama)}</div>
+                    <div>📦 Stok: <b>${item.stok}</b></div>
+                    <div class="btn-edit-text" onclick="editProduk(${item.id})">✏️ EDIT</div>
+                </div>
+                <div class="stock-ctrl">
+                    <button class="btn-s" onclick="adjustStok(${item.id},-1)">−</button>
+                    <button class="btn-s" onclick="adjustStok(${item.id},1)">+</button>
+                    <button class="btn-s" style="background:#fff0f0;color:#dc2626" onclick="hapus(${item.id})">🗑️</button>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+    
+    // Zoom functions
+    function openZoom(productId) {
+        const product = db.find(p => p.id == productId);
+        if (!product) return;
+        currentZoomImages = [];
+        if (product.img1) currentZoomImages.push(product.img1);
+        if (product.img2 && product.img2.trim()) currentZoomImages.push(product.img2);
+        if (currentZoomImages.length === 0) return;
+        currentZoomIndex = 0;
+        const slideWrap = document.getElementById('slide-wrap');
+        slideWrap.innerHTML = currentZoomImages.map((src, idx) => `
+            <div class="slide-item">
+                <img src="${src}" class="zoomable-image" style="transform: scale(1);">
+                ${currentZoomImages.length > 1 ? `<div class="image-counter">${idx+1} / ${currentZoomImages.length}</div>` : ''}
+            </div>
+        `).join('');
+        document.getElementById('fullModal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        attachPinchZoom();
+        attachScrollSync();
+    }
+    
+    function attachPinchZoom() {
+        const images = document.querySelectorAll('.zoomable-image');
+        images.forEach(img => {
+            let scale = 1;
+            let startDist = 0;
+            img.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    e.preventDefault();
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    startDist = Math.hypot(dx, dy);
+                    scale = parseFloat(img.style.transform.replace('scale(', '').replace(')', '')) || 1;
+                }
+            });
+            img.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 2 && startDist > 0) {
+                    e.preventDefault();
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    const newDist = Math.hypot(dx, dy);
+                    let newScale = Math.min(4, Math.max(1, scale * (newDist / startDist)));
+                    img.style.transform = `scale(${newScale})`;
+                }
+            });
+            img.addEventListener('dblclick', () => { img.style.transform = 'scale(1)'; });
+        });
+    }
+    
+    function attachScrollSync() {
+        const container = document.getElementById('slide-wrap');
+        container.addEventListener('scroll', () => {
+            const idx = Math.round(container.scrollLeft / container.clientWidth);
+            if (idx !== currentZoomIndex && idx >= 0 && idx < currentZoomImages.length) {
+                currentZoomIndex = idx;
+                document.querySelectorAll('.zoomable-image').forEach(img => img.style.transform = 'scale(1)');
+            }
+        });
+    }
+    
+    function swipeGallery(dir) {
+        const container = document.getElementById('slide-wrap');
+        const slideWidth = container.clientWidth;
+        let newIdx = currentZoomIndex + (dir === 'next' ? 1 : -1);
+        if (newIdx >= 0 && newIdx < currentZoomImages.length) {
+            container.scrollTo({ left: newIdx * slideWidth, behavior: 'smooth' });
+            currentZoomIndex = newIdx;
+        }
+    }
+    
+    function closeZoom() {
+        document.getElementById('fullModal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    
+    function navKe(page) {
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById(`nav-${page}`).classList.add('active');
+        document.getElementById('screen-add').classList.toggle('hidden', page !== 'add');
+        document.getElementById('screen-list').classList.toggle('hidden', page !== 'list');
+        document.getElementById('tabs-container').classList.toggle('hidden', page !== 'list');
+        if (page === 'list') { renderTabs(); renderProduk(); }
+    }
+    
+    function renderTabs() {
+        const cats = ["HONDA","YAMAHA","SUZUKI","KAWASAKI"];
+        document.getElementById('tabs-container').innerHTML = cats.map(c => 
+            `<div class="tab ${c === currentCategory ? 'active' : ''}" onclick="currentCategory='${c}';renderTabs();renderProduk();">${c}</div>`
+        ).join('');
+    }
+    
+    function exportBackup() {
+        const data = JSON.stringify({ app: "StokStripPro", version: 2, payload: db, exportDate: new Date().toISOString() });
+        const blob = new Blob([data], { type: 'application/octet-stream' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `stok_backup_${new Date().toISOString().slice(0,10)}.sqlite`;
+        a.click();
+        toggleMenu();
+        showToast("Backup berhasil dibuat");
+    }
+    
+    function showRestoreModal() { document.getElementById('modalRestore').style.display = 'flex'; toggleMenu(); }
+    function closeRestoreModal() { document.getElementById('modalRestore').style.display = 'none'; }
+    
+    function restoreFromFile() {
+        const file = document.getElementById('restoreFile').files[0];
+        if (!file) return showToast("Pilih file backup");
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const json = JSON.parse(e.target.result);
+                if (json.app === "StokStripPro" && Array.isArray(json.payload)) {
+                    db = json.payload;
+                    persistAndSync();
+                    showToast(`Restore sukses! ${db.length} produk`);
+                    closeRestoreModal();
+                    renderProduk();
+                } else showToast("Format file tidak valid");
+            } catch(err) { showToast("File rusak"); }
+        };
+        reader.readAsText(file);
+    }
+    
+    function toggleMenu() { document.getElementById('menuDropdown').classList.toggle('show'); }
+    document.addEventListener('click', (e) => {
+        const m = document.getElementById('menuDropdown');
+        if (m && !m.contains(e.target) && !e.target.classList?.contains('menu-btn')) m.classList.remove('show');
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeZoom(); });
+    
+    // Initialize app
+    initFirebase();
+    loadLocalData();
+    navKe('add');
+</script>
+</body>
+</html>
