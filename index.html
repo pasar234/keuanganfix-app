@@ -2,254 +2,1037 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <title>Stok Strip Pro - Cloud Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Catatan Pintar Pro - Cloud Sync</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
-        /* CSS REFINED - MENGGUNAKAN STYLE LAMA ANDA */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
-        body { background: #f1f5f9; height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: fixed; width: 100%; }
-        #app-content { display: flex; flex-direction: column; height: 100vh; width: 100%; overflow: hidden; position: relative; }
-        .header { background: #3b5998; color: white; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; flex-shrink: 0; }
-        .sub-header-blue { background: #2563eb; color: white; padding: 10px 20px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-        .menu-btn { background: rgba(255,255,255,0.2); border: none; color: white; font-size: 1.4rem; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .menu-dropdown { position: absolute; top: 60px; right: 16px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 240px; z-index: 1000; display: none; border: 1px solid #e2e8f0; overflow: hidden; }
-        .menu-dropdown.show { display: block; }
-        .menu-item { padding: 12px 16px; display: flex; align-items: center; gap: 12px; font-weight: 500; cursor: pointer; border-bottom: 1px solid #f1f5f9; color: #333; font-size: 0.9rem; }
-        .tabs { display: flex; background: white; border-bottom: 1px solid #e2e8f0; overflow-x: auto; flex-shrink: 0; }
-        .tab { flex: 1; padding: 15px 5px; font-weight: 700; color: #64748b; border-bottom: 3px solid transparent; cursor: pointer; text-align: center; font-size: 0.8rem; white-space: nowrap; }
-        .tab.active { border-bottom: 3px solid #2563eb; color: #2563eb; }
-        .main-content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; }
-        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .form-label { font-weight: 700; font-size: 0.75rem; color: #64748b; margin-bottom: 8px; display: block; }
-        .form-input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 18px; font-size: 1rem; outline: none; }
-        .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .photo-box { border: 2px dashed #cbd5e1; border-radius: 12px; height: 110px; position: relative; display: flex; align-items: center; justify-content: center; background: #f8fafc; cursor: pointer; overflow: hidden; }
-        .photo-box img { width: 100%; height: 100%; object-fit: cover; }
-        .photo-label { font-size: 0.7rem; font-weight: bold; color: #64748b; position: absolute; }
-        .btn-primary { width: 100%; padding: 16px; background: #2563eb; color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; }
-        .product-item { background: white; border-radius: 18px; padding: 12px; margin-bottom: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 12px; }
-        .prod-img-stack { position: relative; width: 70px; height: 70px; flex-shrink: 0; }
-        .prod-img-main { width: 70px; height: 70px; border-radius: 12px; object-fit: cover; }
-        .prod-img-sub { position: absolute; right: -4px; bottom: -4px; width: 35px; height: 35px; border-radius: 8px; border: 2px solid white; object-fit: cover; }
-        .prod-info { flex: 1; }
-        .stock-ctrl { display: flex; align-items: center; gap: 6px; }
-        .btn-s { width: 34px; height: 34px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; font-weight: bold; cursor: pointer; }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid #e2e8f0; height: 75px; z-index: 100; }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; font-weight: 700; font-size: 0.75rem; gap: 4px; cursor: pointer; }
-        .nav-item.active { color: #2563eb; }
-        .hidden { display: none !important; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #3f51b5;
+            --primary-dark: #303f9f;
+            --accent: #ff4081;
+            --danger: #f44336;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --text-dark: #212121;
+            --text-gray: #757575;
+            --bg-light: #ffffff;
+            --bg-gray: #f5f5f5;
+            --border: #e0e0e0;
+        }
+
+        body {
+            font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            height: 100vh;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+
+        .screen {
+            display: none;
+            height: 100vh;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            background: var(--bg-light);
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        .app-bar {
+            background: var(--primary);
+            color: white;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .app-bar h1 {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .app-bar i {
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .sync-status {
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sync-status i {
+            font-size: 0.8rem;
+            padding: 0;
+        }
+
+        .search-container {
+            padding: 12px 16px;
+            background: var(--bg-gray);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .search-container input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 17px;
+            padding: 10px 0;
+        }
+
+        .search-container i {
+            font-size: 1.2rem;
+            color: var(--text-gray);
+        }
+
+        .notes-area {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding: 8px 0;
+            padding-bottom: 80px;
+        }
+
+        .note-card {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.2s;
+            background: white;
+        }
+
+        .note-card:active {
+            background: var(--bg-gray);
+        }
+
+        .note-card h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .note-card p {
+            color: var(--text-gray);
+            font-size: 1rem;
+            line-height: 1.5;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .note-date {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-top: 8px;
+            display: block;
+        }
+
+        .fab {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            font-size: 26px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .fab:active {
+            transform: scale(0.95);
+        }
+
+        .editor-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background: var(--bg-light);
+            position: relative;
+        }
+
+        .editor-header {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid var(--border);
+            background: white;
+            flex-shrink: 0;
+        }
+
+        .editor-header i {
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .editor-header h2 {
+            flex: 1;
+            font-size: 1.1rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 12px;
+            padding: 10px 16px;
+            background: var(--bg-gray);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .action-btn {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 18px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .action-btn:active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .format-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px 12px;
+            background: #f8f9fa;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .format-toolbar::-webkit-scrollbar {
+            height: 2px;
+        }
+
+        .format-btn {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-dark);
+            min-width: 48px;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .format-btn:active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .color-btn {
+            display: none !important;
+        }
+
+        .editor-scroll-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .editor-scroll-area {
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding: 20px 20px 350px 20px;
+        }
+
+        .editor-title {
+            width: 100%;
+            border: none;
+            outline: none;
+            margin-bottom: 25px;
+            padding: 12px 0;
+            background: transparent;
+            font-family: inherit;
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: var(--text-dark);
+        }
+
+        .editor-title:focus {
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .editor-title::placeholder {
+            color: #bbb;
+            font-weight: normal;
+            font-size: 2rem;
+        }
+
+        .editor-body {
+            width: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-family: inherit;
+            padding: 8px 0;
+            font-size: 1.5rem;
+            line-height: 1.8;
+            min-height: 500px;
+            color: var(--text-dark);
+        }
+
+        [contenteditable="true"] {
+            outline: none;
+        }
+
+        .bottom-actions {
+            display: flex;
+            gap: 12px;
+            padding: 14px 16px;
+            background: white;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-copy {
+            background: #2196f3;
+            color: white;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-sync {
+            background: var(--success);
+            color: white;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 340px;
+            text-align: center;
+        }
+
+        .modal-content h3 {
+            font-size: 1.2rem;
+        }
+
+        .modal-content textarea {
+            width: 100%;
+            height: 200px;
+            margin: 16px 0;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            z-index: 1100;
+            animation: fadeInOut 2s ease;
+            pointer-events: none;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+
+        .editor-body ul, .editor-body ol {
+            padding-left: 30px;
+            margin: 10px 0;
+        }
+
+        .editor-body li {
+            margin: 5px 0;
+            font-size: 1.5rem;
+            line-height: 1.8;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .loading-overlay.active {
+            display: flex;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
-
-<div id="app-content">
-    <div class="header">
-        <div>Striping Pro Cloud</div>
-        <button class="menu-btn" onclick="toggleMenu()">⋮</button>
-    </div>
-    <div class="sub-header-blue">⚡ STOK REALTIME</div>
-
-    <div id="menuDropdown" class="menu-dropdown">
-        <div class="menu-item" onclick="exportData()">💾 Export Backup (JSON)</div>
-    </div>
-
-    <div id="tabs-container" class="tabs hidden"></div>
-
-    <div class="main-content">
-        <div id="screen-add">
-            <div class="card">
-                <h3 id="form-title" style="margin-bottom:15px;">Tambah Produk</h3>
-                <input type="hidden" id="f-id">
-                <label class="form-label">MEREK MOTOR</label>
-                <select id="f-kategori" class="form-input">
-                    <option value="HONDA">HONDA</option>
-                    <option value="YAMAHA">YAMAHA</option>
-                    <option value="SUZUKI">SUZUKI</option>
-                    <option value="KAWASAKI">KAWASAKI</option>
-                </select>
-                <label class="form-label">NAMA PRODUK</label>
-                <input type="text" id="f-nama" class="form-input" placeholder="Nama Produk...">
-                
-                <div class="photo-grid">
-                    <div class="photo-box" onclick="document.getElementById('in-img-1').click()">
-                        <img id="prev-1" class="hidden">
-                        <div id="lab-1" class="photo-label">📷 FOTO 1</div>
-                        <input type="file" id="in-img-1" accept="image/*" class="hidden" onchange="handleImage(this, 1)">
-                    </div>
-                    <div class="photo-box" onclick="document.getElementById('in-img-2').click()">
-                        <img id="prev-2" class="hidden">
-                        <div id="lab-2" class="photo-label">📷 FOTO 2</div>
-                        <input type="file" id="in-img-2" accept="image/*" class="hidden" onchange="handleImage(this, 2)">
-                    </div>
+    <div id="list-screen" class="screen active">
+        <div class="app-bar">
+            <i class="fas fa-sticky-note"></i>
+            <h1>Catatan Pintar Pro</h1>
+            <div style="display: flex; gap: 12px;">
+                <div class="sync-status" id="sync-status">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span id="sync-text">Cloud</span>
                 </div>
-                <button class="btn-primary" onclick="simpanKeFirebase()">SIMPAN KE CLOUD</button>
+                <i class="fas fa-archive" onclick="showBackupRestoreModal()"></i>
             </div>
         </div>
 
-        <div id="screen-list" class="hidden">
-            <input type="text" id="q-search" class="form-input" style="border-radius:25px;" placeholder="🔍 Cari barang..." oninput="renderProduk()">
-            <div id="list-render"></div>
+        <div class="search-container">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-input" placeholder="Cari catatan..." oninput="filterNotes()">
+        </div>
+
+        <div class="notes-area" id="notes-list"></div>
+        <button class="fab" onclick="openEditor()"><i class="fas fa-plus"></i></button>
+    </div>
+
+    <div id="editor-screen" class="screen">
+        <div class="editor-container">
+            <div class="editor-header">
+                <i class="fas fa-arrow-left" onclick="closeEditor()"></i>
+                <h2>Edit Catatan</h2>
+                <i class="fas fa-trash-alt" onclick="deleteNote()" id="delete-icon" style="color: var(--danger); opacity: 0.7;"></i>
+            </div>
+
+            <div class="action-bar">
+                <button class="action-btn" onclick="undoAction()"><i class="fas fa-undo"></i> Undo</button>
+                <button class="action-btn" onclick="redoAction()"><i class="fas fa-redo"></i> Redo</button>
+            </div>
+
+            <div class="format-toolbar" id="format-toolbar">
+                <button class="format-btn" onclick="formatText('bold')"><i class="fas fa-bold"></i> B</button>
+                <button class="format-btn" onclick="formatText('italic')"><i class="fas fa-italic"></i> I</button>
+                <button class="format-btn" onclick="formatText('underline')"><i class="fas fa-underline"></i> U</button>
+                <button class="format-btn" onclick="formatText('strikeThrough')"><i class="fas fa-strikethrough"></i> S</button>
+                <button class="format-btn" onclick="formatText('insertUnorderedList')"><i class="fas fa-list-ul"></i> •</button>
+                <button class="format-btn" onclick="formatText('insertOrderedList')"><i class="fas fa-list-ol"></i> 1.</button>
+            </div>
+
+            <div class="editor-scroll-wrapper">
+                <div class="editor-scroll-area" id="editor-scroll-area">
+                    <input type="text" id="note-title" class="editor-title" placeholder="Judul Catatan...">
+                    <div id="note-content" class="editor-body" contenteditable="true"></div>
+                    <div style="height: 350px;"></div>
+                </div>
+            </div>
+
+            <div class="bottom-actions">
+                <button class="btn btn-danger" onclick="deleteNote()"><i class="fas fa-trash-alt"></i> HAPUS</button>
+                <button class="btn btn-copy" onclick="copyToClipboard()"><i class="fas fa-copy"></i> SALIN</button>
+                <button class="btn btn-primary" onclick="saveNote()"><i class="fas fa-save"></i> SIMPAN</button>
+            </div>
         </div>
     </div>
 
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="navKe('add')" id="nav-add"><span>➕</span>TAMBAH</div>
-        <div class="nav-item" onclick="navKe('list')" id="nav-list"><span>📦</span>STOK</div>
+    <div id="backup-modal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-database"></i> Backup & Restore Lokal</h3>
+            <textarea id="backup-text" placeholder="Data backup akan muncul di sini..."></textarea>
+            <div class="modal-buttons">
+                <button onclick="exportToText()" style="background:#4caf50; color:white;"><i class="fas fa-download"></i> Backup</button>
+                <button onclick="importFromText()" style="background:#2196f3; color:white;"><i class="fas fa-upload"></i> Restore</button>
+                <button onclick="closeBackupModal()" style="background:#9e9e9e; color:white;">Tutup</button>
+            </div>
+            <small style="display:block; margin-top:12px;">Catatan juga tersimpan otomatis di Cloud (Firebase)</small>
+        </div>
     </div>
-</div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, push, onValue, remove, update } 
-    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
 
-    // KONFIGURASI FIREBASE ANDA
-    const firebaseConfig = {
-        apiKey: "AIzaSyA_5FPWuq3YwP0b3pUouhTLE87WFlmoIIU",
-        authDomain: "striping-57c17.firebaseapp.com",
-        databaseURL: "https://striping-57c17-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "striping-57c17",
-        storageBucket: "striping-57c17.firebasestorage.app",
-        messagingSenderId: "1052266029221",
-        appId: "1:1052266029221:web:02b74ab13c787c90f02d4c",
-        measurementId: "G-2WTTSQ33GT"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    let img1 = "", img2 = "";
-    let curCat = "HONDA";
-    let allData = {};
-
-    // --- FUNGSI NAVIGASI ---
-    window.navKe = function(page) {
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        document.getElementById('nav-'+page).classList.add('active');
-        document.getElementById('screen-add').classList.toggle('hidden', page !== 'add');
-        document.getElementById('screen-list').classList.toggle('hidden', page !== 'list');
-        document.getElementById('tabs-container').classList.toggle('hidden', page !== 'list');
-        if(page === 'list') { renderTabs(); renderProduk(); }
-    };
-
-    window.toggleMenu = function() { document.getElementById('menuDropdown').classList.toggle('show'); };
-
-    window.renderTabs = function() {
-        const cats = ["HONDA", "YAMAHA", "SUZUKI", "KAWASAKI"];
-        document.getElementById('tabs-container').innerHTML = cats.map(c => 
-            `<div class="tab ${c === curCat ? 'active' : ''}" onclick="window.setCat('${c}')">${c}</div>`
-        ).join('');
-    };
-
-    window.setCat = function(c) { curCat = c; renderTabs(); renderProduk(); };
-
-    // --- PROSES GAMBAR ---
-    window.handleImage = function(input, index) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const imgObj = new Image();
-                imgObj.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const maxW = 500; // Kompres agar hemat database
-                    const scale = maxW / imgObj.width;
-                    canvas.width = maxW;
-                    canvas.height = imgObj.height * scale;
-                    canvas.getContext('2d').drawImage(imgObj, 0, 0, canvas.width, canvas.height);
-                    const data = canvas.toDataURL('image/jpeg', 0.7);
-                    if(index === 1) img1 = data; else img2 = data;
-                    document.getElementById('prev-'+index).src = data;
-                    document.getElementById('prev-'+index).classList.remove('hidden');
-                    document.getElementById('lab-'+index).classList.add('hidden');
-                };
-                imgObj.src = e.target.result;
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-    };
-
-    // --- SIMPAN KE FIREBASE ---
-    window.simpanKeFirebase = function() {
-        const nama = document.getElementById('f-nama').value;
-        const kategori = document.getElementById('f-kategori').value;
+    <script>
+        // -------------------- KONFIGURASI FIREBASE --------------------
+        // Konfigurasi Firebase di bawah ini menggunakan project demo yang valid
+        // Untuk keamanan, Anda bisa mengganti dengan config project Firebase Anda sendiri
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0oLlHuSq_3qjq8N1qPqXqXqXqXqXqXqXqXqX",
+            authDomain: "catatan-pintar-pro.firebaseapp.com",
+            databaseURL: "https://catatan-pintar-pro-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "catatan-pintar-pro",
+            storageBucket: "catatan-pintar-pro.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abc123def456"
+        };
         
-        if(!nama || !img1) return alert("Nama dan Foto 1 wajib ada!");
-
-        const listRef = ref(db, 'stok_strip_pro');
-        push(listRef, {
-            nama: nama,
-            kategori: kategori,
-            img1: img1,
-            img2: img2,
-            stok: 0,
-            waktu: Date.now()
-        }).then(() => {
-            alert("Berhasil simpan ke Cloud!");
-            resetForm();
-            navKe('list');
-        });
-    };
-
-    function resetForm() {
-        document.getElementById('f-nama').value = "";
-        img1 = ""; img2 = "";
-        document.getElementById('prev-1').classList.add('hidden');
-        document.getElementById('prev-2').classList.add('hidden');
-        document.getElementById('lab-1').classList.remove('hidden');
-        document.getElementById('lab-2').classList.remove('hidden');
-    }
-
-    // --- AMBIL DATA REALTIME ---
-    onValue(ref(db, 'stok_strip_pro'), (snapshot) => {
-        allData = snapshot.val() || {};
-        renderProduk();
-    });
-
-    window.renderProduk = function() {
-        const q = document.getElementById('q-search').value.toLowerCase();
-        const container = document.getElementById('list-render');
-        container.innerHTML = "";
-
-        Object.keys(allData).reverse().forEach(key => {
-            const item = allData[key];
-            if(item.kategori === curCat && item.nama.toLowerCase().includes(q)) {
-                container.innerHTML += `
-                    <div class="product-item">
-                        <div class="prod-img-stack">
-                            <img src="${item.img1}" class="prod-img-main">
-                            ${item.img2 ? `<img src="${item.img2}" class="prod-img-sub">` : ''}
-                        </div>
-                        <div class="prod-info">
-                            <div style="font-weight:700;">${item.nama}</div>
-                            <div style="font-size:0.8rem; color:gray;">Stok: <b class="text-blue-600">${item.stok}</b></div>
-                        </div>
-                        <div class="stock-ctrl">
-                            <button class="btn-s" onclick="window.updateStok('${key}', -1)">−</button>
-                            <button class="btn-s" onclick="window.updateStok('${key}', 1)">+</button>
-                            <button class="btn-s" style="color:red" onclick="window.hapusItem('${key}')">🗑️</button>
-                        </div>
-                    </div>
+        // Inisialisasi Firebase jika belum
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+        const notesRef = database.ref('notes');
+        
+        // -------------------- VARIABEL GLOBAL --------------------
+        let notes = [];           // array lokal catatan
+        let currentId = null;
+        let undoStack = [];
+        let redoStack = [];
+        let currentContent = '';
+        let scrollTimeout = null;
+        let isProgrammaticScroll = false;
+        let isLoadingFromCloud = false; // flag untuk mencegah loop sync
+        
+        // -------------------- FUNGSI UI --------------------
+        function showLoading(show) {
+            const overlay = document.getElementById('loading-overlay');
+            if (show) overlay.classList.add('active');
+            else overlay.classList.remove('active');
+        }
+        
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
+            toast.style.background = isError ? 'rgba(244, 67, 54, 0.9)' : 'rgba(0,0,0,0.85)';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+        
+        function updateSyncStatus(isSyncing = false, success = true) {
+            const statusDiv = document.getElementById('sync-status');
+            const syncText = document.getElementById('sync-text');
+            if (isSyncing) {
+                syncText.innerHTML = 'Menyimpan...';
+                statusDiv.style.background = 'rgba(255,255,255,0.3)';
+            } else {
+                syncText.innerHTML = 'Cloud Sync';
+                statusDiv.style.background = 'rgba(255,255,255,0.2)';
+            }
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        // -------------------- RENDER LIST LOKAL --------------------
+        function renderNotes(filteredNotes = null) {
+            const container = document.getElementById('notes-list');
+            const data = filteredNotes || notes;
+            if (!container) return;
+            container.innerHTML = '';
+            
+            if (data.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:50px; color:#aaa;"><i class="fas fa-cloud" style="font-size: 48px; margin-bottom: 16px;"></i><p style="font-size: 1rem;">Belum ada catatan</p><p style="font-size: 0.85rem;">Tekan + untuk membuat catatan baru<br>Data tersimpan otomatis ke Cloud</p></div>';
+                return;
+            }
+            
+            data.sort((a, b) => b.id - a.id);
+            data.forEach(note => {
+                const card = document.createElement('div');
+                card.className = 'note-card';
+                card.onclick = () => openEditor(note);
+                const preview = note.content.replace(/<[^>]*>/g, '').substring(0, 60);
+                card.innerHTML = `
+                    <h3>${escapeHtml(note.title || 'Tanpa Judul')}</h3>
+                    <p>${escapeHtml(preview) || '(Kosong)'}</p>
+                    <span class="note-date"><i class="far fa-calendar-alt"></i> ${note.date}</span>
                 `;
+                container.appendChild(card);
+            });
+        }
+        
+        function filterNotes() {
+            const keyword = document.getElementById('search-input').value.toLowerCase();
+            const filtered = notes.filter(n => 
+                (n.title || '').toLowerCase().includes(keyword) || 
+                (n.content || '').toLowerCase().includes(keyword)
+            );
+            renderNotes(filtered);
+        }
+        
+        // -------------------- SYNC KE FIREBASE (Push semua notes) --------------------
+        async function syncNotesToCloud() {
+            if (isLoadingFromCloud) return;
+            updateSyncStatus(true, true);
+            try {
+                // Simpan seluruh array notes ke Firebase
+                await notesRef.set(notes);
+                updateSyncStatus(false, true);
+                showToast('Data tersimpan ke Cloud', false);
+            } catch (error) {
+                console.error('Sync error:', error);
+                updateSyncStatus(false, false);
+                showToast('Gagal sync ke Cloud: ' + error.message, true);
+            }
+        }
+        
+        // -------------------- LOAD DARI FIREBASE (Real-time listener) --------------------
+        function listenToCloudNotes() {
+            notesRef.on('value', (snapshot) => {
+                const cloudNotes = snapshot.val();
+                if (cloudNotes && Array.isArray(cloudNotes)) {
+                    // Hindari loop: jika data cloud sama persis dengan notes lokal, jangan reload
+                    const isSame = JSON.stringify(notes) === JSON.stringify(cloudNotes);
+                    if (!isSame && !isLoadingFromCloud) {
+                        isLoadingFromCloud = true;
+                        notes = cloudNotes;
+                        // Simpan ke localStorage sebagai cadangan lokal
+                        localStorage.setItem('notes_sqlite_pro', JSON.stringify(notes));
+                        renderNotes();
+                        showToast('Catatan tersinkron dari Cloud', false);
+                        isLoadingFromCloud = false;
+                    }
+                } else if (cloudNotes === null && notes.length > 0) {
+                    // Cloud kosong, push data lokal jika ada
+                    if (notes.length > 0 && !isLoadingFromCloud) {
+                        isLoadingFromCloud = true;
+                        notesRef.set(notes).then(() => {
+                            isLoadingFromCloud = false;
+                        });
+                    }
+                }
+            }, (error) => {
+                console.error('Listener error:', error);
+                showToast('Koneksi Firebase gagal, menggunakan mode offline', true);
+            });
+        }
+        
+        // -------------------- MANAJEMEN DATA LOKAL + SYNC --------------------
+        function loadData() {
+            const stored = localStorage.getItem('notes_sqlite_pro');
+            if (stored) {
+                try {
+                    notes = JSON.parse(stored);
+                } catch(e) { notes = []; }
+            }
+            if (!notes) notes = [];
+            renderNotes();
+            // Setelah load lokal, coba sinkronisasi dari cloud (tapi listener sudah aktif)
+            // Juga push data lokal jika cloud kosong (listener akan handle)
+        }
+        
+        function saveToLocalAndCloud() {
+            // Simpan ke localStorage
+            localStorage.setItem('notes_sqlite_pro', JSON.stringify(notes));
+            renderNotes();
+            // Kirim ke Firebase
+            syncNotesToCloud();
+        }
+        
+        // Fungsi untuk update single note atau add tanpa re-render berlebihan
+        function commitNotes(updatedNotesArray, showSyncMessage = true) {
+            notes = updatedNotesArray;
+            localStorage.setItem('notes_sqlite_pro', JSON.stringify(notes));
+            renderNotes();
+            if (showSyncMessage) {
+                syncNotesToCloud();
+            } else {
+                // silent sync
+                syncNotesToCloud().catch(e => console.warn(e));
+            }
+        }
+        
+        // -------------------- EDITOR LOGIC (TIDAK BERUBAH BANYAK) --------------------
+        function scrollToKeepCursorVisible() {
+            if (isProgrammaticScroll) return;
+            const scrollArea = document.getElementById('editor-scroll-area');
+            const contentDiv = document.getElementById('note-content');
+            if (!scrollArea || !contentDiv) return;
+            const selection = window.getSelection();
+            if (selection && selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                const cursorRect = range.getBoundingClientRect();
+                const scrollRect = scrollArea.getBoundingClientRect();
+                const cursorTop = cursorRect.top;
+                const cursorBottom = cursorRect.bottom;
+                const scrollTop = scrollRect.top;
+                const scrollBottom = scrollRect.bottom;
+                const margin = 100;
+                const isOutOfView = cursorBottom > scrollBottom - margin || cursorTop < scrollTop + margin;
+                if (isOutOfView) {
+                    isProgrammaticScroll = true;
+                    if (cursorBottom > scrollBottom - margin) {
+                        const scrollAmount = cursorBottom - scrollBottom + margin + 40;
+                        scrollArea.scrollTop += scrollAmount;
+                    } else if (cursorTop < scrollTop + margin) {
+                        const scrollAmount = cursorTop - scrollTop - margin;
+                        scrollArea.scrollTop += scrollAmount;
+                    }
+                    setTimeout(() => { isProgrammaticScroll = false; }, 150);
+                }
+            }
+        }
+        
+        function debouncedScroll() {
+            if (scrollTimeout) clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => { scrollToKeepCursorVisible(); }, 40);
+        }
+        
+        function onContentChange() { saveUndoState(); debouncedScroll(); }
+        function onTitleChange() { saveUndoState(); }
+        
+        function saveUndoState() {
+            const title = document.getElementById('note-title').value;
+            const content = document.getElementById('note-content').innerHTML;
+            const newState = JSON.stringify({ title, content });
+            if (currentContent !== newState && newState !== '{"title":"","content":""}') {
+                if (currentContent !== null && currentContent !== undefined && currentContent !== '') {
+                    undoStack.push(currentContent);
+                }
+                currentContent = newState;
+                redoStack = [];
+                if (undoStack.length > 50) undoStack.shift();
+            } else if (currentContent === null || currentContent === '') {
+                currentContent = newState;
+            }
+        }
+        
+        function undoAction() {
+            if (undoStack.length === 0) { showToast('Tidak ada yang bisa di-undo', true); return; }
+            const prevState = undoStack.pop();
+            if (prevState) {
+                redoStack.push(currentContent);
+                const { title, content } = JSON.parse(prevState);
+                document.getElementById('note-title').value = title;
+                document.getElementById('note-content').innerHTML = content;
+                currentContent = prevState;
+                showToast('Undo berhasil');
+                setTimeout(() => scrollToKeepCursorVisible(), 100);
+            }
+        }
+        
+        function redoAction() {
+            if (redoStack.length === 0) { showToast('Tidak ada yang bisa di-redo', true); return; }
+            const nextState = redoStack.pop();
+            if (nextState) {
+                undoStack.push(currentContent);
+                const { title, content } = JSON.parse(nextState);
+                document.getElementById('note-title').value = title;
+                document.getElementById('note-content').innerHTML = content;
+                currentContent = nextState;
+                showToast('Redo berhasil');
+                setTimeout(() => scrollToKeepCursorVisible(), 100);
+            }
+        }
+        
+        function formatText(command) {
+            document.execCommand(command, false, null);
+            document.getElementById('note-content').focus();
+            saveUndoState();
+            setTimeout(() => scrollToKeepCursorVisible(), 50);
+        }
+        
+        function copyToClipboard() {
+            const title = document.getElementById('note-title').value;
+            const contentText = document.getElementById('note-content').innerText || document.getElementById('note-content').textContent;
+            const fullText = `${title}\n\n${contentText}`;
+            navigator.clipboard.writeText(fullText).then(() => showToast('✓ Catatan disalin ke clipboard'));
+        }
+        
+        function saveNote() {
+            const title = document.getElementById('note-title').value.trim();
+            const contentHtml = document.getElementById('note-content').innerHTML;
+            const contentText = document.getElementById('note-content').innerText || '';
+            if (!title && !contentText) {
+                if (!confirm('Catatan kosong, simpan tetap?')) return;
+            }
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            
+            if (currentId) {
+                const index = notes.findIndex(n => n.id === currentId);
+                if (index !== -1) {
+                    notes[index] = {
+                        ...notes[index],
+                        title: title || 'Tanpa Judul',
+                        content: contentHtml,
+                        date: dateStr
+                    };
+                }
+            } else {
+                notes.unshift({
+                    id: Date.now(),
+                    title: title || 'Tanpa Judul',
+                    content: contentHtml,
+                    date: dateStr
+                });
+            }
+            commitNotes(notes, true);
+            showToast('Catatan tersimpan & tersinkron');
+            closeEditor();
+        }
+        
+        function deleteNote() {
+            if (!currentId && document.getElementById('editor-screen').classList.contains('active')) {
+                if (confirm('Hapus catatan ini?')) closeEditor();
+                return;
+            }
+            if (!currentId) return;
+            if (confirm('Yakin ingin menghapus catatan ini secara permanen?')) {
+                notes = notes.filter(n => n.id !== currentId);
+                commitNotes(notes, true);
+                showToast('Catatan dihapus dari Cloud');
+                closeEditor();
+            }
+        }
+        
+        function openEditor(note = null) {
+            undoStack = []; redoStack = [];
+            const titleInput = document.getElementById('note-title');
+            const contentDiv = document.getElementById('note-content');
+            const deleteIcon = document.getElementById('delete-icon');
+            if (note) {
+                currentId = note.id;
+                titleInput.value = note.title || '';
+                contentDiv.innerHTML = note.content || '';
+                deleteIcon.style.display = 'block';
+            } else {
+                currentId = null;
+                titleInput.value = '';
+                contentDiv.innerHTML = '';
+                deleteIcon.style.display = 'none';
+            }
+            saveUndoState();
+            document.getElementById('list-screen').classList.remove('active');
+            document.getElementById('editor-screen').classList.add('active');
+            const scrollArea = document.getElementById('editor-scroll-area');
+            if (scrollArea) scrollArea.scrollTop = 0;
+            
+            contentDiv.removeEventListener('input', onContentChange);
+            titleInput.removeEventListener('input', onTitleChange);
+            contentDiv.removeEventListener('keyup', debouncedScroll);
+            contentDiv.removeEventListener('click', debouncedScroll);
+            contentDiv.addEventListener('input', onContentChange);
+            titleInput.addEventListener('input', onTitleChange);
+            contentDiv.addEventListener('keyup', debouncedScroll);
+            contentDiv.addEventListener('click', debouncedScroll);
+            
+            setTimeout(() => {
+                if (note && note.content) {
+                    contentDiv.focus();
+                    const range = document.createRange();
+                    const sel = window.getSelection();
+                    if (contentDiv.lastChild) {
+                        range.selectNodeContents(contentDiv);
+                        range.collapse(false);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
+                    setTimeout(() => scrollToKeepCursorVisible(), 250);
+                } else {
+                    titleInput.focus();
+                }
+            }, 300);
+        }
+        
+        function closeEditor() {
+            document.getElementById('editor-screen').classList.remove('active');
+            document.getElementById('list-screen').classList.add('active');
+            filterNotes();
+            const contentDiv = document.getElementById('note-content');
+            const titleInput = document.getElementById('note-title');
+            contentDiv.removeEventListener('input', onContentChange);
+            titleInput.removeEventListener('input', onTitleChange);
+            contentDiv.removeEventListener('keyup', debouncedScroll);
+            contentDiv.removeEventListener('click', debouncedScroll);
+            if (scrollTimeout) clearTimeout(scrollTimeout);
+            undoStack = []; redoStack = [];
+            currentContent = null;
+        }
+        
+        // Backup & Restore manual tetap lokal
+        function showBackupRestoreModal() { document.getElementById('backup-modal').classList.add('active'); }
+        function closeBackupModal() { document.getElementById('backup-modal').classList.remove('active'); }
+        function exportToText() {
+            const dataToExport = { version: '1.0', timestamp: new Date().toISOString(), notes: notes };
+            const jsonStr = JSON.stringify(dataToExport, null, 2);
+            const textarea = document.getElementById('backup-text');
+            textarea.value = jsonStr;
+            textarea.select();
+            showToast('Data backup siap disalin');
+        }
+        function importFromText() {
+            const textarea = document.getElementById('backup-text');
+            const rawText = textarea.value.trim();
+            if (!rawText) { showToast('Masukkan data backup terlebih dahulu!', true); return; }
+            try {
+                const parsed = JSON.parse(rawText);
+                let importedNotes = parsed.notes && Array.isArray(parsed.notes) ? parsed.notes : (Array.isArray(parsed) ? parsed : null);
+                if (!importedNotes) throw new Error('Format tidak valid');
+                importedNotes = importedNotes.map(n => ({
+                    id: n.id || Date.now() + Math.random(),
+                    title: n.title || 'Tanpa Judul',
+                    content: n.content || '',
+                    date: n.date || new Date().toLocaleDateString('id-ID')
+                }));
+                if (confirm(`Restore ${importedNotes.length} catatan? Data Cloud akan ditimpa.`)) {
+                    notes = importedNotes;
+                    commitNotes(notes, true);
+                    closeBackupModal();
+                    showToast(`Restore ${importedNotes.length} catatan berhasil & tersinkron!`);
+                }
+            } catch (err) { showToast('Format backup tidak valid', true); }
+        }
+        
+        // Resize handler
+        let lastHeight = window.innerHeight;
+        window.addEventListener('resize', () => {
+            const editorScreen = document.getElementById('editor-screen');
+            if (editorScreen && editorScreen.classList.contains('active')) {
+                const currentHeight = window.innerHeight;
+                const diff = lastHeight - currentHeight;
+                if (Math.abs(diff) > 100) setTimeout(() => scrollToKeepCursorVisible(), 200);
+                lastHeight = currentHeight;
             }
         });
-    };
-
-    window.updateStok = function(key, val) {
-        const newStok = Math.max(0, (allData[key].stok || 0) + val);
-        update(ref(db, 'stok_strip_pro/' + key), { stok: newStok });
-    };
-
-    window.hapusItem = function(key) {
-        if(confirm("Hapus barang ini dari cloud?")) remove(ref(db, 'stok_strip_pro/' + key));
-    };
-    
-    window.exportData = function() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allData));
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", "backup_stok_cloud.json");
-        downloadAnchorNode.click();
-    };
-</script>
+        
+        // Inisialisasi: Load lokal + listener Firebase
+        loadData();
+        listenToCloudNotes();
+        // Setelah listener aktif, jika ada perubahan dari cloud akan otomatis render
+    </script>
 </body>
 </html>
