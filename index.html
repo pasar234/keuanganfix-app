@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <title>Stok Strip Pro - Universal APK</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background: #f1f5f9; height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: fixed; width: 100%; }
+        #app-content { display: flex; flex-direction: column; height: 100vh; width: 100%; overflow: hidden; }
+        .header { background: #0f172a; color: white; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; flex-shrink: 0; }
+        .sub-header-blue { background: #2563eb; color: white; padding: 8px 20px; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+        .sync-status { background: rgba(255,255,255,0.2); border-radius: 40px; padding: 4px 12px; font-size: 0.7rem; cursor: pointer; }
+        .menu-btn { background: rgba(255,255,255,0.15); border: none; color: white; font-size: 1.4rem; width: 38px; height: 38px; border-radius: 30px; cursor: pointer; }
+        .menu-dropdown { position: absolute; top: 65px; right: 16px; background: white; border-radius: 20px; box-shadow: 0 20px 35px rgba(0,0,0,0.2); width: 260px; z-index: 1000; display: none; overflow: hidden; }
+        .menu-dropdown.show { display: block; }
+        .menu-item { padding: 14px 18px; display: flex; align-items: center; gap: 14px; font-weight: 500; cursor: pointer; border-bottom: 1px solid #f1f5f9; }
+        .tabs { display: flex; background: white; border-bottom: 1px solid #e2e8f0; overflow-x: auto; flex-shrink: 0; }
+        .tab { flex: 1; padding: 14px 5px; font-weight: 700; color: #64748b; border-bottom: 3px solid transparent; cursor: pointer; text-align: center; font-size: 0.8rem; }
+        .tab.active { border-bottom: 3px solid #2563eb; color: #2563eb; background: #eff6ff; }
+        .main-content { flex: 1; overflow-y: auto; padding: 18px; padding-bottom: 90px; }
+        .card { background: white; padding: 22px; border-radius: 28px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+        .form-label { font-weight: 700; font-size: 0.7rem; color: #475569; margin-bottom: 6px; display: block; }
+        .form-input { width: 100%; padding: 14px; border-radius: 18px; border: 1.5px solid #e2e8f0; margin-bottom: 18px; font-size: 0.95rem; }
+        .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+        .photo-box { border: 2px dashed #cbd5e1; border-radius: 24px; height: 130px; display: flex; align-items: center; justify-content: center; background: #fafcff; cursor: pointer; overflow: hidden; position: relative; }
+        .photo-box img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-label { font-size: 0.7rem; font-weight: 600; color: #64748b; background: rgba(255,255,255,0.8); padding: 4px 10px; border-radius: 40px; }
+        .btn-primary { width: 100%; padding: 16px; background: #2563eb; color: white; border: none; border-radius: 40px; font-weight: 700; cursor: pointer; }
+        .btn-primary:active { transform: scale(0.97); }
+        .btn-cancel { width: 100%; padding: 16px; background: #e2e8f0; color: #334155; border: none; border-radius: 40px; margin-top: 12px; cursor: pointer; }
+        .product-item { background: white; border-radius: 24px; padding: 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 14px; border: 1px solid #eef2ff; }
+        .prod-img-stack { position: relative; width: 75px; height: 75px; flex-shrink: 0; cursor: pointer; border-radius: 18px; overflow: hidden; background: #f1f5f9; }
+        .prod-img-main { width: 100%; height: 100%; object-fit: cover; }
+        .prod-img-sub { position: absolute; right: -6px; bottom: -6px; width: 38px; height: 38px; border-radius: 12px; border: 2px solid white; object-fit: cover; }
+        .prod-info { flex: 1; }
+        .btn-edit-text { color: #3b82f6; font-size: 0.7rem; font-weight: 700; cursor: pointer; display: inline-block; margin-top: 6px; background: #eff6ff; padding: 4px 12px; border-radius: 40px; }
+        .stock-ctrl { display: flex; gap: 8px; }
+        .btn-s { width: 44px; height: 44px; border-radius: 30px; border: 1px solid #e2e8f0; background: white; font-weight: bold; cursor: pointer; font-size: 1.3rem; }
+        .btn-s:active { background: #e2e8f0; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid #eef2ff; height: 72px; z-index: 100; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; font-weight: 700; font-size: 0.7rem; gap: 4px; cursor: pointer; }
+        .nav-item.active { color: #2563eb; background: #eff6ff; }
+        .hidden { display: none !important; }
+        .toast-message { position: fixed; bottom: 90px; left: 20px; right: 20px; background: #1e293b; color: white; padding: 12px 20px; border-radius: 60px; text-align: center; z-index: 2000; font-size: 0.85rem; }
+        .modal-backup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 5000; align-items: center; justify-content: center; }
+        .backup-box { background: white; width: 100%; max-width: 340px; padding: 28px; border-radius: 40px; text-align: center; }
+        #q-search { margin-bottom: 18px; border-radius: 60px; background: #f8fafc; }
+        
+        /* Modal Zoom - Menggunakan metode popup window untuk kompatibilitas maksimal */
+        .modal-full { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 3000; align-items: center; justify-content: center; flex-direction: column; }
+        .modal-full.active { display: flex; }
+        .zoom-image-full { max-width: 95%; max-height: 85%; object-fit: contain; border-radius: 16px; }
+        .modal-close { position: absolute; top: 20px; right: 20px; color: white; font-size: 2rem; background: rgba(0,0,0,0.5); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
+        .zoom-nav { position: absolute; bottom: 30px; left: 0; right: 0; display: flex; justify-content: center; gap: 30px; }
+        .zoom-nav-btn { background: rgba(0,0,0,0.6); color: white; border: none; padding: 12px 24px; border-radius: 40px; font-size: 1rem; cursor: pointer; }
+        .zoom-counter { position: absolute; top: 20px; left: 20px; color: white; background: rgba(0,0,0,0.5); padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+<div id="app-content">
+    <div class="header">
+        <div>🏍️ Striping Pro • Cloud</div>
+        <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    </div>
+    <div class="sub-header-blue">
+        <span>⚡ MANAJEMEN STOK</span>
+        <div id="syncStatus" class="sync-status" onclick="manualSync()">✅ Cloud • Online</div>
+    </div>
+
+    <div id="menuDropdown" class="menu-dropdown">
+        <div class="menu-item" onclick="exportBackup()">💾 Backup ke File</div>
+        <div class="menu-item" onclick="showRestoreModal()">📂 Restore dari File</div>
+        <div class="menu-item" onclick="manualSync()">🔄 Sinkronisasi Manual</div>
+    </div>
+
+    <div id="tabs-container" class="tabs hidden"></div>
+
+    <div class="main-content">
+        <div id="screen-add">
+            <div class="card">
+                <h3 id="form-title" style="margin-bottom:18px;">➕ Tambah Produk</h3>
+                <input type="hidden" id="f-id">
+                <label class="form-label">🏍️ MEREK MOTOR</label>
+                <select id="f-kategori" class="form-input">
+                    <option value="HONDA">HONDA</option>
+                    <option value="YAMAHA">YAMAHA</option>
+                    <option value="SUZUKI">SUZUKI</option>
+                    <option value="KAWASAKI">KAWASAKI</option>
+                </select>
+                <label class="form-label">📛 NAMA PRODUK</label>
+                <input type="text" id="f-nama" class="form-input" placeholder="Nama produk...">
+                <div class="photo-grid">
+                    <div class="photo-box" onclick="triggerFile(1)">
+                        <img id="prev-1" class="hidden">
+                        <div id="lab-1" class="photo-label">📸 FOTO UTAMA</div>
+                        <input type="file" id="in-img-1" accept="image/*" class="hidden" onchange="handleImage(this,1)">
+                    </div>
+                    <div class="photo-box" onclick="triggerFile(2)">
+                        <img id="prev-2" class="hidden">
+                        <div id="lab-2" class="photo-label">🖼️ FOTO 2</div>
+                        <input type="file" id="in-img-2" accept="image/*" class="hidden" onchange="handleImage(this,2)">
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="simpanProduk()">💾 SIMPAN PRODUK</button>
+                <button class="btn-cancel hidden" id="btn-cancel" onclick="resetForm()">BATAL EDIT</button>
+            </div>
+        </div>
+
+        <div id="screen-list" class="hidden">
+            <input type="text" id="q-search" class="form-input" placeholder="🔍 Cari produk..." oninput="renderProduk()">
+            <div id="list-render"></div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="navKe('add')" id="nav-add"><span>➕</span>TAMBAH</div>
+        <div class="nav-item" onclick="navKe('list')" id="nav-list"><span>📦</span>STOK</div>
+    </div>
+</div>
+
+<!-- ZOOM MODAL - Versi Universal (tanpa gesture, pakai tombol) -->
+<div id="zoomModal" class="modal-full">
+    <button class="modal-close" onclick="closeZoom()">✕</button>
+    <div class="zoom-counter" id="zoomCounter">1 / 1</div>
+    <img id="zoomImage" class="zoom-image-full" src="">
+    <div class="zoom-nav">
+        <button class="zoom-nav-btn" onclick="zoomPrev()">◀ Sebelumnya</button>
+        <button class="zoom-nav-btn" onclick="zoomNext()">Selanjutnya ▶</button>
+    </div>
+</div>
+
+<div id="modalRestore" class="modal-backup">
+    <div class="backup-box">
+        <h3>📂 Restore Data</h3>
+        <input type="file" id="restoreFile" accept=".sqlite" style="width:100%; margin:15px 0;">
+        <button class="btn-primary" onclick="restoreFromFile()">RESTORE</button>
+        <button onclick="closeRestoreModal()" style="margin-top:12px;">Batal</button>
+    </div>
+</div>
+
+<script>
+    // Firebase Config
+    const firebaseConfig = {
+        apiKey: "AIzaSyDYTe7VmQ1r8zZ6T7Hrn5UAVFA0z3k7xgs",
+        authDomain: "stok-strip-pro.firebaseapp.com",
+        databaseURL: "https://stok-strip-pro-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "stok-strip-pro",
+        storageBucket: "stok-strip-pro.firebasestorage.app",
+        messagingSenderId: "569226117773",
+        appId: "1:569226117773:web:e7ec59998558db4c4758c4"
+    };
+
+    let database = null;
+    let isConnected = false;
+    let db = [];
+    let currentCategory = "HONDA";
+    let img1Base64 = "", img2Base64 = "";
+    
+    // Zoom state
+    let currentZoomImages = [];
+    let currentZoomIndex = 0;
+
+    // Inisialisasi Firebase
+    function initFirebase() {
+        try {
+            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            database.ref('.info/connected').on('value', (snap) => {
+                isConnected = snap.val() === true;
+                updateStatusDisplay();
+                if (isConnected) {
+                    showToast("✅ Terhubung ke Firebase");
+                    loadFromFirebase();
+                }
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    function updateStatusDisplay() {
+        const el = document.getElementById('syncStatus');
+        if (isConnected) {
+            el.innerHTML = '✅ Cloud • Online';
+            el.style.background = '#10b981';
+        } else {
+            el.innerHTML = '⚠️ Offline Mode';
+            el.style.background = '#ef4444';
+        }
+    }
+
+    async function loadFromFirebase() {
+        try {
+            const snap = await database.ref('produk_strip').once('value');
+            const data = snap.val();
+            if (data && Array.isArray(data) && data.length > 0) {
+                db = data.map(item => ({
+                    ...item,
+                    stok: item.stok !== undefined ? item.stok : 0,
+                    img1: item.img1 || '',
+                    img2: item.img2 || ''
+                }));
+                localStorage.setItem('stok_strip_firebase', JSON.stringify(db));
+                renderProduk();
+                showToast(`✅ Load ${db.length} produk`);
+            } else if (db.length > 0) {
+                await syncToFirebase();
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    async function syncToFirebase() {
+        if (!database || !isConnected) return;
+        try {
+            await database.ref('produk_strip').set(db);
+            showToast(`✅ Sync ${db.length} produk`);
+        } catch(e) { showToast("❌ Gagal sync"); }
+    }
+
+    async function manualSync() {
+        showToast("🔄 Sinkronisasi...");
+        await loadFromFirebase();
+        await syncToFirebase();
+        renderProduk();
+    }
+
+    function showToast(msg) {
+        let t = document.querySelector('.toast-message');
+        if (t) t.remove();
+        t = document.createElement('div');
+        t.className = 'toast-message';
+        t.innerHTML = msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2500);
+    }
+
+    function loadLocalData() {
+        const stored = localStorage.getItem('stok_strip_firebase');
+        if (stored) {
+            try {
+                let parsed = JSON.parse(stored);
+                db = parsed.map(item => ({
+                    ...item,
+                    stok: item.stok !== undefined ? item.stok : 0,
+                    img1: item.img1 || '',
+                    img2: item.img2 || ''
+                }));
+            } catch(e) { db = []; }
+        }
+        if (db.length === 0) initSampleData();
+        renderProduk();
+    }
+
+    function initSampleData() {
+        const sampleImg = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Crect width="200" height="200" fill="%233b82f6"/%3E%3Ctext x="100" y="120" fill="white" font-size="20" text-anchor="middle"%3ESTRIP%3C/text%3E%3C/svg%3E';
+        db = [
+            { id: Date.now(), nama: "SHOGUNNEW 03 HITAM", kategori: "SUZUKI", img1: sampleImg, img2: "", stok: 5 },
+            { id: Date.now()+1, nama: "SHOGUNNEW 03 BIRU", kategori: "SUZUKI", img1: sampleImg, img2: "", stok: 3 }
+        ];
+        saveAndSync();
+    }
+
+    function saveAndSync() {
+        localStorage.setItem('stok_strip_firebase', JSON.stringify(db));
+        if (isConnected) syncToFirebase();
+        if (!document.getElementById('screen-list').classList.contains('hidden')) renderProduk();
+    }
+
+    function triggerFile(idx) { document.getElementById('in-img-'+idx).click(); }
+
+    function handleImage(input, idx) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height;
+                    const maxW = 800;
+                    if (w > maxW) { h = (h * maxW) / w; w = maxW; }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    if (idx === 1) img1Base64 = dataUrl;
+                    else img2Base64 = dataUrl;
+                    document.getElementById('prev-'+idx).src = dataUrl;
+                    document.getElementById('prev-'+idx).classList.remove('hidden');
+                    document.getElementById('lab-'+idx).classList.add('hidden');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function simpanProduk() {
+        const id = document.getElementById('f-id').value;
+        const nama = document.getElementById('f-nama').value.trim();
+        const kategori = document.getElementById('f-kategori').value;
+        if (!nama) return showToast("Nama produk wajib!");
+        if (!img1Base64 && !id) return showToast("Foto utama wajib!");
+        
+        if (id) {
+            const idx = db.findIndex(p => p.id == id);
+            if (idx !== -1) db[idx] = { ...db[idx], nama, kategori, img1: img1Base64, img2: img2Base64 };
+        } else {
+            db.push({ id: Date.now(), nama, kategori, img1: img1Base64, img2: img2Base64 || "", stok: 0 });
+        }
+        saveAndSync();
+        resetForm();
+        navKe('list');
+        showToast("Produk tersimpan!");
+    }
+
+    function editProduk(id) {
+        const p = db.find(x => x.id == id);
+        if (!p) return;
+        document.getElementById('f-id').value = p.id;
+        document.getElementById('f-nama').value = p.nama;
+        document.getElementById('f-kategori').value = p.kategori;
+        img1Base64 = p.img1;
+        img2Base64 = p.img2 || "";
+        document.getElementById('prev-1').src = img1Base64;
+        document.getElementById('prev-1').classList.remove('hidden');
+        document.getElementById('lab-1').classList.add('hidden');
+        if (img2Base64) {
+            document.getElementById('prev-2').src = img2Base64;
+            document.getElementById('prev-2').classList.remove('hidden');
+            document.getElementById('lab-2').classList.add('hidden');
+        }
+        document.getElementById('form-title').innerText = "✏️ Edit Produk";
+        document.getElementById('btn-cancel').classList.remove('hidden');
+        navKe('add');
+    }
+
+    function resetForm() {
+        document.getElementById('f-id').value = "";
+        document.getElementById('f-nama').value = "";
+        document.getElementById('f-kategori').value = "HONDA";
+        img1Base64 = ""; img2Base64 = "";
+        document.getElementById('prev-1').classList.add('hidden');
+        document.getElementById('prev-2').classList.add('hidden');
+        document.getElementById('lab-1').classList.remove('hidden');
+        document.getElementById('lab-2').classList.remove('hidden');
+        document.getElementById('form-title').innerText = "➕ Tambah Produk";
+        document.getElementById('btn-cancel').classList.add('hidden');
+    }
+
+    // FUNGSI STOK - PASTIKAN BEKERJA DI SEMUA WEBVIEW
+    window.adjustStok = function(id, delta) {
+        console.log("adjustStok called - id:", id, "delta:", delta);
+        const idx = db.findIndex(p => p.id == id);
+        if (idx !== -1) {
+            const newStok = Math.max(0, (db[idx].stok || 0) + delta);
+            db[idx].stok = newStok;
+            saveAndSync();
+            renderProduk();
+            showToast("Stok: " + newStok);
+        } else {
+            showToast("Error: Produk tidak ditemukan");
+        }
+    };
+
+    window.hapus = function(id) {
+        if (confirm("Hapus produk ini?")) {
+            db = db.filter(p => p.id !== id);
+            saveAndSync();
+            renderProduk();
+            showToast("Produk dihapus");
+        }
+    };
+
+    // FUNGSI ZOOM - Menggunakan modal sederhana (kompatibel semua WebView)
+    window.openZoom = function(id) {
+        const p = db.find(x => x.id == id);
+        if (!p) return;
+        
+        currentZoomImages = [];
+        if (p.img1) currentZoomImages.push(p.img1);
+        if (p.img2 && p.img2.trim()) currentZoomImages.push(p.img2);
+        
+        if (currentZoomImages.length === 0) {
+            showToast("Tidak ada foto");
+            return;
+        }
+        
+        currentZoomIndex = 0;
+        const modal = document.getElementById('zoomModal');
+        const zoomImage = document.getElementById('zoomImage');
+        const zoomCounter = document.getElementById('zoomCounter');
+        
+        zoomImage.src = currentZoomImages[0];
+        zoomCounter.innerText = `1 / ${currentZoomImages.length}`;
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+    
+    window.zoomPrev = function() {
+        if (currentZoomImages.length === 0) return;
+        currentZoomIndex--;
+        if (currentZoomIndex < 0) currentZoomIndex = currentZoomImages.length - 1;
+        document.getElementById('zoomImage').src = currentZoomImages[currentZoomIndex];
+        document.getElementById('zoomCounter').innerText = `${currentZoomIndex+1} / ${currentZoomImages.length}`;
+    };
+    
+    window.zoomNext = function() {
+        if (currentZoomImages.length === 0) return;
+        currentZoomIndex++;
+        if (currentZoomIndex >= currentZoomImages.length) currentZoomIndex = 0;
+        document.getElementById('zoomImage').src = currentZoomImages[currentZoomIndex];
+        document.getElementById('zoomCounter').innerText = `${currentZoomIndex+1} / ${currentZoomImages.length}`;
+    };
+    
+    window.closeZoom = function() {
+        const modal = document.getElementById('zoomModal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        currentZoomImages = [];
+    };
+
+    function renderProduk() {
+        const keyword = document.getElementById('q-search')?.value.toLowerCase() || "";
+        const filtered = db.filter(p => p.kategori === currentCategory && p.nama.toLowerCase().includes(keyword));
+        const container = document.getElementById('list-render');
+        if (!container) return;
+        if (filtered.length === 0) {
+            container.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8;">✨ Tidak ada produk</div>';
+            return;
+        }
+        container.innerHTML = filtered.map(item => `
+            <div class="product-item">
+                <div class="prod-img-stack" onclick="openZoom(${item.id})">
+                    <img src="${item.img1 || ''}" class="prod-img-main" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Crect fill=\'%23ddd\' width=\'100\' height=\'100\'/%3E%3Ctext x=\'50\' y=\'55\' fill=\'%23999\' text-anchor=\'middle\'%3ENo img%3C/text%3E%3C/svg%3E'">
+                    ${item.img2 ? `<img src="${item.img2}" class="prod-img-sub">` : ''}
+                </div>
+                <div class="prod-info">
+                    <div style="font-weight:800;">${escapeHtml(item.nama)}</div>
+                    <div style="font-size:0.8rem;">📦 Stok: <b>${item.stok !== undefined ? item.stok : 0}</b></div>
+                    <div class="btn-edit-text" onclick="editProduk(${item.id})">✏️ EDIT</div>
+                </div>
+                <div class="stock-ctrl">
+                    <button class="btn-s" onclick="adjustStok(${item.id},-1)">−</button>
+                    <button class="btn-s" onclick="adjustStok(${item.id},1)">+</button>
+                    <button class="btn-s" style="background:#fff0f0;color:#dc2626" onclick="hapus(${item.id})">🗑️</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function escapeHtml(str) {
+        return String(str).replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function navKe(page) {
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById(`nav-${page}`).classList.add('active');
+        document.getElementById('screen-add').classList.toggle('hidden', page !== 'add');
+        document.getElementById('screen-list').classList.toggle('hidden', page !== 'list');
+        document.getElementById('tabs-container').classList.toggle('hidden', page !== 'list');
+        if (page === 'list') { renderTabs(); renderProduk(); }
+    }
+
+    function renderTabs() {
+        const cats = ["HONDA", "YAMAHA", "SUZUKI", "KAWASAKI"];
+        document.getElementById('tabs-container').innerHTML = cats.map(c => 
+            `<div class="tab ${c === currentCategory ? 'active' : ''}" onclick="currentCategory='${c}';renderTabs();renderProduk();">${c}</div>`
+        ).join('');
+    }
+
+    function exportBackup() {
+        const data = JSON.stringify({ app: "StokStripPro", version: 2, payload: db });
+        const blob = new Blob([data], { type: 'application/octet-stream' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `stok_backup_${new Date().toISOString().slice(0,10)}.sqlite`;
+        a.click();
+        toggleMenu();
+        showToast("Backup berhasil");
+    }
+
+    function showRestoreModal() { document.getElementById('modalRestore').style.display = 'flex'; toggleMenu(); }
+    function closeRestoreModal() { document.getElementById('modalRestore').style.display = 'none'; }
+
+    function restoreFromFile() {
+        const file = document.getElementById('restoreFile').files[0];
+        if (!file) return showToast("Pilih file backup");
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const json = JSON.parse(e.target.result);
+                if (json.app === "StokStripPro" && Array.isArray(json.payload)) {
+                    db = json.payload.map(item => ({
+                        ...item,
+                        stok: item.stok !== undefined ? item.stok : 0
+                    }));
+                    saveAndSync();
+                    showToast(`✅ Restore sukses! ${db.length} produk`);
+                    closeRestoreModal();
+                    renderProduk();
+                } else if (Array.isArray(json)) {
+                    db = json.map(item => ({
+                        ...item,
+                        stok: item.stok !== undefined ? item.stok : 0,
+                        id: item.id || Date.now() + Math.random()
+                    }));
+                    saveAndSync();
+                    showToast(`✅ Restore ${db.length} produk`);
+                    closeRestoreModal();
+                    renderProduk();
+                } else {
+                    showToast("❌ Format file tidak dikenali");
+                }
+            } catch(err) { 
+                showToast("❌ File korup"); 
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function toggleMenu() { document.getElementById('menuDropdown').classList.toggle('show'); }
+
+    document.addEventListener('click', (e) => {
+        const m = document.getElementById('menuDropdown');
+        if (m && !m.contains(e.target) && !e.target.classList?.contains('menu-btn')) m.classList.remove('show');
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeZoom(); });
+
+    initFirebase();
+    loadLocalData();
+    navKe('add');
+</script>
+</body>
+</html>
