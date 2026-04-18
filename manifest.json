@@ -1,64 +1,109 @@
 {
   "name": "StokStrip Pro",
   "short_name": "StripPro",
-  "description": "Aplikasi manajemen stok stiker motor untuk HONDA, YAMAHA, SUZUKI, KAWASAKI. Mudah tambah, edit, dan pantau stok produk.",
+  "description": "Aplikasi manajemen stok stiker motor untuk HONDA, YAMAHA, SUZUKI, KAWASAKI",
   "start_url": "/StripPwa/index.html",
   "scope": "/StripPwa/",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#1e293b",
   "background_color": "#1e293b",
-  "categories": ["shopping", "productivity", "business"],
-  "lang": "id",
-  "dir": "ltr",
   "icons": [
     {
       "src": "icon-72.png",
       "sizes": "72x72",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "icon-96.png",
       "sizes": "96x96",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "icon-128.png",
       "sizes": "128x128",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "icon-144.png",
       "sizes": "144x144",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "icon-152.png",
       "sizes": "152x152",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "icon-384.png",
       "sizes": "384x384",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "screenshots": [
@@ -75,34 +120,6 @@
       "type": "image/png",
       "form_factor": "wide",
       "label": "Halaman Daftar Stok"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Tambah Produk",
-      "short_name": "Tambah",
-      "description": "Langsung ke halaman tambah produk",
-      "url": "/StripPwa/index.html?action=add",
-      "icons": [
-        {
-          "src": "icon-96.png",
-          "sizes": "96x96",
-          "type": "image/png"
-        }
-      ]
-    },
-    {
-      "name": "Lihat Stok",
-      "short_name": "Stok",
-      "description": "Langsung ke daftar stok",
-      "url": "/StripPwa/index.html?action=list",
-      "icons": [
-        {
-          "src": "icon-96.png",
-          "sizes": "96x96",
-          "type": "image/png"
-        }
-      ]
     }
   ]
 }
