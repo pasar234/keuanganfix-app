@@ -11,8 +11,6 @@
   "categories": ["shopping", "productivity", "business"],
   "lang": "id",
   "dir": "ltr",
-  "iarc_rating_id": "",
-  "prefer_related_applications": false,
   "icons": [
     {
       "src": "icon-72.png",
@@ -106,16 +104,5 @@
         }
       ]
     }
-  ],
-  "related_applications": [],
-  "share_target": {
-    "action": "/StripPwa/index.html",
-    "method": "GET",
-    "enctype": "application/x-www-form-urlencoded",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
-    }
-  }
+  ]
 }
