@@ -1,13 +1,18 @@
 {
   "name": "StokStrip Pro",
   "short_name": "StripPro",
-  "description": "Aplikasi manajemen stok stiker motor untuk HONDA, YAMAHA, SUZUKI, KAWASAKI",
+  "description": "Aplikasi manajemen stok stiker motor untuk HONDA, YAMAHA, SUZUKI, KAWASAKI. Mudah tambah, edit, dan pantau stok produk.",
   "start_url": "/StripPwa/index.html",
   "scope": "/StripPwa/",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#1e293b",
   "background_color": "#1e293b",
+  "categories": ["shopping", "productivity", "business"],
+  "lang": "id",
+  "dir": "ltr",
+  "iarc_rating_id": "",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "icon-72.png",
@@ -57,5 +62,60 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot-1.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Halaman Tambah Produk"
+    },
+    {
+      "src": "screenshot-2.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Halaman Daftar Stok"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Tambah Produk",
+      "short_name": "Tambah",
+      "description": "Langsung ke halaman tambah produk",
+      "url": "/StripPwa/index.html?action=add",
+      "icons": [
+        {
+          "src": "icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Lihat Stok",
+      "short_name": "Stok",
+      "description": "Langsung ke daftar stok",
+      "url": "/StripPwa/index.html?action=list",
+      "icons": [
+        {
+          "src": "icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "share_target": {
+    "action": "/StripPwa/index.html",
+    "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 }
